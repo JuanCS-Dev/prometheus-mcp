@@ -15,8 +15,13 @@ from rich.panel import Panel
 from rich.syntax import Syntax
 from rich.table import Table
 
-from .core.llm import MultiProviderLLM
 from .core.context import ContextBuilder
+
+# Import LLM client (using existing implementation)
+try:
+    from .core.llm import llm_client as default_llm_client
+except ImportError:
+    default_llm_client = None
 from .tools.base import ToolRegistry
 from .tools.file_ops import (
     ReadFileTool, WriteFileTool, EditFileTool,
@@ -30,6 +35,10 @@ from .tools.search import SearchFilesTool, GetDirectoryTreeTool
 from .tools.exec import BashCommandTool
 from .tools.git_ops import GitStatusTool, GitDiffTool
 from .tools.context import GetContextTool, SaveSessionTool, RestoreBackupTool
+from .tools.terminal import (
+    CdTool, LsTool, PwdTool, MkdirTool, RmTool,
+    CpTool, MvTool, TouchTool, CatTool
+)
 
 
 class SessionContext:
@@ -61,9 +70,9 @@ class SessionContext:
 class InteractiveShell:
     """Tool-based interactive shell (Claude Code-level)."""
     
-    def __init__(self, llm_client: Optional[MultiProviderLLM] = None):
+    def __init__(self, llm_client=None):
         self.console = Console()
-        self.llm = llm_client or MultiProviderLLM()
+        self.llm = llm_client or default_llm_client
         self.context = SessionContext()
         self.context_builder = ContextBuilder()
         
@@ -112,6 +121,17 @@ class InteractiveShell:
             GetContextTool(),
             SaveSessionTool(),
             RestoreBackupTool(),
+            
+            # Terminal commands (9 tools)
+            CdTool(),
+            LsTool(),
+            PwdTool(),
+            MkdirTool(),
+            RmTool(),
+            CpTool(),
+            MvTool(),
+            TouchTool(),
+            CatTool(),
         ]
         
         for tool in tools:
@@ -313,6 +333,35 @@ Response: I don't have a tool to check the current time, but I can help you with
                     for f in data['files'][:10]:
                         self.console.print(f"  📄 {f['name']} ({f['size']} bytes)")
                     results.append(f"✓ Listed {result.metadata['file_count']} files, {result.metadata['dir_count']} directories")
+                
+                # Terminal commands
+                elif tool_name == "ls":
+                    items = result.data
+                    for item in items:
+                        icon = "📁" if item['type'] == 'dir' else "📄"
+                        name = f"[bold cyan]{item['name']}[/bold cyan]" if item['type'] == 'dir' else item['name']
+                        if result.metadata.get('long_format'):
+                            self.console.print(f"{icon} {name} ({item.get('size', 0)} bytes)")
+                        else:
+                            self.console.print(f"{icon} {name}")
+                    results.append(f"✓ {result.metadata['count']} items")
+                
+                elif tool_name == "pwd":
+                    self.console.print(f"[bold green]{result.data}[/bold green]")
+                    results.append("✓ Current directory shown")
+                
+                elif tool_name == "cd":
+                    self.console.print(f"[green]→ {result.metadata['new_cwd']}[/green]")
+                    results.append(f"✓ {result.data}")
+                
+                elif tool_name == "cat":
+                    from rich.syntax import Syntax
+                    # Try to detect language from file extension
+                    path = result.metadata.get('path', '')
+                    lang = Path(path).suffix.lstrip('.') or 'text'
+                    syntax = Syntax(result.data, lang, theme="monokai", line_numbers=True)
+                    self.console.print(syntax)
+                    results.append(f"✓ Displayed {result.metadata['lines']} lines")
                 
                 else:
                     results.append(f"✓ {result.data}")
