@@ -22,9 +22,14 @@ from .tools.file_ops import (
     ReadFileTool, WriteFileTool, EditFileTool,
     ListDirectoryTool, DeleteFileTool
 )
+from .tools.file_mgmt import (
+    MoveFileTool, CopyFileTool, CreateDirectoryTool,
+    ReadMultipleFilesTool, InsertLinesTool
+)
 from .tools.search import SearchFilesTool, GetDirectoryTreeTool
 from .tools.exec import BashCommandTool
 from .tools.git_ops import GitStatusTool, GitDiffTool
+from .tools.context import GetContextTool, SaveSessionTool, RestoreBackupTool
 
 
 class SessionContext:
@@ -76,16 +81,37 @@ class InteractiveShell:
     def _register_tools(self):
         """Register all available tools."""
         tools = [
+            # File reading (4 tools)
             ReadFileTool(),
+            ReadMultipleFilesTool(),
+            ListDirectoryTool(),
+            
+            # File writing (4 tools)
             WriteFileTool(),
             EditFileTool(),
-            ListDirectoryTool(),
+            InsertLinesTool(),
             DeleteFileTool(),
+            
+            # File management (3 tools)
+            MoveFileTool(),
+            CopyFileTool(),
+            CreateDirectoryTool(),
+            
+            # Search (2 tools)
             SearchFilesTool(),
             GetDirectoryTreeTool(),
+            
+            # Execution (1 tool)
             BashCommandTool(),
+            
+            # Git (2 tools)
             GitStatusTool(),
             GitDiffTool(),
+            
+            # Context (3 tools)
+            GetContextTool(),
+            SaveSessionTool(),
+            RestoreBackupTool(),
         ]
         
         for tool in tools:
@@ -111,24 +137,43 @@ class InteractiveShell:
             # Build prompt for LLM
             tool_schemas = self.registry.get_schemas()
             
-            system_prompt = f"""You are a code assistant with access to tools. 
-Available tools:
-{json.dumps(tool_schemas, indent=2)}
+            # Group tools by category for better understanding
+            tool_list = []
+            for schema in tool_schemas:
+                tool_list.append(f"- {schema['name']}: {schema['description']}")
+            
+            system_prompt = f"""You are an AI code assistant with access to tools for file operations, git, search, and execution.
+
+Available tools ({len(tool_schemas)} total):
+{chr(10).join(tool_list)}
 
 Current context:
-- CWD: {self.context.cwd}
-- Modified files: {list(self.context.modified_files)}
-- Read files: {list(self.context.read_files)}
+- Working directory: {self.context.cwd}
+- Modified files: {list(self.context.modified_files) if self.context.modified_files else 'none'}
+- Read files: {list(self.context.read_files) if self.context.read_files else 'none'}
 
-Based on the user's request, determine which tool(s) to use and return a JSON array of tool calls.
+INSTRUCTIONS:
+1. Analyze the user's request
+2. If it requires tools, respond ONLY with a JSON array of tool calls
+3. If no tools needed, respond with helpful text
 
-Format:
+Tool call format:
 [
   {{"tool": "tool_name", "args": {{"param": "value"}}}}
 ]
 
-If no tools are needed, just respond with conversational text.
-"""
+Examples:
+User: "read api.py"
+Response: [{{"tool": "readfile", "args": {{"path": "api.py"}}}}]
+
+User: "show git status"
+Response: [{{"tool": "gitstatus", "args": {{}}}}]
+
+User: "search for TODO in python files"
+Response: [{{"tool": "searchfiles", "args": {{"pattern": "TODO", "file_pattern": "*.py"}}}}]
+
+User: "what time is it?"
+Response: I don't have a tool to check the current time, but I can help you with code-related tasks."""
             
             messages = [
                 {"role": "system", "content": system_prompt},
@@ -179,7 +224,12 @@ If no tools are needed, just respond with conversational text.
                 continue
             
             # Show what we're doing
-            self.console.print(f"[dim]→ {tool_name}({', '.join(f'{k}={v}' for k, v in args.items())})[/dim]")
+            args_str = ', '.join(f'{k}={v}' for k, v in args.items())
+            self.console.print(f"[dim]→ {tool_name}({args_str})[/dim]")
+            
+            # Add session context for tools that need it
+            if tool_name in ['getcontext', 'savesession']:
+                args['session_context'] = self.context
             
             # Execute tool
             result = await tool.execute(**args)

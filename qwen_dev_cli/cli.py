@@ -175,6 +175,24 @@ def config_show():
     console.print()
 
 
+@app.command()
+def shell():
+    """Start interactive shell with tool-based architecture."""
+    from .shell import InteractiveShell
+    
+    console.print("[cyan]Starting interactive shell...[/cyan]")
+    
+    try:
+        shell_instance = InteractiveShell()
+        asyncio.run(shell_instance.run())
+    except KeyboardInterrupt:
+        console.print("\n[yellow]Shell interrupted[/yellow]")
+    except Exception as e:
+        console.print(f"[red]Error: {e}[/red]")
+        import traceback
+        traceback.print_exc()
+
+
 def main():
     """Entry point for CLI."""
     app()
