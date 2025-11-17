@@ -129,6 +129,27 @@ def create_ui() -> gr.Blocks:
             with gr.Column(scale=2, min_width=280):
                 # Collapsible Settings (better for mobile)
                 with gr.Accordion("⚙️ Model Settings", open=False):
+                    # Provider Selection
+                    provider_dropdown = gr.Dropdown(
+                        choices=llm_client.get_available_providers(),
+                        value="auto",
+                        label="🎯 LLM Provider",
+                        info="Choose LLM backend (auto = smart routing)",
+                        interactive=True
+                    )
+                    
+                    # Show provider info
+                    provider_info = gr.Markdown(
+                        """
+                        **Available Providers:**
+                        - `auto` - Intelligent routing (recommended)
+                        - `hf` - HuggingFace (baseline, 1514ms TTFT)
+                        - `sambanova` - SambaNova (fast, 1161ms TTFT, 23% ↑)
+                        - `ollama` - Local inference (privacy-first)
+                        """,
+                        visible=True
+                    )
+                    
                     temperature = gr.Slider(
                         minimum=0.0,
                         maximum=2.0,
@@ -216,8 +237,8 @@ def create_ui() -> gr.Blocks:
         
         # Event Handlers
         
-        def respond_stream(message: str, history: List, temp: float, max_tok: int, stream: bool) -> Generator:
-            """Handle chat response with streaming support."""
+        def respond_stream(message: str, history: List, temp: float, max_tok: int, stream: bool, provider: str) -> Generator:
+            """Handle chat response with streaming support and provider selection."""
             if not message.strip():
                 yield history
                 return
@@ -231,7 +252,7 @@ def create_ui() -> gr.Blocks:
                 async def stream_response():
                     full_response = ""
                     try:
-                        async for chunk in llm_client.stream_chat(message, temperature=temp, max_tokens=max_tok):
+                        async for chunk in llm_client.stream_chat(message, temperature=temp, max_tokens=max_tok, provider=provider):
                             full_response += chunk
                             history[-1]["content"] = full_response
                             yield history
@@ -255,7 +276,7 @@ def create_ui() -> gr.Blocks:
             else:
                 # Non-streaming mode
                 try:
-                    response = asyncio.run(llm_client.generate(message, temperature=temp, max_tokens=max_tok))
+                    response = asyncio.run(llm_client.generate(message, temperature=temp, max_tokens=max_tok, provider=provider))
                     history[-1]["content"] = response
                 except Exception as e:
                     history[-1]["content"] = f"❌ Error: {str(e)}"
@@ -289,7 +310,7 @@ def create_ui() -> gr.Blocks:
             """Clear chat history."""
             return [], ""
         
-        def retry_last(history: List, last_msg: str, temp: float, max_tok: int, stream: bool) -> Generator:
+        def retry_last(history: List, last_msg: str, temp: float, max_tok: int, stream: bool, provider: str) -> Generator:
             """Retry last message."""
             if not last_msg:
                 yield history
@@ -299,7 +320,7 @@ def create_ui() -> gr.Blocks:
             if len(history) >= 2 and history[-2].get("role") == "user":
                 history = history[:-2]
             
-            yield from respond_stream(last_msg, history, temp, max_tok, stream)
+            yield from respond_stream(last_msg, history, temp, max_tok, stream, provider)
         
         def toggle_mcp(enabled: bool) -> str:
             """Toggle MCP on/off."""
@@ -310,7 +331,7 @@ def create_ui() -> gr.Blocks:
         # Wire events
         send_btn.click(
             respond_stream,
-            inputs=[msg_input, chatbot, temperature, max_tokens, stream_enabled],
+            inputs=[msg_input, chatbot, temperature, max_tokens, stream_enabled, provider_dropdown],
             outputs=[chatbot]
         ).then(
             lambda: ("", context_builder.get_stats()),
@@ -323,7 +344,7 @@ def create_ui() -> gr.Blocks:
         
         msg_input.submit(
             respond_stream,
-            inputs=[msg_input, chatbot, temperature, max_tokens, stream_enabled],
+            inputs=[msg_input, chatbot, temperature, max_tokens, stream_enabled, provider_dropdown],
             outputs=[chatbot]
         ).then(
             lambda: ("", context_builder.get_stats()),
@@ -337,7 +358,7 @@ def create_ui() -> gr.Blocks:
         clear_btn.click(clear_chat, outputs=[chatbot, last_user_msg])
         retry_btn.click(
             retry_last,
-            inputs=[chatbot, last_user_msg, temperature, max_tokens, stream_enabled],
+            inputs=[chatbot, last_user_msg, temperature, max_tokens, stream_enabled, provider_dropdown],
             outputs=[chatbot]
         )
         
