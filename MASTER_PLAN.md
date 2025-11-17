@@ -58,28 +58,30 @@
 ```python
 our_tech_stack = {
     "MCP Integration": "✅ Filesystem server working",
+    "Interactive Shell": "✅ Rich REPL with history & autocomplete",
     "Gradio 6 UI": "✅ Host technology (bias!)",
-    "Streaming": "✅ Real-time token display",
+    "Streaming": "✅ Real-time token display (CLI + Web)",
     "Mobile": "✅ Responsive at 320px",
     "Performance": "✅ TTFT <2s, throughput >10 t/s",
     "Deployment": "✅ Live on HF Spaces"
 }
 
-score = 38/40  # Near perfect execution
+score = 39/40  # Near perfect execution
 ```
 
 ### **2. Innovation & Uniqueness (30 points)**
 
 ```python
 differentiators = [
-    "Hybrid CLI + Web UI (best of both)",
+    "Triple interface: CLI + Shell + Web (ultimate flexibility)",
+    "Interactive REPL with history & autocomplete",
     "Privacy-first (local Ollama option)",
     "MCP as first-class citizen (not afterthought)",
     "Mobile-friendly code assistant (rare!)",
     "HF Inference API fallback (reliability)"
 ]
 
-score = 27/30  # Strong differentiation
+score = 28/30  # Stronger differentiation
 ```
 
 ### **3. User Experience (20 points)**
@@ -109,7 +111,7 @@ demo_package = {
 score = 9/10  # Professional presentation
 ```
 
-**TOTAL PROJECTED: 92/100** → **TOP 3 RANGE** (90+ = podium)
+**TOTAL PROJECTED: 94/100** → **TOP 3 RANGE** (90+ = podium)
 
 ---
 
@@ -122,14 +124,15 @@ score = 9/10  # Professional presentation
 │         QWEN-DEV-CLI: HYBRID ARCHITECTURE               │
 ├─────────────────────────────────────────────────────────┤
 │                                                         │
-│  ┌─── USER INTERFACES ───────────────────────────┐    │
-│  │                                                │    │
-│  │  CLI (Terminal)           Web UI (Gradio 6)    │    │
-│  │  ├─ explain cmd           ├─ Chat interface   │    │
-│  │  ├─ generate cmd          ├─ Streaming        │    │
-│  │  └─ serve cmd             └─ Mobile responsive│    │
-│  │                                                │    │
-│  └────────────────┬───────────────────┬──────────┘    │
+│  ┌─── USER INTERFACES ────────────────────────────────┐    │
+│  │                                                    │    │
+│  │  CLI Commands      Interactive Shell   Web UI     │    │
+│  │  ├─ explain        ├─ REPL mode      ├─ Chat     │    │
+│  │  ├─ generate       ├─ History        ├─ Stream   │    │
+│  │  ├─ serve          ├─ Autocomplete   ├─ Mobile   │    │
+│  │  └─ shell          └─ Multiline      └─ Upload   │    │
+│  │                                                    │    │
+│  └─────────┬─────────────────┬────────────┬──────────┘    │
 │                   │                   │               │
 │  ┌────────────────▼───────────────────▼──────────┐    │
 │  │         CORE BUSINESS LOGIC                    │    │
@@ -172,6 +175,7 @@ qwen-dev-cli/
 │   │   └── config.py         (50 LOC) # Configuration
 │   │
 │   ├── cli.py               (100 LOC) # Typer CLI interface
+│   ├── shell.py             (120 LOC) # Interactive REPL shell
 │   ├── ui.py                (250 LOC) # Gradio Blocks UI
 │   └── utils.py              (50 LOC) # Helpers
 │
@@ -184,7 +188,7 @@ qwen-dev-cli/
     ├── benchmark.py                   # Performance testing
     └── deploy.sh                      # Deployment script
 
-TOTAL: ~800 LOC (achievable in 13 days!)
+TOTAL: ~920 LOC (achievable in 13 days!)
 ```
 
 ---
@@ -224,6 +228,8 @@ gradio>=6.0.0
 typer>=0.9.0
 rich>=13.0.0
 httpx>=0.27.0          # HF Inference API client
+prompt-toolkit>=3.0.0  # Interactive shell
+pygments>=2.0.0        # Syntax highlighting
 
 # MCP
 mcp>=1.0.0             # MCP SDK
@@ -368,6 +374,7 @@ AFTERNOON (3h): ☀️
     - Implement: explain command (stub)
     - Implement: generate command (stub)
     - Implement: serve command (stub)
+    - Implement: shell command (REPL mode) (stub)
     - Test: CLI loads, shows help
     - Time: 2h
     - Commit: "CLI interface skeleton"
@@ -379,14 +386,23 @@ AFTERNOON (3h): ☀️
     - Time: 1h
     - Commit: "CLI explain command working"
 
-EVENING (1h): 🌙
-[ ] Task 2.5: Daily review
+[ ] Task 2.5: Interactive shell skeleton
+    - Create: shell.py - REPL interface
+    - Implement: Basic prompt loop (using prompt_toolkit)
+    - Implement: /help, /exit commands
+    - Test: `qwen shell` enters interactive mode
+    - Time: 30min (moved from Day 3)
+    - Commit: "Interactive shell skeleton"
+
+EVENING (30min): 🌙
+[ ] Task 2.6: Daily review
     - Test: CLI end-to-end workflow
+    - Test: Shell enters interactive mode
     - Fix: Any bugs discovered
     - Document: Progress in log
-    - Time: 1h
+    - Time: 30min
 
-CHECKPOINT: ✅ CLI works, context injection working
+CHECKPOINT: ✅ CLI works, shell mode works, context injection working
 ```
 
 **Day 2 Deliverables:**
@@ -409,28 +425,32 @@ CHECKPOINT: ✅ CLI works, context injection working
 └─────────────────────────────────────────────────────────┘
 
 MORNING (3h): 🌅
-[ ] Task 3.1: Gradio UI skeleton
+[ ] Task 3.1: Interactive shell - Wire to LLM
+    - Import: core/llm.py into shell.py
+    - Implement: Message → LLM → Stream output
+    - Add: Syntax highlighting (Pygments)
+    - Add: Auto-completion (file paths, commands)
+    - Test: Chat in terminal works
+    - Time: 2h
+    - Commit: "Interactive shell working"
+
+[ ] Task 3.2: Shell history & context
+    - Add: Persistent history (readline)
+    - Add: Multi-line input support
+    - Add: /context command (show current files)
+    - Test: Shell UX is smooth
+    - Time: 1h
+    - Commit: "Shell history and context"
+
+AFTERNOON (3h): ☀️
+[ ] Task 3.3: Gradio UI skeleton
     - Create: ui.py - gr.Blocks() structure
     - Layout: 2-column (60% chat, 40% controls)
     - Components: Chatbot, Textbox, Button
-    - Test: UI renders
+    - Wire: Button → LLM → Chatbot
+    - Test: Basic web chat works
     - Time: 2h
-    - Commit: "Gradio UI skeleton"
-
-[ ] Task 3.2: Basic chat interaction
-    - Implement: chat_fn() handler (echo for now)
-    - Wire: Button → chat_fn → Chatbot
-    - Test: Chat interface works
-    - Time: 1h
-    - Commit: "Basic chat interaction"
-
-AFTERNOON (3h): ☀️
-[ ] Task 3.3: Connect Gradio to LLM
-    - Import: core/llm.py into ui.py
-    - Implement: Real chat_fn with LLM
-    - Test: User input → LLM → Display
-    - Time: 2h
-    - Commit: "Gradio connected to LLM"
+    - Commit: "Gradio UI working"
 
 [ ] Task 3.4: Add file upload
     - Add: gr.File() component
@@ -445,7 +465,7 @@ EVENING (1h): 🌙
     - Fix: Any UX issues
     - Time: 1h
 
-CHECKPOINT: ✅ Gradio UI working, LLM connected
+CHECKPOINT: ✅ Interactive shell working, Gradio UI working, both connected to LLM
 ```
 
 ---
@@ -1073,7 +1093,8 @@ Key Features:
   - 📱 Mobile-responsive (Gradio 6)
   - 🔧 MCP filesystem integration
   - ⚡ Real-time streaming
-  - 🎯 Dual interface (CLI + Web)
+  - 🎯 Triple interface (CLI + Shell + Web)
+  - 💻 Interactive REPL with history & autocomplete
 
 Links:
   GitHub: https://github.com/[your-username]/qwen-dev-cli
@@ -1189,7 +1210,7 @@ evaluation_rubric = {
     }
 }
 
-total_score = 38 + 27 + 18 + 9  # = 92/100
+total_score = 39 + 28 + 18 + 9  # = 94/100
 ranking = "TOP 3" if total_score >= 90 else "TOP 10"
 ```
 
@@ -1316,27 +1337,28 @@ This differentiates from 80% of submissions
 Estimated boost: +5 points
 ```
 
-### **4. Innovation (Hybrid Approach)**
+### **4. Innovation (Triple Interface)**
 
 ```
 Most projects are EITHER:
 - CLI only (developers like, judges don't demo well)
 - Web only (accessible but not powerful)
 
-We are BOTH:
-✅ CLI for power users
+We are ALL THREE:
+✅ CLI commands for automation
+✅ Interactive shell for development flow
 ✅ Web UI for accessibility
-✅ Same core, dual interface
+✅ Same core, triple interface
 
-This is unique and strategic
+This is highly unique and strategic
 
-Estimated boost: +5 points
+Estimated boost: +7 points
 ```
 
-**Total Advantage: +25 points over average submission**
+**Total Advantage: +27 points over average submission**
 
 **Base Score: 67 (average)  
-With Advantages: 92 (TOP 3 range)**
+With Advantages: 94 (TOP 3 range)**
 
 ---
 
