@@ -152,8 +152,15 @@ class InteractiveShell:
         self.console.print(welcome)
     
     async def _process_tool_calls(self, user_input: str) -> str:
-        """Process user input and execute tools via LLM."""
+        """Process user input and execute tools via LLM with professional prompts."""
         try:
+            # Import professional prompts (Phase 1.1 complete!)
+            from .prompts import (
+                build_system_prompt,
+                build_user_prompt,
+                get_examples_for_context
+            )
+            
             # Build prompt for LLM
             tool_schemas = self.registry.get_schemas()
             
