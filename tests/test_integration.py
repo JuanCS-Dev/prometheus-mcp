@@ -4,6 +4,7 @@ import asyncio
 import time
 from pathlib import Path
 import sys
+import pytest
 
 # Add parent directory to path
 sys.path.insert(0, str(Path(__file__).parent.parent))
@@ -94,6 +95,7 @@ def test_02_llm_client_validation():
     print(f"✅ LLM client valid: {message}")
 
 
+@pytest.mark.asyncio
 async def test_03_llm_basic_response():
     """Test 3: Basic LLM response (non-streaming)."""
     print("\n" + "="*60)
@@ -117,6 +119,7 @@ async def test_03_llm_basic_response():
     print(f"   Response: {response[:100]}...")
 
 
+@pytest.mark.asyncio
 async def test_04_llm_streaming():
     """Test 4: LLM streaming validation."""
     print("\n" + "="*60)
@@ -246,6 +249,7 @@ def test_06_mcp_manager():
     mcp_manager.clear()
 
 
+@pytest.mark.asyncio
 async def test_07_context_aware_generation():
     """Test 7: Context-aware LLM generation."""
     print("\n" + "="*60)
@@ -289,6 +293,7 @@ async def test_07_context_aware_generation():
     context_builder.clear()
 
 
+@pytest.mark.asyncio
 async def test_08_performance_benchmark():
     """Test 8: Performance benchmarking (3 samples)."""
     print("\n" + "="*60)
