@@ -25,6 +25,9 @@ from .core.recovery import (
 )
 
 # Import LLM client (using existing implementation)
+from .core.async_executor import AsyncExecutor
+from .core.file_watcher import FileWatcher
+from .core.file_watcher import RecentFilesTracker
 try:
     from .core.llm import llm_client as default_llm_client
 except ImportError:
@@ -760,59 +763,59 @@ Tool calls: {len(self.context.tool_calls)}
         
         try:
             while True:
-                    try:
+                try:
                     # Get user input
                     user_input = await self.session.prompt_async("┃ > ")
                     
                     if not user_input.strip():
                         continue
                     
-                # Build rich context for intelligence features
-                rich_ctx = build_rich_context(
-                    current_command=user_input,
-                    command_history=self.context.history[-10:],
-                    recent_errors=[],
-                    working_dir="."
-                )
+                    # Build rich context for intelligence features
+                    rich_ctx = build_rich_context(
+                        current_command=user_input,
+                        command_history=self.context.history[-10:],
+                        recent_errors=[],
+                        working_dir="."
+                    )
                 
-                # Check risk before execution
-                risk = assess_risk(user_input)
-                if risk.requires_confirmation:
-                    warning = get_risk_warning(risk, user_input)
-                    self.console.print(f"\n{warning}\n")
-                    confirm = input("Continue? [y/N]: ")
-                    if confirm.lower() != 'y':
+                    # Check risk before execution
+                    risk = assess_risk(user_input)
+                    if risk.requires_confirmation:
+                        warning = get_risk_warning(risk, user_input)
+                        self.console.print(f"\n{warning}\n")
+                        confirm = input("Continue? [y/N]: ")
+                        if confirm.lower() != 'y':
+                            continue
+                
+                    # Handle system commands
+                    if user_input.startswith("/"):
+                        should_exit, message = await self._handle_system_command(user_input)
+                        if message:
+                            self.console.print(f"[red]{message}[/red]")
+                        if should_exit:
+                            break
                         continue
                 
-                # Handle system commands
-                if user_input.startswith("/"):
-                    should_exit, message = await self._handle_system_command(user_input)
-                    if message:
-                        self.console.print(f"[red]{message}[/red]")
-                    if should_exit:
-                        break
-                    continue
+                    # Process with tools
+                    response = await self._process_tool_calls(user_input)
                 
-                # Process with tools
-                response = await self._process_tool_calls(user_input)
-                
-                if response:
-                    # Show response
-                    if response.startswith("✓") or response.startswith("❌"):
-                        # Tool execution result
-                        self.console.print(response)
-                    else:
-                        # Regular LLM response
-                        md = Markdown(response)
-                        self.console.print(md)
+                    if response:
+                        # Show response
+                        if response.startswith("✓") or response.startswith("❌"):
+                            # Tool execution result
+                            self.console.print(response)
+                        else:
+                            # Regular LLM response
+                            md = Markdown(response)
+                            self.console.print(md)
                     
-                    # Show intelligent suggestions after response
-                    suggestions = suggestion_engine.generate_suggestions(rich_ctx, max_suggestions=3)
-                    if suggestions.suggestions:
-                        self.console.print("\n[dim]💡 Suggestions:[/dim]")
-                        for i, sugg in enumerate(suggestions.suggestions[:3], 1):
-                            self.console.print(f"  {i}. {sugg}")
-                        self.console.print()
+                        # Show intelligent suggestions after response
+                        suggestions = suggestion_engine.generate_suggestions(rich_ctx, max_suggestions=3)
+                        if suggestions.suggestions:
+                            self.console.print("\n[dim]💡 Suggestions:[/dim]")
+                            for i, sugg in enumerate(suggestions.suggestions[:3], 1):
+                                self.console.print(f"  {i}. {sugg}")
+                            self.console.print()
                 
                 except KeyboardInterrupt:
                     continue
