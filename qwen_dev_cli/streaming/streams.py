@@ -54,7 +54,10 @@ class StreamProcessor:
         # Notify callbacks immediately
         for cb in self._callbacks:
             try:
-                cb(chunk)
+                if asyncio.iscoroutinefunction(cb):
+                    asyncio.create_task(cb(chunk))
+                else:
+                    cb(chunk)
             except Exception:
                 pass
         

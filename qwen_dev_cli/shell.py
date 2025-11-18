@@ -760,13 +760,13 @@ Tool calls: {len(self.context.tool_calls)}
         
         try:
             while True:
-                try:
-                # Get user input
-                user_input = await self.session.prompt_async("┃ > ")
-                
-                if not user_input.strip():
-                    continue
-                
+                    try:
+                    # Get user input
+                    user_input = await self.session.prompt_async("┃ > ")
+                    
+                    if not user_input.strip():
+                        continue
+                    
                 # Build rich context for intelligence features
                 rich_ctx = build_rich_context(
                     current_command=user_input,
