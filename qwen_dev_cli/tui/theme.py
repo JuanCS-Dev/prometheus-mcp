@@ -78,6 +78,16 @@ COLORS = {
     'status_error': '#da3633',      # Error states
     'status_info': '#1f6feb',       # Info messages
     'status_processing': '#8957e5', # Processing/loading
+    
+    # Legacy aliases for backwards compatibility
+    'primary': '#58a6ff',           # Alias for accent_blue
+    'success': '#3fb950',           # Alias for accent_green
+    'warning': '#d29922',           # Alias for accent_yellow
+    'error': '#f85149',             # Alias for accent_red
+    'info': '#58a6ff',              # Alias for accent_blue
+    'text': '#c9d1d9',              # Alias for text_primary
+    'dim': '#8b949e',               # Alias for text_secondary
+    'reset': '\033[0m',             # ANSI reset
 }
 
 

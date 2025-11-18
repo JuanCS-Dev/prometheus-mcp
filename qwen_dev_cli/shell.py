@@ -35,6 +35,7 @@ from .core.help_system import help_system
 from .core.async_executor import AsyncExecutor
 from .core.file_watcher import FileWatcher
 from .core.file_watcher import RecentFilesTracker
+from .intelligence.indexer import SemanticIndexer
 try:
     from .core.llm import llm_client as default_llm_client
 except ImportError:
@@ -154,6 +155,11 @@ class InteractiveShell:
         # Setup file watcher callback
         self.file_watcher.add_callback(self._on_file_changed)
         self.file_watcher.start()
+        
+        # Phase 5: Semantic indexer (Cursor-style intelligence)
+        self.indexer = SemanticIndexer(root_path=os.getcwd())
+        self.indexer.load_cache()  # Load from cache if available
+        self._indexer_initialized = False
     
     def _register_tools(self):
         """Register all available tools."""
@@ -670,11 +676,18 @@ Response: I don't have a tool to check the current time, but I can help you with
         elif cmd == "/help":
             help_text = """
 [bold]System Commands:[/bold]
-  /help     - Show this help
-  /exit     - Exit shell
-  /tools    - List available tools
-  /context  - Show session context
-  /clear    - Clear screen
+  /help       - Show this help
+  /exit       - Exit shell
+  /tools      - List available tools
+  /context    - Show session context
+  /clear      - Clear screen
+  /metrics    - Show constitutional metrics
+  /cache      - Show cache statistics
+
+[bold]Cursor-style Intelligence:[/bold]
+  /index      - Index codebase (Cursor magic!)
+  /find NAME  - Search symbols by name
+  /explain X  - Explain command/concept
 
 [bold]Natural Language Commands:[/bold]
   Just type what you want to do, e.g.:
@@ -734,6 +747,51 @@ Tool calls: {len(self.context.tool_calls)}
             explanation = explain_command(cmd[9:])
             self.console.print(f"\n💡 {explanation}")
             return False, None
+        
+        elif cmd == "/index":
+            # Phase 5: Semantic indexer
+            self.console.print("[cyan]🔍 Indexing codebase...[/cyan]")
+            import time
+            start = time.time()
+            count = self.indexer.index_codebase(force=True)
+            elapsed = time.time() - start
+            
+            stats = self.indexer.get_stats()
+            
+            self.console.print(f"[green]✓ Indexed {count} files in {elapsed:.2f}s[/green]")
+            self.console.print(f"  Total symbols: {stats['total_symbols']}")
+            self.console.print(f"  Unique names:  {stats['unique_symbols']}")
+            self._indexer_initialized = True
+            return False, None
+        
+        elif cmd.startswith("/find "):
+            # Phase 5: Symbol search
+            query = cmd[6:].strip()
+            
+            if not self._indexer_initialized:
+                self.console.print("[yellow]⚠ Index not initialized. Run /index first.[/yellow]")
+                return False, None
+            
+            results = self.indexer.search_symbols(query, limit=10)
+            
+            if not results:
+                self.console.print(f"[dim]No symbols found for: {query}[/dim]")
+                return False, None
+            
+            self.console.print(f"\n[bold]Found {len(results)} symbols:[/bold]\n")
+            for symbol in results:
+                type_style = "green" if symbol.type == "class" else "blue"
+                self.console.print(
+                    f"  [{type_style}]{symbol.name}[/{type_style}] "
+                    f"[dim]({symbol.type})[/dim] "
+                    f"[yellow]{symbol.file_path}:{symbol.line_number}[/yellow]"
+                )
+                if symbol.docstring:
+                    doc_preview = symbol.docstring.split('\n')[0][:60]
+                    self.console.print(f"    [dim]→ {doc_preview}...[/dim]")
+            
+            return False, None
+        
         else:
             return False, f"Unknown command: {cmd}"
     
