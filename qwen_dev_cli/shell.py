@@ -28,6 +28,9 @@ from .core.recovery import (
 from .core.error_parser import error_parser, ErrorAnalysis
 from .core.danger_detector import danger_detector, DangerWarning, DangerLevel
 
+# P2: Import enhanced help system
+from .core.help_system import help_system
+
 # Import LLM client (using existing implementation)
 from .core.async_executor import AsyncExecutor
 from .core.file_watcher import FileWatcher
@@ -92,6 +95,10 @@ class InteractiveShell:
         self.llm = llm_client or default_llm_client
         self.context = SessionContext()
         self.context_builder = ContextBuilder()
+        
+        # P2: Rich context builder
+        from .core.context_rich import RichContextBuilder
+        self.rich_context = RichContextBuilder()
         
         # Phase 2.3: Multi-turn conversation manager
         if session_id is None:
@@ -785,7 +792,26 @@ Tool calls: {len(self.context.tool_calls)}
                         self.console.print("[cyan]👋 Goodbye![/cyan]")
                         break
                     elif user_input.strip().lower() == 'help':
-                        self._show_help()
+                        # P2: Enhanced help system
+                        help_system.show_main_help()
+                        continue
+                    elif user_input.strip().lower().startswith('help '):
+                        # P2: Topic-specific help
+                        topic = user_input.strip()[5:].strip()
+                        if topic == 'examples':
+                            help_system.show_examples()
+                        else:
+                            help_system.show_examples(topic)
+                        continue
+                    elif user_input.strip().lower() == '/tutorial':
+                        # P2: Interactive tutorial
+                        help_system.show_tutorial()
+                        continue
+                    elif user_input.strip().lower().startswith('/explain '):
+                        # P2: Command explanation
+                        command = user_input.strip()[9:].strip()
+                        explanation = help_system.explain_command(command)
+                        self.console.print(explanation)
                         continue
                     elif user_input.startswith("/"):
                         should_exit, message = await self._handle_system_command(user_input)
@@ -826,7 +852,14 @@ Tool calls: {len(self.context.tool_calls)}
         """
         import time
         
-        # Build context (Cursor: auto context injection)
+        # P2: Build rich context (enhanced)
+        context_dict = self.rich_context.build_rich_context(
+            include_git=True,
+            include_env=True,
+            include_recent=True
+        )
+        
+        # Old format for compatibility
         rich_ctx = build_rich_context(
             current_command=user_input,
             command_history=self.context.history[-10:],
@@ -963,10 +996,13 @@ Tool calls: {len(self.context.tool_calls)}
             # Fallback: basic regex parsing (Claude: graceful degradation)
             return self._fallback_suggest(user_request)
         
-        # Build prompt with context (Cursor: context injection)
+        # P2: Build prompt with RICH context (Cursor: context injection)
+        rich_context = self.rich_context.build_rich_context()
+        context_str = self.rich_context.format_context_for_llm(rich_context)
+        
         prompt = f"""User request: {user_request}
-Current directory: {context.get('working_dir', '.')}
-OS: {context.get('os', 'Linux')}
+
+{context_str}
 
 Suggest ONE shell command to accomplish this task.
 Output ONLY the command, no explanation, no markdown."""
