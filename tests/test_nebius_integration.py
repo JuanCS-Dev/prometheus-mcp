@@ -6,7 +6,7 @@ Tests actual API calls with real Qwen models.
 import pytest
 import asyncio
 import os
-from qwen_dev_cli.core.llm import ResilientLLMClient
+from qwen_dev_cli.core.llm import LLMClient
 
 
 @pytest.mark.asyncio
@@ -16,7 +16,7 @@ async def test_nebius_qwen_72b_basic():
     if not os.getenv("NEBIUS_API_KEY"):
         pytest.skip("NEBIUS_API_KEY not set")
     
-    client = ResilientLLMClient()
+    client = LLMClient()
     
     response = ""
     async for chunk in client.stream_chat(
@@ -36,7 +36,7 @@ async def test_nebius_code_generation():
     if not os.getenv("NEBIUS_API_KEY"):
         pytest.skip("NEBIUS_API_KEY not set")
     
-    client = ResilientLLMClient()
+    client = LLMClient()
     
     response = ""
     async for chunk in client.stream_chat(
@@ -57,7 +57,7 @@ async def test_nebius_temperature_variation():
     if not os.getenv("NEBIUS_API_KEY"):
         pytest.skip("NEBIUS_API_KEY not set")
     
-    client = ResilientLLMClient()
+    client = LLMClient()
     
     # Low temperature (deterministic)
     response_low = ""
@@ -88,7 +88,7 @@ async def test_nebius_max_tokens_limit():
     if not os.getenv("NEBIUS_API_KEY"):
         pytest.skip("NEBIUS_API_KEY not set")
     
-    client = ResilientLLMClient()
+    client = LLMClient()
     
     response = ""
     async for chunk in client.stream_chat(
@@ -110,7 +110,7 @@ async def test_nebius_context_awareness():
     if not os.getenv("NEBIUS_API_KEY"):
         pytest.skip("NEBIUS_API_KEY not set")
     
-    client = ResilientLLMClient()
+    client = LLMClient()
     
     response = ""
     async for chunk in client.stream_chat(
@@ -130,7 +130,7 @@ async def test_nebius_streaming_incremental():
     if not os.getenv("NEBIUS_API_KEY"):
         pytest.skip("NEBIUS_API_KEY not set")
     
-    client = ResilientLLMClient()
+    client = LLMClient()
     
     chunks = []
     async for chunk in client.stream_chat(
@@ -152,7 +152,7 @@ async def test_nebius_error_handling():
     if not os.getenv("NEBIUS_API_KEY"):
         pytest.skip("NEBIUS_API_KEY not set")
     
-    client = ResilientLLMClient()
+    client = LLMClient()
     
     # Empty prompt should still work (model decides response)
     response = ""
@@ -176,7 +176,7 @@ async def test_nebius_concurrent_requests():
     if not os.getenv("NEBIUS_API_KEY"):
         pytest.skip("NEBIUS_API_KEY not set")
     
-    client = ResilientLLMClient()
+    client = LLMClient()
     
     async def make_request(prompt: str) -> str:
         response = ""
@@ -202,7 +202,7 @@ async def test_nebius_qwq_model():
     if not os.getenv("NEBIUS_API_KEY"):
         pytest.skip("NEBIUS_API_KEY not set")
     
-    client = ResilientLLMClient()
+    client = LLMClient()
     
     # QwQ models need to be explicitly selected via model parameter
     # For now test with default model (Qwen2.5-72B)

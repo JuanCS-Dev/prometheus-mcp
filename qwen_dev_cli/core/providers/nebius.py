@@ -1,8 +1,7 @@
 """Nebius AI provider integration.
 
-Nebius provides access to Qwen models via OpenAI-compatible API.
+Nebius provides access to various LLM models via OpenAI-compatible API.
 API Base: https://api.studio.nebius.ai/v1/
-Models: Qwen/Qwen2.5-72B-Instruct, Qwen/QwQ-32B-Preview
 """
 
 import os
@@ -27,12 +26,16 @@ class NebiusProvider:
             api_key=self.api_key
         )
         
-        # Available models
+        # Available models (updated with real Nebius models)
         self.models = {
-            "qwen2.5-72b": "Qwen/Qwen2.5-72B-Instruct",
-            "qwq-32b": "Qwen/QwQ-32B-Preview"
+            "qwen3-235b": "Qwen/Qwen3-235B-A22B-Instruct-2507",
+            "qwen2.5-coder-7b": "Qwen/Qwen2.5-Coder-7B-fast",
+            "llama-3.3-70b": "meta-llama/Llama-3.3-70B-Instruct-fast",
+            "llama-3.1-8b": "meta-llama/Meta-Llama-3.1-8B-Instruct-fast",
+            "deepseek-r1": "deepseek-ai/DeepSeek-R1-0528",
+            "gemma-2-9b": "google/gemma-2-9b-it-fast"
         }
-        self.default_model = "qwen2.5-72b"
+        self.default_model = "qwen3-235b"
     
     async def stream_chat(
         self,

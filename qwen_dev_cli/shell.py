@@ -49,6 +49,8 @@ from .tools.terminal import (
     CdTool, LsTool, PwdTool, MkdirTool, RmTool,
     CpTool, MvTool, TouchTool, CatTool
 )
+from .intelligence.context_enhanced import build_rich_context
+from .intelligence.risk import assess_risk
 
 
 class SessionContext:
@@ -60,6 +62,7 @@ class SessionContext:
         self.modified_files = set()
         self.read_files = set()
         self.tool_calls = []
+        self.history = []
     
     def track_tool_call(self, tool_name: str, args: Dict[str, Any], result: Any):
         """Track tool usage."""
@@ -749,7 +752,8 @@ Tool calls: {len(self.context.tool_calls)}
         self._show_welcome()
         
         # Initialize suggestion engine
-        suggestion_engine = get_suggestion_engine()
+        from .intelligence.engine import SuggestionEngine
+        suggestion_engine = SuggestionEngine()
         from .intelligence.patterns import register_builtin_patterns
         register_builtin_patterns(suggestion_engine)
         
