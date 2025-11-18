@@ -518,6 +518,354 @@ Tarefas:
 
 ---
 
+
+---
+
+### 🔥 FASE 3.5: REACTIVE TUI & ASYNC LOG STREAMING (1-2 dias) [CRÍTICO - PRIORITÁRIO]
+
+#### **3.5 Cursor-like Terminal Experience**
+Status: ❌ TODO | Prioridade: **CRÍTICA** (bloqueador para UX profissional)
+
+**PROBLEMA ATUAL:**
+```python
+# Anti-pattern: Buffering completo
+result = subprocess.run(cmd, capture_output=True)
+print(result.stdout)  # Cospe tudo no final! ❌
+```
+
+**User Experience Target:** Cursor IDE Agent Terminal
+- ✅ Ver output linha-por-linha em tempo real
+- ✅ Múltiplos processos paralelos sem glitch
+- ✅ Spinners e progress bars fluidos
+- ✅ Zero UI blocking
+- ✅ "Terminal vivo", não estático
+
+---
+
+#### **Objective: Zero-UI-Blocking Architecture**
+
+Replicar a fluidez do Cursor IDE/Claude Code terminal.
+
+**Arquivos a criar:**
+```
+qwen_dev_cli/tui/
+├── __init__.py
+├── stream_engine.py      # 400 LOC - Producer-Consumer engine
+├── renderer.py            # 300 LOC - UI thread (Rich/Textual)
+├── process_manager.py     # 250 LOC - Async subprocess management
+└── components.py          # 200 LOC - Spinners, Progress bars
+```
+
+**Tests:**
+```
+tests/test_tui.py          # 300 LOC - Real-time streaming tests
+```
+
+---
+
+#### **Specs Técnicas (Non-Negotiable):**
+
+**1. Architecture: Producer-Consumer Pattern**
+```python
+from dataclasses import dataclass
+from typing import AsyncGenerator
+import asyncio
+
+@dataclass
+class StreamChunk:
+    """Chunk de output em tempo real."""
+    source: str  # stdout/stderr
+    content: str
+    timestamp: float
+    process_id: str
+
+class StreamEngine:
+    """Engine de streaming assíncrono.
+    
+    Producer: Worker threads leem stdout/stderr
+    Consumer: UI thread renderiza em tempo real
+    """
+    
+    def __init__(self):
+        self.queue: asyncio.Queue[StreamChunk] = asyncio.Queue()
+        self.active_processes: Dict[str, Process] = {}
+    
+    async def execute_streaming(
+        self,
+        command: str,
+        process_id: str
+    ) -> AsyncGenerator[StreamChunk, None]:
+        """Execute command with real-time streaming.
+        
+        Boris Cherny: Async generators for backpressure control.
+        """
+        process = await asyncio.create_subprocess_shell(
+            command,
+            stdout=asyncio.subprocess.PIPE,
+            stderr=asyncio.subprocess.PIPE
+        )
+        
+        self.active_processes[process_id] = process
+        
+        # Producer: Read stdout line-by-line
+        async def read_stdout():
+            async for line in process.stdout:
+                chunk = StreamChunk(
+                    source="stdout",
+                    content=line.decode(),
+                    timestamp=time.time(),
+                    process_id=process_id
+                )
+                await self.queue.put(chunk)
+        
+        # Producer: Read stderr line-by-line
+        async def read_stderr():
+            async for line in process.stderr:
+                chunk = StreamChunk(
+                    source="stderr",
+                    content=line.decode(),
+                    timestamp=time.time(),
+                    process_id=process_id
+                )
+                await self.queue.put(chunk)
+        
+        # Start both readers in parallel
+        await asyncio.gather(
+            read_stdout(),
+            read_stderr()
+        )
+```
+
+---
+
+**2. Real-Time Streaming (Zero Buffering)**
+```python
+class RealtimeRenderer:
+    """UI thread - NUNCA bloqueia em I/O.
+    
+    Cursor pattern: Optimistic UI + Background processing
+    """
+    
+    def __init__(self):
+        self.console = Console()
+        self.active_spinners: Dict[str, Spinner] = {}
+    
+    async def render_stream(
+        self,
+        engine: StreamEngine
+    ):
+        """Consume stream and render em tempo real."""
+        
+        while True:
+            try:
+                # Non-blocking get with timeout
+                chunk = await asyncio.wait_for(
+                    engine.queue.get(),
+                    timeout=0.1
+                )
+                
+                # Render imediatamente (linha-por-linha)
+                if chunk.source == "stdout":
+                    self.console.print(chunk.content, end="")
+                else:  # stderr
+                    self.console.print(
+                        f"[red]{chunk.content}[/red]",
+                        end=""
+                    )
+                
+            except asyncio.TimeoutError:
+                # Update spinners while waiting
+                self._update_spinners()
+```
+
+---
+
+**3. Concurrency Visuals (Race-Free Rendering)**
+```python
+class ConcurrentRenderer:
+    """Gerencia múltiplos processos paralelos.
+    
+    Cursor pattern: Múltiplos streams sem glitch visual
+    """
+    
+    def __init__(self):
+        self.lock = asyncio.Lock()  # Mutex para UI
+        self.process_views: Dict[str, ProcessView] = {}
+    
+    async def render_parallel_streams(
+        self,
+        processes: List[str]
+    ):
+        """Renderiza N processos em paralelo."""
+        
+        async with self.lock:
+            # Create visual sections for each process
+            for pid in processes:
+                self.process_views[pid] = ProcessView(
+                    title=f"Process {pid}",
+                    live=Live(auto_refresh=True)
+                )
+        
+        # Render each stream in parallel
+        tasks = [
+            self._render_process_stream(pid)
+            for pid in processes
+        ]
+        
+        await asyncio.gather(*tasks)
+    
+    async def _render_process_stream(self, pid: str):
+        """Render single process stream (thread-safe)."""
+        view = self.process_views[pid]
+        
+        async for chunk in self.engine.stream(pid):
+            async with self.lock:  # Race condition protection
+                view.append(chunk.content)
+                view.live.update(view.panel)
+```
+
+---
+
+**4. Optimistic UI Pattern**
+```python
+class OptimisticUI:
+    """Feedback visual imediato.
+    
+    Claude Code pattern: Mostrar intenção antes de execução
+    """
+    
+    async def execute_with_feedback(
+        self,
+        command: str
+    ):
+        """Execute with immediate visual feedback."""
+        
+        # 1. IMMEDIATE: Show what we're about to do
+        with self.console.status(
+            f"[bold blue]Executing:[/] {command}"
+        ) as status:
+            
+            # 2. BACKGROUND: Actually execute
+            result = await self.engine.execute_streaming(command)
+            
+            # 3. REAL-TIME: Stream output as it comes
+            async for chunk in result:
+                self.console.print(chunk.content, end="")
+                status.update(f"Running... (line {chunk.line_number})")
+        
+        # 4. FINAL: Show completion
+        self.console.print("[green]✓[/green] Complete")
+```
+
+---
+
+#### **Implementation Priorities:**
+
+**Day 1 (6-8h):**
+1. ✅ StreamEngine base (Producer-Consumer)
+2. ✅ Process async subprocess management
+3. ✅ Basic RealtimeRenderer
+4. ✅ Tests for streaming (line-by-line validation)
+
+**Day 2 (4-6h):**
+1. ✅ ConcurrentRenderer (parallel streams)
+2. ✅ OptimisticUI components
+3. ✅ Rich/Textual integration
+4. ✅ Visual components (Spinners, Progress)
+5. ✅ Integration with existing shell.py
+
+---
+
+#### **Anti-Patterns to Avoid:**
+
+❌ **PROIBIDO: Loading infinito que cospe tudo no final**
+```python
+# NUNCA FAZER ISSO:
+result = subprocess.run(cmd, capture_output=True)
+time.sleep(5)  # User vê nada...
+print(result.stdout)  # BOOM - tudo de uma vez
+```
+
+✅ **CORRETO: Streaming em tempo real**
+```python
+async for line in process.stdout:
+    print(line, end="")  # Linha-por-linha
+```
+
+❌ **PROIBIDO: UI thread bloqueando em I/O**
+```python
+# NUNCA:
+def render():
+    data = blocking_io_call()  # UI trava! ❌
+    display(data)
+```
+
+✅ **CORRETO: I/O em worker, UI apenas renderiza**
+```python
+async def render():
+    data = await self.queue.get()  # Non-blocking ✓
+    display(data)
+```
+
+---
+
+#### **LOC Estimate:**
+```
+stream_engine.py:      400 LOC
+renderer.py:           300 LOC
+process_manager.py:    250 LOC
+components.py:         200 LOC
+tests/test_tui.py:     300 LOC
+───────────────────────────
+TOTAL:               1,450 LOC
+```
+
+**Critério de Sucesso:**
+- ✅ Ver output linha-por-linha (< 50ms latency)
+- ✅ Múltiplos processos paralelos sem glitch
+- ✅ Spinners fluidos (60 FPS)
+- ✅ Zero UI blocking
+- ✅ Feels "Cursor-like"
+
+---
+
+**Dependencies:**
+```bash
+pip install rich textual asyncio-subprocess
+```
+
+**Research References:**
+- Cursor IDE: Agent Terminal implementation
+- Claude Code: Real-time streaming UX
+- Rich library: Live rendering patterns
+- Textual: Reactive TUI framework
+
+---
+
+**Integration Points:**
+- Integra com `shell.py` (existing REPL)
+- Usa `StreamEngine` em vez de `subprocess.run()`
+- Mantém compatibilidade com tool execution
+- Adiciona modo `--streaming` para comandos
+
+---
+
+**PRIORITY JUSTIFICATION:**
+
+Esta feature é **CRÍTICA** porque:
+1. **UX Profissional:** Cursor/Claude Code têm isso, nós PRECISAMOS
+2. **Diferenciação:** 90% dos CLIs fazem buffering completo (somos os 10%)
+3. **User Perception:** "Feels fast" > "Is fast"
+4. **Debugging:** Ver output em tempo real = debug 10x mais rápido
+5. **Long-running tasks:** Builds, testes, deploys precisam de feedback
+
+**Impact:** 70% → 85% Copilot parity (UX leap)
+
+**Timeline:** 1-2 dias full focus (10-14h)
+
+**Bloqueador para:** Phase 4.3 (Performance) e Phase 5 (Polish)
+
+---
 ## 📊 ESTIMATIVAS TOTAIS (UPDATED)
 
 ### **LOC por Fase:**
@@ -1360,3 +1708,87 @@ Code Quality:
 
 **Soli Deo Gloria!** 🙏✨
 
+
+---
+
+## 🔥 ATUALIZAÇÃO CRÍTICA: TUI PRIORITÁRIO (2025-11-18)
+
+### **Nova Prioridade Máxima: Phase 3.5 - Reactive TUI**
+
+**JUSTIFICATIVA:**
+Esta feature foi identificada como **BLOQUEADOR CRÍTICO** para UX profissional.
+
+**Reordenação de Implementação:**
+
+### **✅ COMPLETADO (Sessions 1-3):**
+1. ✅ Phase 1: LLM Backend (100%)
+2. ✅ Phase 2: Shell Integration (100%)
+3. ✅ Phase 3.1: Error Recovery (100%)
+4. ✅ Phase 3.2: Workflow Orchestration (100%)
+5. ✅ Phase 4.1: Intelligent Suggestions (100%)
+6. ✅ Phase 4.1 Enhanced: Risk + Workflows (100%)
+
+**Progress:** 82% Copilot parity, 98% Constitutional
+
+---
+
+### **🔥 PRÓXIMA IMPLEMENTAÇÃO (CRÍTICA):**
+
+**Phase 3.5: Reactive TUI & Async Streaming** (1-2 dias)
+- **Prioridade:** MÁXIMA (bloqueador UX)
+- **Impact:** 82% → 87-90% Copilot parity
+- **LOC:** ~1,450
+- **Feeling:** Cursor IDE Agent Terminal
+- **Specs:**
+  - Producer-Consumer architecture
+  - Real-time line-by-line streaming
+  - Concurrent process rendering
+  - Optimistic UI feedback
+  - Zero UI blocking
+
+**Dependencies:**
+```bash
+pip install rich textual asyncio-subprocess
+```
+
+---
+
+### **Após TUI (ordem revisada):**
+
+1. ⚠️ Phase 4.2: Explanation Engine (1 dia)
+2. ⚠️ Phase 4.3: Performance Optimization (1 dia)
+3. ⚠️ Phase 4.5: Constitutional Metrics (0.5 dia)
+4. ⚠️ Phase 5: Final Polish (1-2 dias)
+
+---
+
+### **Timeline Atualizado:**
+
+```
+Hoje (Nov 18):       Phase 3.5 TUI (start)
+Nov 19-20:           Phase 3.5 TUI (complete)
+Nov 21:              Phase 4.2 Explanation
+Nov 22:              Phase 4.3 Performance
+Nov 23:              Phase 4.5 Metrics
+Nov 24-25:           Phase 5 Polish
+Nov 26-30:           Buffer + Documentation
+```
+
+**Status:** AHEAD OF SCHEDULE (4-6 days buffer) ✅
+
+---
+
+### **Impacto no Copilot Parity:**
+
+```
+Current:    82% [████████████████░░░░]
++ TUI:      87% [█████████████████░░░] (+5% - UX leap)
++ Phase 4:  90% [██████████████████░░] (+3% - Intelligence)
++ Polish:   92% [██████████████████░░] (+2% - Final touches)
+```
+
+**Target:** 90%+ até Nov 25 (5 dias antes do deadline) 🎯
+
+---
+
+**Soli Deo Gloria!** 🙏✨
