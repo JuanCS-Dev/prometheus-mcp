@@ -2,12 +2,23 @@
 """
 TUI Components Demo - Visual showcase of all components.
 
-Run this to see the surgical TUI system in action.
+Run from project root:
+    source venv/bin/activate
+    python examples/tui_demo.py
+
+Or install in dev mode:
+    pip install -e .
 
 Created: 2025-11-18 20:35 UTC
 """
 
 import asyncio
+import sys
+from pathlib import Path
+
+# Add parent directory to path for development
+sys.path.insert(0, str(Path(__file__).parent.parent))
+
 from rich.console import Console
 
 from qwen_dev_cli.tui.theme import COLORS
