@@ -1,16 +1,26 @@
-"""Reactive TUI & Async Streaming Engine (Phase 3.5)."""
+"""Reactive TUI and async streaming components."""
 
 from .executor import AsyncCommandExecutor, ExecutionResult
-from .renderer import ReactiveRenderer, RenderEvent, RenderEventType
-from .streams import StreamProcessor, OutputChunk, StreamType
+from .renderer import (
+    ReactiveRenderer,
+    ConcurrentRenderer,
+    RenderEvent,
+    RenderEventType
+)
+from .streams import (
+    StreamProcessor,
+    StreamType,
+    LineBufferedStreamReader
+)
 
 __all__ = [
-    "AsyncCommandExecutor",
-    "ExecutionResult",
-    "ReactiveRenderer",
-    "RenderEvent",
-    "RenderEventType",
-    "StreamProcessor",
-    "OutputChunk",
-    "StreamType",
+    'AsyncCommandExecutor',
+    'ExecutionResult',
+    'ReactiveRenderer',
+    'ConcurrentRenderer',
+    'RenderEvent',
+    'RenderEventType',
+    'StreamProcessor',
+    'StreamType',
+    'LineBufferedStreamReader',
 ]
