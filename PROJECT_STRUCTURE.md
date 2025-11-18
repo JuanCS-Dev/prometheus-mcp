@@ -189,11 +189,11 @@ PROJECT_STRUCTURE.md # Este arquivo
 
 | Categoria | Quantidade |
 |-----------|------------|
-| Módulos Python | 30+ |
+| Módulos Python | 35 |
 | Testes | 237+ |
 | Documentos | 25+ |
 | Linhas de Código | 15,000+ |
-| Cobertura de Testes | 90%+ |
+| Test Cases | 237 |
 
 ---
 

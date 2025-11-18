@@ -168,7 +168,7 @@ class ContextWindow:
             turns: Full conversation history
             strategy: Compaction strategy
                 - "sliding_window": Keep last N turns
-                - "summarize": Summarize old turns (TODO: needs LLM)
+                - "summarize": Summarize old turns (requires LLM integration)
                 - "aggressive": Keep only last 2 turns + errors
         
         Returns:

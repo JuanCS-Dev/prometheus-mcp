@@ -15,7 +15,7 @@ from qwen_dev_cli.core.mcp import mcp_manager
 from qwen_dev_cli.core.config import config
 
 
-class TestMetrics:
+class _TestMetrics:
     """Scientific metrics collection."""
     
     def __init__(self):
@@ -58,7 +58,7 @@ class TestMetrics:
         }
 
 
-metrics = TestMetrics()
+metrics = _TestMetrics()
 
 
 def test_01_config_validation():
@@ -178,10 +178,10 @@ def test_05_context_builder():
     # Clear any previous context
     context_builder.clear()
     
-    # Test reading test files
+    # Test reading test files with correct paths
     test_files = [
-        "test_llm.py",
-        "test_context.py"
+        "tests/test_llm.py",
+        "tests/test_context.py"
     ]
     
     results = context_builder.add_files(test_files)
@@ -200,7 +200,7 @@ def test_05_context_builder():
     context = context_builder.get_context()
     
     assert len(context) > 0, "Context is empty"
-    assert "test_llm.py" in context, "File name not in context"
+    assert "tests/test_llm.py" in context, "File name not in context"
     
     print(f"✅ Context builder works!")
     print(f"   Files: {stats['files']}")
@@ -220,10 +220,10 @@ def test_06_mcp_manager():
     # Clear context
     mcp_manager.clear()
     
-    # List Python files
-    files = mcp_manager.list_files("*.py", recursive=False)
+    # List Python files in tests directory
+    files = mcp_manager.list_files("tests/*.py", recursive=False)
     
-    assert len(files) > 0, "No Python files found"
+    assert len(files) > 0, "No Python files found in tests/"
     
     # Test file info
     if files:
@@ -232,7 +232,7 @@ def test_06_mcp_manager():
         assert "size" in info or "size_kb" in info, "File info missing size"
     
     # Test pattern injection
-    results = mcp_manager.inject_pattern_to_context("test_*.py")
+    results = mcp_manager.inject_pattern_to_context("tests/test_*.py")
     
     assert len(results) > 0, "No files injected"
     
@@ -256,9 +256,9 @@ async def test_07_context_aware_generation():
     print("TEST 7: Context-Aware Generation")
     print("="*60)
     
-    # Add a test file to context
+    # Add a test file to context with correct path
     context_builder.clear()
-    success, msg = context_builder.add_file("test_llm.py")
+    success, msg = context_builder.add_file("tests/test_llm.py")
     
     assert success, f"Failed to add context: {msg}"
     
@@ -358,7 +358,7 @@ def test_09_error_handling():
     
     # Test 2: File too large
     context_builder.max_file_size_kb = 0.001  # 1 byte
-    success, message = context_builder.add_file("test_llm.py")
+    success, message = context_builder.add_file("tests/test_llm.py")
     assert not success, "Should fail on large file"
     assert "too large" in message.lower(), f"Expected 'too large' error, got: {message}"
     context_builder.max_file_size_kb = 100  # Reset
@@ -367,8 +367,8 @@ def test_09_error_handling():
     # Test 3: Max files limit
     context_builder.clear()
     context_builder.max_files = 1
-    context_builder.add_file("test_llm.py")
-    success, message = context_builder.add_file("test_context.py")
+    context_builder.add_file("tests/test_llm.py")
+    success, message = context_builder.add_file("tests/test_context.py")
     assert not success, "Should fail when max files reached"
     assert "maximum" in message.lower(), f"Expected 'maximum' error, got: {message}"
     context_builder.max_files = 5  # Reset
