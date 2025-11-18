@@ -740,7 +740,7 @@ Tool calls: {len(self.context.tool_calls)}
         
         try:
             while True:
-            try:
+                try:
                 # Get user input
                 user_input = await self.session.prompt_async("┃ > ")
                 
