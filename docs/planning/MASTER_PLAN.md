@@ -1891,7 +1891,20 @@ QWEN_MCP_MODE=true qwen       # Via env var
 **Status:** 🔴 NOT STARTED  
 **Priority:** P0 (Hackathon demo)
 
-**Vision:** Terminal lindo com syntax highlight, autocomplete, drag-and-drop
+**Vision:** FRONTEND KILLER - Terminal que faz nerds chorarem de beleza
+- CLEAN: Zero clutter visual, hierarquia clara, whitespace estratégico
+- SOBRIO: Paleta restrita (2-3 cores + neutros), tipografia impecável
+- DETALHISTA: Micro-interações, transições suaves (120ms), estados hover/focus precisos
+- PARADOXO: Aos leigos parece simples. Aos devs revela cuidado meticuloso.
+
+**Design Philosophy:**
+```
+"The best interface is invisible until you need it"
+- Spotify-like minimalism
+- Linear.app-level polish
+- Vercel dashboard sobriety
+- Warp terminal innovation
+```
 
 **Architecture:**
 ```
@@ -1899,62 +1912,206 @@ qwen_dev_cli/integrations/gradio/
 ├── __init__.py
 ├── app.py              # Gradio interface
 ├── components/
-│   ├── terminal.py     # Terminal component
-│   ├── file_tree.py    # Project explorer
-│   └── diff_viewer.py  # Git diff viewer
-└── themes/
-    └── qwen_dark.py    # Custom theme
+│   ├── terminal.py     # Terminal component (Xterm.js)
+│   ├── file_tree.py    # Project explorer (VSCode-inspired)
+│   ├── diff_viewer.py  # Git diff viewer (GitHub-quality)
+│   └── command_palette.py  # Cmd+K style quick actions
+├── themes/
+│   └── qwen_dark.py    # Custom theme (surgical colors)
+└── assets/
+    ├── fonts/          # Inter/JetBrains Mono
+    └── animations/     # Lottie micro-interactions
 ```
 
 **Features:**
-1. **Terminal component** (6h)
-   - Xterm.js integration
-   - Syntax highlighting (Pygments)
-   - Autocomplete (bash, git, python)
-   - Command history (↑/↓)
-   - Multi-tab support
+1. **Terminal component** (8h) - O coração pulsante
+   - Xterm.js integration (addons: fit, search, webLinks)
+   - Syntax highlighting real-time (Pygments + custom lexers)
+   - Autocomplete inteligente (bash, git, python, contexto-aware)
+   - Command history com fuzzy search (↑/↓ + Ctrl+R)
+   - Multi-tab support (Cmd+T, Cmd+W, Cmd+1-9)
+   - Smooth scrolling (não aquele scroll travado feio)
+   - Copy/paste elegante (preserva ANSI colors)
+   - Responsivo (mobile-friendly, touch gestures)
 
-2. **File operations** (4h)
-   - Drag-and-drop upload
-   - File tree viewer (Monaco-like)
-   - Inline editing com preview
-   - Diff viewer side-by-side
+2. **File operations** (6h) - VSCode no browser
+   - Drag-and-drop upload (com progress indicator elegante)
+   - File tree viewer (Monaco-inspired, lazy loading)
+   - Inline editing com preview instantâneo (debounced 300ms)
+   - Diff viewer side-by-side (GitHub-quality, unified/split toggle)
+   - File search (Cmd+P, fuzzy matching)
+   - Syntax highlighting p/ 50+ linguagens
+   - Minimap (Monaco-style) para arquivos grandes
 
-3. **MCP bridge** (3h)
-   - Gradio UI → MCP server → CLI
+3. **MCP bridge** (3h) - Brain-CLI connection
+   - Gradio UI → MCP server → CLI (zero latency perceptível)
    - Same backend, different frontend
    - Share sessions entre web e Claude Desktop
+   - WebSocket para updates real-time
+   - Offline mode (commands enfileirados)
+
+4. **UI Polish** (5h) - O diferencial KILLER
+   - **Micro-interações:**
+     - Button hover: scale(1.02) + shadow lift (120ms ease-out)
+     - Input focus: border glow + label slide-up
+     - Command execution: subtle pulse no terminal border
+     - File save: checkmark fade-in (400ms) + haptic feedback (se mobile)
+   
+   - **Loading states:**
+     - Skeleton screens (não spinners genéricos)
+     - Progress indicators com ETA estimado
+     - Optimistic UI (feedback imediato, sync depois)
+   
+   - **Error handling:**
+     - Toast notifications (top-right, auto-dismiss 4s)
+     - Inline validation (red underline + helper text)
+     - Error boundaries elegantes (não crashar feio)
+   
+   - **Accessibility:**
+     - Keyboard shortcuts COMPLETO (+ cheatsheet Cmd+/)
+     - Screen reader support (ARIA labels corretos)
+     - High contrast mode toggle
+     - Focus indicators visíveis (não remover outline!)
+   
+   - **Animações estratégicas:**
+     - Page transitions: fade (200ms)
+     - Modal open: scale(0.95→1) + fade (250ms)
+     - List items: stagger animation (50ms offset)
+     - Command output: typewriter effect OPCIONAL (pode enjoar)
+
+**Color Palette (Cirúrgica):**
+```python
+QWEN_DARK_THEME = {
+    # Base (neutros perfeitos)
+    "bg_primary": "#0D0D0D",      # Quase preto (não #000)
+    "bg_secondary": "#1A1A1A",    # Cards/panels
+    "bg_tertiary": "#262626",     # Hover states
+    
+    # Text (hierarquia clara)
+    "text_primary": "#FAFAFA",    # Headlines
+    "text_secondary": "#A3A3A3",  # Body
+    "text_tertiary": "#737373",   # Muted
+    
+    # Accent (1 cor só, usada com parcimônia)
+    "accent": "#3B82F6",          # Blue (actions primárias)
+    "accent_hover": "#2563EB",    # Darker on hover
+    
+    # Semantic (mínimo necessário)
+    "success": "#10B981",         # Green
+    "error": "#EF4444",           # Red
+    "warning": "#F59E0B",         # Amber
+    
+    # Syntax (terminal)
+    "syntax_keyword": "#C792EA",  # Purple
+    "syntax_string": "#C3E88D",   # Green
+    "syntax_function": "#82AAFF", # Blue
+    "syntax_comment": "#546E7A",  # Gray
+}
+```
+
+**Typography Stack:**
+```css
+--font-sans: 'Inter', -apple-system, system-ui;
+--font-mono: 'JetBrains Mono', 'Fira Code', monospace;
+--font-size-xs: 0.75rem;   /* 12px */
+--font-size-sm: 0.875rem;  /* 14px */
+--font-size-base: 1rem;    /* 16px */
+--font-size-lg: 1.125rem;  /* 18px */
+--line-height-tight: 1.25;
+--line-height-normal: 1.5;
+```
 
 **Implementation:**
 ```python
 import gradio as gr
 from qwen_dev_cli.integrations.mcp import MCPClient
+from qwen_dev_cli.integrations.gradio.themes import QWEN_DARK_THEME
 
 def create_ui():
-    with gr.Blocks(theme="qwen_dark") as demo:
-        terminal = gr.Terminal(
-            command_handler=handle_command,
-            syntax_highlight=True,
-            autocomplete=True
-        )
-        file_tree = gr.FileExplorer(root=".")
-        diff_viewer = gr.Code(language="diff")
+    with gr.Blocks(
+        theme=gr.themes.Default(**QWEN_DARK_THEME),
+        css="""
+            /* Surgical CSS - só o essencial */
+            .terminal-container {
+                border-radius: 8px;
+                box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+                transition: box-shadow 120ms ease-out;
+            }
+            .terminal-container:focus-within {
+                box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.2);
+            }
+            /* Smooth scroll p/ tudo */
+            * {
+                scroll-behavior: smooth;
+            }
+        """
+    ) as demo:
+        with gr.Row():
+            # Left: File tree (30% width)
+            with gr.Column(scale=3):
+                file_tree = gr.FileExplorer(
+                    root=".",
+                    label="",  # Sem label feio
+                    height=600
+                )
+            
+            # Right: Terminal + Editor (70% width)
+            with gr.Column(scale=7):
+                # Tabs elegantes
+                with gr.Tabs():
+                    with gr.Tab("Terminal"):
+                        terminal = gr.Terminal(
+                            command_handler=handle_command,
+                            syntax_highlight=True,
+                            autocomplete=True,
+                            height=600
+                        )
+                    
+                    with gr.Tab("Editor"):
+                        editor = gr.Code(
+                            language="python",
+                            lines=25,
+                            interactive=True
+                        )
+                    
+                    with gr.Tab("Diff"):
+                        diff_viewer = gr.Code(
+                            language="diff",
+                            lines=25
+                        )
+        
+        # Bottom: Status bar (sempre visível)
+        with gr.Row():
+            status = gr.Textbox(
+                value="Ready",
+                interactive=False,
+                container=False,  # Sem borda
+                show_label=False
+            )
     
     return demo
 
 def handle_command(cmd: str) -> str:
-    # Route to MCP server
-    result = mcp_client.run_command(cmd)
-    return result["output"]
+    # MCP bridge com error handling elegante
+    try:
+        result = mcp_client.run_command(cmd)
+        return result["output"]
+    except Exception as e:
+        return f"❌ {str(e)}"  # Emoji + mensagem limpa
 ```
 
-**Testing:**
-- [ ] UI renders corretamente
-- [ ] Terminal executa comandos
-- [ ] Syntax highlighting funciona
-- [ ] File upload/download funciona
-- [ ] MCP integration works
-- [ ] Multi-user support (optional)
+**Testing (Rigoroso):**
+- [ ] UI renders em <2s (cold start)
+- [ ] Terminal executa comandos em <100ms (perceived)
+- [ ] Syntax highlighting funciona p/ 20+ linguagens
+- [ ] File upload (10MB) sem travar UI
+- [ ] Diff viewer handle arquivos grandes (1000+ lines)
+- [ ] MCP integration <50ms latency
+- [ ] Keyboard shortcuts funcionam 100%
+- [ ] Mobile responsivo (iPhone SE até iPad Pro)
+- [ ] Lighthouse score: Performance 90+, Accessibility 100
+- [ ] Zero console errors
+- [ ] Funciona offline (graceful degradation)
 
 **Dependencies:**
 ```toml
@@ -1962,7 +2119,10 @@ def handle_command(cmd: str) -> str:
 gradio = [
     "gradio>=4.0.0",
     "pygments>=2.17.0",
-    "monaco-editor>=0.34.0"  # JS via CDN
+    "xterm>=5.3.0",  # Via CDN
+    "monaco-editor>=0.45.0",  # Via CDN
+    "inter-ui>=3.19.0",  # Font
+    "jetbrains-mono>=2.304.0"  # Font
 ]
 ```
 
@@ -1972,10 +2132,19 @@ gradio = [
 pip install qwen-dev-cli[gradio]
 
 # Run
-qwen --gradio                  # Launch web UI
+qwen --gradio                  # Launch web UI (localhost:7860)
 qwen --gradio --share          # Public URL (Gradio share)
 qwen --gradio --mcp            # Both integrations
+qwen --gradio --port 8080      # Custom port
 ```
+
+**Success Criteria:**
+- Jurados dizem "Wow, isso é comercial" nos primeiros 10s
+- Devs tentam inspecionar CSS pra entender como foi feito
+- Leigos acham "bonito e fácil"
+- Nenhum beta tester reclama de UX
+
+---
 
 ---
 
