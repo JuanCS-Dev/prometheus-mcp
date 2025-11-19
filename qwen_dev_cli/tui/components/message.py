@@ -44,6 +44,15 @@ from ..spacing import SPACING
 
 from enum import Enum
 
+class MessageRole(Enum):
+    """Message role types."""
+    USER = "user"
+    ASSISTANT = "assistant"
+    SYSTEM = "system"
+
+
+from enum import Enum
+
 
 class MessageRole(Enum):
     """Message role types."""
