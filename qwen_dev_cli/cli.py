@@ -22,6 +22,51 @@ app = typer.Typer(
 console = Console()
 
 
+def validate_output_path(path_str: str) -> Path:
+    """Validate output path is safe and allowed.
+    
+    Security checks:
+    1. Must be relative or within current directory tree
+    2. Cannot overwrite critical system files (checked BEFORE parent dir check)
+    3. Parent directory must exist
+    
+    Raises:
+        ValueError: If path is unsafe or forbidden
+        FileNotFoundError: If parent directory doesn't exist
+    """
+    path = Path(path_str).resolve()
+    cwd = Path.cwd().resolve()
+    
+    # Check 1: Must be within current working directory tree
+    try:
+        path.relative_to(cwd)
+    except ValueError:
+        raise ValueError(
+            f"Security: Output path must be within current directory.\n"
+            f"  Requested: {path}\n"
+            f"  Allowed: {cwd} and subdirectories"
+        )
+    
+    # Check 2: Forbidden paths/files (check BEFORE parent existence)
+    forbidden_patterns = ['.git', '.env', '.ssh', 'id_rsa', 'id_ed25519', 'authorized_keys']
+    path_parts = path.parts
+    
+    for pattern in forbidden_patterns:
+        if any(pattern in part for part in path_parts):
+            raise ValueError(
+                f"Security: Cannot write to protected path containing '{pattern}': {path}"
+            )
+    
+    # Check 3: Parent directory must exist
+    if not path.parent.exists():
+        raise FileNotFoundError(
+            f"Parent directory does not exist: {path.parent}\n"
+            f"Create it first with: mkdir -p {path.parent}"
+        )
+    
+    return path
+
+
 @app.command()
 def explain(
     file_path: str = typer.Argument(..., help="Path to file to explain"),
@@ -157,7 +202,9 @@ def chat(
         # Non-interactive mode
         from .core.single_shot import execute_single_shot
         
-        console.print(f"[dim]Executing:[/dim] {message}\n")
+        # FIX #2: Only show "Executing:" if NOT json mode (keeps JSON clean)
+        if not json_output:
+            console.print(f"[dim]Executing:[/dim] {message}\n")
         
         # Execute
         result = asyncio.run(execute_single_shot(
@@ -175,10 +222,22 @@ def chat(
                 output += '\n\n[red]Errors:[/red]\n'
                 output += '\n'.join(f"  - {err}" for err in result['errors'])
         
-        # Save to file or print
+        # FIX #1 & #3: Save to file with proper error handling and path validation
         if output_file:
-            Path(output_file).write_text(output)
-            console.print(f"[green]✓ Output saved to:[/green] {output_file}")
+            try:
+                safe_path = validate_output_path(output_file)
+                safe_path.write_text(output)
+                console.print(f"[green]✓ Output saved to:[/green] {output_file}")
+            except (ValueError, FileNotFoundError) as e:
+                console.print(f"[red]✗ Error:[/red] {e}")
+                raise typer.Exit(1)
+            except PermissionError as e:
+                console.print(f"[red]✗ Permission denied:[/red] {output_file}")
+                console.print(f"[dim]Details: {e}[/dim]")
+                raise typer.Exit(1)
+            except OSError as e:
+                console.print(f"[red]✗ Failed to write file:[/red] {e}")
+                raise typer.Exit(1)
         else:
             if json_output:
                 console.print(output)
