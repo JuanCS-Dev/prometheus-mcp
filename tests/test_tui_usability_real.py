@@ -202,7 +202,7 @@ class TestRealUsability:
         """Progress bar shows actual progress."""
         
         from qwen_dev_cli.tui.components import ProgressBar, ProgressState
-    from qwen_dev_cli.tui.components._enums import ProgressStyle
+        from qwen_dev_cli.tui.components._enums import ProgressStyle
         
         console = Console(file=StringIO())
         
