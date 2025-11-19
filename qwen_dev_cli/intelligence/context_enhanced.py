@@ -208,8 +208,8 @@ def detect_workspace(working_dir: str = ".") -> WorkspaceInfo:
                     has_tests=has_tests,
                     test_command=test_cmd
                 )
-        except (json.JSONDecodeError, IOError):
-            pass
+        except (json.JSONDecodeError, IOError) as e:
+            logger.debug(f"Failed to parse package.json: {e}")
     
     # Check for requirements.txt (Python)
     requirements = os.path.join(working_dir, "requirements.txt")
@@ -235,8 +235,8 @@ def detect_workspace(working_dir: str = ".") -> WorkspaceInfo:
                     has_tests=has_tests,
                     test_command=test_cmd if has_tests else None
                 )
-        except IOError:
-            pass
+        except IOError as e:
+            logger.debug(f"Failed to read requirements.txt: {e}")
     
     # Check for Cargo.toml (Rust)
     cargo_toml = os.path.join(working_dir, "Cargo.toml")

@@ -337,8 +337,8 @@ Please diagnose the error and suggest a correction."""
                 json_str = diagnosis_text[json_start:json_end]
                 correction = json.loads(json_str)
                 return correction
-            except (ValueError, json.JSONDecodeError, IndexError):
-                pass
+            except (ValueError, json.JSONDecodeError, IndexError) as e:
+                logger.debug(f"Failed to extract JSON correction: {e}")
         
         # Try to find JSON anywhere in response
         try:
@@ -349,8 +349,8 @@ Please diagnose the error and suggest a correction."""
                 # Validate it has tool and args
                 if "tool" in correction and "args" in correction:
                     return correction
-        except (json.JSONDecodeError, AttributeError):
-            pass
+        except (json.JSONDecodeError, AttributeError) as e:
+            logger.debug(f"Failed to parse correction JSON: {e}")
         
         # If no structured correction, return None (need human)
         return None

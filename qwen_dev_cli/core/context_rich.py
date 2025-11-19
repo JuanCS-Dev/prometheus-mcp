@@ -68,8 +68,8 @@ class RichContextBuilder:
                     commits = [line.strip() for line in result.stdout.strip().split('\n') if line.strip()]
                     context['recent_commits'] = commits
         
-        except Exception:
-            pass
+        except Exception as e:
+            logger.debug(f"Failed to get git context: {e}")
         
         self._git_cache = context
         return context

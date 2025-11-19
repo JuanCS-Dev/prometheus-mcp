@@ -81,7 +81,7 @@ class SearchFilesTool(Tool):
                     )
             except FileNotFoundError:
                 # Ripgrep not installed, fall back to grep
-                pass
+                logger.debug("ripgrep not available, falling back to grep")
             
             # Fallback to grep
             cmd = ["grep", "-rn", pattern, path]
@@ -175,8 +175,8 @@ class GetDirectoryTreeTool(Tool):
                         
                         if item.is_dir():
                             lines.extend(build_tree(item, prefix + next_prefix, depth + 1))
-                except PermissionError:
-                    pass
+                except PermissionError as e:
+                    logger.debug(f"Permission denied in directory tree: {e}")
                 
                 return lines
             

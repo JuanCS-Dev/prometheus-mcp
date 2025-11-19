@@ -63,7 +63,7 @@ class ReactiveRenderer:
             try:
                 await self._render_task
             except asyncio.CancelledError:
-                pass
+                logger.debug("Render task cancelled")
     
     async def emit(self, event: RenderEvent) -> None:
         """Emit render event (non-blocking)."""
@@ -84,7 +84,7 @@ class ReactiveRenderer:
                 await self._render_event(event)
         
         except asyncio.CancelledError:
-            pass
+            logger.debug("Event renderer cancelled")
     
     async def _render_event(self, event: RenderEvent) -> None:
         """Render single event."""

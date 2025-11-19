@@ -21,3 +21,4 @@ mypy>=1.0.0
 pytest-asyncio>=0.23.0
 openai>=1.0.0
 prompt_toolkit>=3.0.0
+textual>=6.0.0

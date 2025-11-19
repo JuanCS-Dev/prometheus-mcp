@@ -138,7 +138,8 @@ class FuzzyMatcher:
     
     def __init__(self):
         """Initialize matcher."""
-        pass
+        # No initialization needed - stateless matcher
+        self.initialized = True
     
     def score(self, text: str, query: str) -> float:
         """

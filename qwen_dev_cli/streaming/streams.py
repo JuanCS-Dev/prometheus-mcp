@@ -58,8 +58,8 @@ class StreamProcessor:
                     asyncio.create_task(cb(chunk))
                 else:
                     cb(chunk)
-            except Exception:
-                pass
+            except Exception as e:
+                logger.debug(f"Callback execution failed: {e}")
         
         await self._queue.put(chunk)
     
@@ -112,5 +112,5 @@ class LineBufferedStreamReader:
         
         except asyncio.CancelledError:
             raise
-        except Exception:
-            pass
+        except Exception as e:
+            logger.error(f"Stream processing error: {e}")

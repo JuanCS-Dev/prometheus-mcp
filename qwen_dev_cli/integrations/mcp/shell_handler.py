@@ -122,14 +122,14 @@ class ShellSession:
         if self.master_fd is not None:
             try:
                 os.close(self.master_fd)
-            except:
-                pass
+            except (OSError, ValueError) as e:
+                logger.debug(f"Failed to close master_fd {self.master_fd}: {e}")
         if self.pid is not None:
             try:
                 os.kill(self.pid, 9)
                 os.waitpid(self.pid, 0)
-            except:
-                pass
+            except (ProcessLookupError, ChildProcessError, PermissionError) as e:
+                logger.debug(f"Failed to kill process {self.pid}: {e}")
         logger.info(f"Shell session {self.session_id} closed")
 
 

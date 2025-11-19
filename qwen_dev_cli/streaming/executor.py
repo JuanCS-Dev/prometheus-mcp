@@ -142,6 +142,6 @@ class AsyncCommandExecutor:
             try:
                 process.kill()
                 await process.wait()
-            except Exception:
-                pass
+            except Exception as e:
+                logger.debug(f"Failed to kill process: {e}")
         self._active_processes.clear()

@@ -1,10 +1,276 @@
 # 🏆 QWEN-DEV-CLI: MASTER PLAN DEFINITIVO
 
-**Updated:** 2025-11-19 00:18 UTC (21:18 BRT)  
-**Current Status:** 98% paridade com GitHub Copilot CLI 🔥🚀  
-**Target:** 90%+ paridade ✅ ACHIEVED  
+**Updated:** 2025-11-19 06:48 UTC (09:48 BRT)  
+**Current Status:** 🔴 CRITICAL FIXES IN PROGRESS  
+**Target:** 90%+ paridade ✅ ACHIEVED (architecture complete)  
 **Deadline:** 2025-11-30 (11 dias restantes)  
 **Hackathon Focus:** MCP Integration + Constitutional AI + **TUI System ✨**
+
+---
+
+## 🚨 CRITICAL FIXES SESSION (2025-11-19 06:48 UTC)
+
+**Status:** 🔴 ACTIVE - Constitutional Code Review Complete  
+**Reviewer:** Constitutional AI Senior Reviewer  
+**Findings:** 3 blockers, 2 serious issues identified
+
+### **BLOCKER #1: Import Error - `create_progress_bar` Missing** ⚡
+**Priority:** P0 (CRITICAL - Shell won't start)  
+**Location:** `qwen_dev_cli/tui/components/__init__.py:34`  
+**Status:** 🟡 IN PROGRESS
+
+**Problem:**
+```python
+from .progress import ProgressBar, ProgressState, create_progress_bar
+#                                                  ^^^^^^^^^^^^^^^^^^^ MISSING
+```
+
+**Evidence:**
+- Function was added to `progress.py` 33min ago (git shows modified)
+- Python cache may be preventing import
+- Need to verify and clear `__pycache__`
+
+**Fix Steps:**
+- [ ] Clear Python cache: `rm -rf qwen_dev_cli/tui/**/__pycache__`
+- [ ] Verify function exists: `grep "def create_progress_bar" progress.py`
+- [ ] Test import: `python3 -c "from qwen_dev_cli.tui.components import create_progress_bar"`
+- [ ] Run shell: `python3 -m qwen_dev_cli.shell`
+- [ ] Verify all 515 tests collect: `pytest --collect-only`
+
+**Estimated Time:** 5 minutes  
+**Assigned:** Maestro AI  
+**Deadline:** IMMEDIATE
+
+---
+
+### **BLOCKER #2: LEI = 2.43 (Target: <1.0)** ⚡
+**Priority:** P0 (CONSTITUTIONAL VIOLATION - Artigo II, Seção 3)  
+**Status:** 🔴 NOT STARTED
+
+**Measured LEI Breakdown:**
+```
+Total LOC: 18,938
+Total Patterns: 46 violations
+  - FIXME comments: 9
+  - XXX comments: 4
+  - HACK comments: 4
+  - pass statements (standalone): 24
+  - NotImplemented: 5
+
+LEI = (46 / 18,938) * 1000 = 2.43 ❌
+Target: < 1.0
+```
+
+**Violation Locations (Top 15):**
+```python
+# shell_handler.py
+Line 125-126: except: pass  # ❌ Bare except + placeholder
+Line 131-132: except: pass  # ❌ Bare except + placeholder
+
+# file_tree.py
+Line 83:   pass  # ❌ Empty handler
+Line 243:  pass  # ❌ Empty handler  
+Line 251:  pass  # ❌ Empty handler
+
+# autocomplete.py
+Line 163:  pass  # ❌ Placeholder
+
+# palette.py
+Line 141:  pass  # ❌ Placeholder
+
+# search.py
+Line 84:   pass  # ❌ Error handling missing
+Line 179:  pass  # ❌ Error handling missing
+
+# shell.py
+Line 489:  pass  # ❌ Placeholder
+Line 841:  pass  # ❌ Placeholder
+Line 942:  pass  # ❌ Placeholder
+
+# workflows.py
+Line 19:   pass  # ❌ Placeholder
+Line 24:   pass  # ❌ Placeholder
+
+# + 10 more occurrences in streaming/, intelligence/, core/
+```
+
+**Fix Strategy:**
+
+**Phase 2A.1: Replace `pass` statements (24 occurrences) - 1h**
+- [ ] `shell_handler.py` (2): Add logging for cleanup failures
+- [ ] `file_tree.py` (3): Implement actual event handlers or remove
+- [ ] `autocomplete.py` (1): Implement completion logic or stub properly
+- [ ] `palette.py` (1): Implement command filtering
+- [ ] `search.py` (2): Add proper error handling with logging
+- [ ] `shell.py` (3): Implement missing command handlers
+- [ ] `workflows.py` (2): Implement workflow steps
+- [ ] `intelligence/` (4): Implement context extraction logic
+- [ ] `streaming/` (3): Implement stream handlers
+- [ ] `core/` (3): Implement recovery/context logic
+
+**Phase 2A.2: Remove/Resolve FIXME/XXX/HACK (17 occurrences) - 30min**
+- [ ] Grep all: `grep -rn "FIXME\|XXX\|HACK" qwen_dev_cli/ --exclude-dir=__pycache__`
+- [ ] For each: Either implement or document why deferred
+- [ ] Remove comment or replace with proper TODO tracker link
+
+**Phase 2A.3: Implement NotImplemented (5 occurrences) - 30min**
+- [ ] Find all: `grep -rn "NotImplemented" qwen_dev_cli/`
+- [ ] Either implement or convert to proper stubs with docstrings
+
+**Target LEI:** < 1.0 (< 19 patterns for 18,938 LOC)  
+**Estimated Time:** 2 hours  
+**Assigned:** Maestro AI  
+**Deadline:** 2025-11-19 12:00 UTC
+
+---
+
+### **BLOCKER #3: Bare Except Clauses (5 occurrences)** ⚡
+**Priority:** P0 (SECURITY VULNERABILITY)  
+**Status:** 🔴 NOT STARTED
+
+**Locations:**
+```python
+# qwen_dev_cli/integrations/mcp/shell_handler.py
+Line 125-126:
+    try:
+        os.close(self.master_fd)
+    except:  # ❌ Catches KeyboardInterrupt, SystemExit
+        pass
+
+Line 131-132:
+    try:
+        os.kill(self.pid, 9)
+        os.waitpid(self.pid, 0)
+    except:  # ❌ Silences all errors
+        pass
+
+# + 3 more in context_rich.py, context_old.py, context_enhanced.py
+```
+
+**Fix Steps:**
+- [ ] Replace bare `except:` with specific exception types
+- [ ] Add logging for all caught exceptions
+- [ ] Use `except (OSError, IOError) as e:` for file operations
+- [ ] Use `except (ProcessLookupError, ChildProcessError) as e:` for process ops
+- [ ] Add proper cleanup in finally blocks
+
+**Target:** 0 bare except clauses  
+**Estimated Time:** 30 minutes  
+**Assigned:** Maestro AI  
+**Deadline:** 2025-11-19 10:30 UTC
+
+---
+
+### **SERIOUS ISSUE #1: God Methods (2 occurrences)** 🟡
+**Priority:** P1 (CODE QUALITY - Technical Debt)  
+**Status:** 🔴 NOT STARTED
+
+**Locations:**
+```python
+# qwen_dev_cli/shell.py
+- __init__  (312 lines) ❌ Violates SRP
+- run       (242 lines) ❌ Too complex
+```
+
+**Fix Strategy:**
+
+**Phase 2B: Refactor `__init__` (312 LOC → ~4 methods) - 1h**
+```python
+# Current (312 lines in one method)
+def __init__(self, llm_client, ...):
+    # Lines 1-80: Setup LLM, registry, conversation
+    # Lines 81-160: Initialize intelligence systems
+    # Lines 161-240: Setup TUI components
+    # Lines 241-312: Configure tools and watchers
+
+# Target (split into focused methods)
+def __init__(self, llm_client, ...):
+    self._init_core_systems()       # ~80 LOC
+    self._init_intelligence()       # ~80 LOC
+    self._init_tui_components()     # ~80 LOC
+    self._init_tools_and_watchers() # ~70 LOC
+```
+
+**Phase 2C: Refactor `run` (242 LOC → ~3 methods) - 1h**
+```python
+# Current (242 lines in one method)
+async def run(self):
+    # Lines 1-80: Setup and welcome
+    # Lines 81-160: Main event loop
+    # Lines 161-242: Command processing and cleanup
+
+# Target (split into focused methods)
+async def run(self):
+    await self._display_welcome()    # ~30 LOC
+    await self._run_event_loop()     # ~150 LOC
+    await self._cleanup()            # ~30 LOC
+```
+
+**Target:** No methods > 100 LOC  
+**Estimated Time:** 2 hours (OPTIONAL - not blocking)  
+**Assigned:** Maestro AI  
+**Deadline:** 2025-11-20 (after blockers fixed)
+
+---
+
+### **SUMMARY OF FIXES**
+
+| Issue | Priority | Status | ETA | Time |
+|-------|----------|--------|-----|------|
+| Import Error | P0 | 🟡 In Progress | IMMEDIATE | 5min |
+| LEI Violation | P0 | 🔴 Not Started | 12:00 UTC | 2h |
+| Bare Excepts | P0 | 🔴 Not Started | 10:30 UTC | 30min |
+| God Methods | P1 | 🔴 Not Started | 2025-11-20 | 2h (optional) |
+
+**Total P0 Time:** 2h 35min  
+**Total P0+P1 Time:** 4h 35min
+
+**Success Criteria:**
+- ✅ Shell starts without import errors
+- ✅ LEI < 1.0 (Constitutional compliance)
+- ✅ Zero bare except clauses (Security)
+- ✅ All 515 tests collect and run
+- ✅ 95%+ tests passing
+
+**Next Update:** After P0 fixes complete (estimated 12:00 UTC)
+
+---
+
+---
+
+## 🧹 CONSOLIDATION CHECKPOINT #3 (2025-11-19 06:48 UTC)
+
+**Constitutional Code Review Complete - Action Plan Established**
+
+**Findings:**
+- ✅ Architecture is world-class (confirmed)
+- ✅ Documentation is exceptional (confirmed)
+- ✅ Constitutional framework implemented (confirmed)
+- ⚡ 3 Critical Blockers identified (fix in progress)
+- 🟡 2 Serious Issues identified (optional fixes)
+
+**Action Items Created:**
+1. Fix import error (5min) - IMMEDIATE
+2. Reduce LEI to <1.0 (2h) - TODAY
+3. Remove bare excepts (30min) - TODAY
+4. Refactor god methods (2h) - OPTIONAL (tomorrow)
+
+**Updated Sections:**
+- Added "CRITICAL FIXES SESSION" at top of plan
+- Detailed breakdown of all issues with line numbers
+- Estimated time for each fix
+- Success criteria defined
+- Timeline established
+
+**Next Actions:**
+- [ ] Execute P0 fixes (2h 35min)
+- [ ] Validate all tests pass
+- [ ] Update plan with completion status
+- [ ] Move to next phase (polish)
+
+**Principle:** "Do not merely listen to the word, and so deceive yourselves. Do what it says." - James 1:22
+
+---
 
 ## 🧹 CONSOLIDATION CHECKPOINT #2 (2025-11-19 00:18 UTC)
 

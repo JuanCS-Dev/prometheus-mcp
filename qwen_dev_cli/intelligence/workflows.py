@@ -16,12 +16,12 @@ class Workflow(ABC):
     @abstractmethod
     def is_active(self, context: RichContext) -> bool:
         """Check if this workflow is currently active."""
-        pass
+        raise NotImplementedError("Subclasses must implement is_active()")
     
     @abstractmethod
     def suggest_next(self, context: RichContext) -> List[Suggestion]:
         """Suggest next steps in this workflow."""
-        pass
+        raise NotImplementedError("Subclasses must implement suggest_next()")
 
 
 class GitWorkflow(Workflow):

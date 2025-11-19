@@ -80,7 +80,7 @@ class FileNode:
         """Initialize computed fields."""
         if self.is_dir and not self.children:
             # Lazy loading - children will be loaded when expanded
-            pass
+            self.children = []
     
     def toggle_expand(self):
         """Toggle expand/collapse state."""
@@ -239,8 +239,8 @@ class FileTree:
                     
                     child_node = self._build_node(child_path, depth + 1)
                     node.add_child(child_node)
-            except PermissionError:
-                pass
+            except PermissionError as e:
+                logger.debug(f"Permission denied for {node.path}: {e}")
         
         return node
     

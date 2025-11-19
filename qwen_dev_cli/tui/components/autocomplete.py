@@ -159,8 +159,8 @@ class ContextAwareCompleter(Completer):
                     score=score,
                     metadata=result
                 ))
-        except Exception:
-            pass
+        except Exception as e:
+            logger.debug(f"Failed to get semantic completions: {e}")
         
         return completions
     

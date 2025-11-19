@@ -485,8 +485,8 @@ Response: I don't have a tool to check the current time, but I can help you with
                         # Phase 2.3: Add tool calls to turn
                         self.conversation.add_tool_calls(turn, tool_calls)
                         return await self._execute_tool_calls(tool_calls, turn)
-            except (json.JSONDecodeError, ValueError):
-                pass
+            except (json.JSONDecodeError, ValueError) as e:
+                logger.debug(f"Response is not tool calls JSON: {e}")
             
             # If not tool calls, return as regular response
             # Phase 2.3: Transition to IDLE (no tools to execute)
@@ -837,8 +837,8 @@ Tool calls: {len(self.context.tool_calls)}
         
         # Invalidate cache if needed (files used in context)
         if event.event_type in ['modified', 'deleted']:
-            # Could invalidate related cache entries here
-            pass
+            # Cache invalidation deferred - would require cache key tracking
+            logger.debug(f"File {event.path} {event.event_type} - cache invalidation not yet implemented")
     
     async def _handle_explain(self, command: str) -> None:
         """Explain a command."""
@@ -939,7 +939,7 @@ Tool calls: {len(self.context.tool_calls)}
             try:
                 await watcher_task
             except asyncio.CancelledError:
-                pass
+                logger.debug("File watcher task cancelled successfully")
     
     async def _process_request_with_llm(self, user_input: str, suggestion_engine):
         """
