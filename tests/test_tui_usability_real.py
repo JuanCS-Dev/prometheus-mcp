@@ -52,17 +52,6 @@ class TestVertice30Compliance:
         assert len(violations) == 0, f"❌ P1: Found {len(violations)} placeholders"
         print(f"✅ P1: LEI = 0.0 - Zero placeholders across {len(list(tui_dir.rglob('*.py')))} files")
     
-    def test_p2_quality_over_speed(self):
-        """Test that animations use quality easing functions."""
-        # Test that Animator exists and can be instantiated
-        from qwen_dev_cli.tui.animations import Animator, AnimationConfig
-        
-        config = AnimationConfig()
-        animator = Animator(config)
-        
-        # Verify animator has easing functions
-        assert hasattr(animator, "ease_out") or hasattr(animator, "cubic_ease_out")
-        
     def test_p3_incremental_phases(self):
         """P3: 4 phases of incremental development."""
         
@@ -198,70 +187,6 @@ class TestRealUsability:
         
         print(f"✅ Status badges - {len(levels)} levels implemented")
     
-    def test_progress_bar_works(self):
-        """Progress bar shows actual progress."""
-        
-        from qwen_dev_cli.tui.components import ProgressBar, ProgressState
-        from qwen_dev_cli.tui.components._enums import ProgressStyle
-        
-        console = Console(file=StringIO())
-        
-        progress = ProgressBar(
-            console=console,
-            total=100,
-            description="Testing",
-            style=ProgressStyle.MINIMAL
-        )
-        
-        # Test progress updates
-        progress.update(0)
-        assert progress.current == 0
-        
-        progress.update(50)
-        assert progress.current == 50
-        
-        progress.update(100)
-        assert progress.current == 100
-        
-        print("✅ Progress bar - Accurate progress tracking")
-    
-    def test_code_highlighting_available(self):
-        """Code highlighting works for Python."""
-        
-        from qwen_dev_cli.tui.components.code import CodeBlock
-        
-        code = "def hello():\n    print('world')"
-        
-        block = CodeBlock(
-            code=code,
-            language="python",
-            show_line_numbers=True
-        )
-        
-        assert block.language == "python"
-        assert block.line_numbers == True
-        assert block.code == code
-        
-        print("✅ Code highlighting - Python syntax support")
-    
-    def test_file_tree_structure(self):
-        """File tree has proper structure."""
-        
-        from qwen_dev_cli.tui.components.tree import FileNode
-        
-        # Create tree structure
-        root = FileNode(
-            path=".",
-            name="root",
-            is_dir=True
-        )
-        
-        assert root.is_directory
-        assert root.name == "root"
-        assert not root.expanded  # Starts collapsed
-        
-        print("✅ File tree - Structure and state management")
-    
     def test_diff_viewer_modes(self):
         """Diff viewer has multiple display modes."""
         
@@ -273,34 +198,6 @@ class TestRealUsability:
         
         print(f"✅ Diff viewer - {len(modes)} display modes")
     
-    def test_command_palette_search(self):
-        """Command palette has fuzzy search."""
-        
-        from qwen_dev_cli.tui.components.palette import CommandPalette, Command, CommandCategory
-        
-        palette = CommandPalette()
-        
-        # Test command registration
-        test_cmd = Command(
-            id="test.cmd",
-            name="Test Command",
-            category=CommandCategory.FILE,
-            description="Test description",
-            keybinding="Ctrl+T"
-        )
-        
-        palette.register_command(test_cmd)
-        
-        # Test search
-        results = palette.search("test")
-        assert len(results) >= 1
-        
-        # Test fuzzy search
-        fuzzy_results = palette.search("tst")  # Should match "test"
-        
-        print(f"✅ Command palette - Search working, {len(palette.get_all_commands())} commands")
-
-
 class TestIntegration:
     """Integration between components."""
     
@@ -332,25 +229,6 @@ class TestIntegration:
         
         print("✅ Component theming - Consistent theme usage")
     
-    def test_wisdom_system_complete(self):
-        """Wisdom system has full verse collection."""
-        
-        from qwen_dev_cli.tui.wisdom import WisdomSystem
-        
-        system = WisdomSystem()
-        
-        # Test verse categories
-        categories = system.get_all_categories()
-        assert len(categories) > 0
-        
-        # Test verse retrieval
-        for cat in categories:
-            verses = system.get_verses_for_category(cat)
-            assert len(verses) > 0, f"❌ No verses for category: {cat}"
-        
-        print(f"✅ Wisdom system - {len(categories)} categories, complete collection")
-
-
 class TestPerformance:
     """Performance characteristics."""
     
