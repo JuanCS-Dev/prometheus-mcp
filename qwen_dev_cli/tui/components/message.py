@@ -45,6 +45,16 @@ from ..styles import PRESET_STYLES, StyleCombinations
 from ..spacing import SPACING
 
 
+from enum import Enum
+
+class MessageRole(Enum):
+    """Message role types."""
+    USER = "user"
+    ASSISTANT = "assistant"
+    SYSTEM = "system"
+
+
+
 @dataclass
 class Message:
     """
