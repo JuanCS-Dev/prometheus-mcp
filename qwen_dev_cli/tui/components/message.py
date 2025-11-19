@@ -3,12 +3,6 @@
 
 Features:
 - ✨ Smooth typing animation (cubic ease-out)
-
-class MessageRole(Enum):
-    """Message role types."""
-    USER = "user"
-    ASSISTANT = "assistant"
-    SYSTEM = "system"
 - 🎨 Role-based styling (user vs AI)
 - ⏰ Timestamp display
 - 🎯 Syntax highlighting for code blocks
@@ -41,34 +35,6 @@ from rich.syntax import Syntax
 from ..theme import COLORS
 from ..styles import PRESET_STYLES, StyleCombinations
 from ..spacing import SPACING
-
-from enum import Enum
-
-class MessageRole(Enum):
-    """Message role types."""
-    USER = "user"
-    ASSISTANT = "assistant"
-    SYSTEM = "system"
-
-
-from enum import Enum
-
-
-class MessageRole(Enum):
-    """Message role types."""
-    USER = "user"
-    ASSISTANT = "assistant"
-    SYSTEM = "system"
-
-
-
-
-class MessageRole(Enum):
-    """Message role types."""
-    USER = "user"
-    ASSISTANT = "assistant"
-    SYSTEM = "system"
-
 
 
 @dataclass
