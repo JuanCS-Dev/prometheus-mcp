@@ -64,7 +64,7 @@ class MessageBox:
     
     Examples:
         # Simple message
-        msg = MessageBox(Message("Hello!", role="user"))
+        msg = MessageBox(Message("Hello!", role=MessageRole.USER))
         console.print(msg.render())
         
         # With typing animation
@@ -267,8 +267,8 @@ class MessageStream:
     
     Examples:
         stream = MessageStream(console)
-        stream.add_message(Message("Hello!", role="user"))
-        stream.add_message(Message("Hi there!", role="assistant"))
+        stream.add_message(Message("Hello!", role=MessageRole.USER))
+        stream.add_message(Message("Hi there!", role=MessageRole.ASSISTANT))
         stream.render()
     """
     
@@ -384,9 +384,9 @@ def create_system_message(content: str) -> Message:
 
 def create_user_message(content: str) -> Message:
     """Create a user message."""
-    return Message(content=content, role="user")
+    return Message(content=content, role=MessageRole.USER)
 
 
 def create_assistant_message(content: str) -> Message:
     """Create an assistant message."""
-    return Message(content=content, role="assistant")
+    return Message(content=content, role=MessageRole.ASSISTANT)

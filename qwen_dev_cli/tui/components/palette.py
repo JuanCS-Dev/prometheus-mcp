@@ -66,7 +66,16 @@ CATEGORY_CONFIG = {
 @dataclass
 class Command:
     """
-    A command in the palette.
+    name: str
+    description: str
+    category: str
+    id: str = ""
+    shortcut: str = ""
+    icon: str = ""
+    
+    def __post_init__(self):
+        if not self.id:
+            self.id = self.name.lower().replace(" ", "_")
     
     Attributes:
         id: Unique command identifier

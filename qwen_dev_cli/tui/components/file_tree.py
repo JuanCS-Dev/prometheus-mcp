@@ -78,7 +78,10 @@ class FileNode:
     size: Optional[int] = None
     depth: int = 0
     
-    def __post_init__(self):
+    def __post_init__(self, is_directory=None):
+        # Allow is_directory as alias for is_dir
+        if is_directory is not None:
+            self.is_dir = is_directory
         """Initialize computed fields."""
         if self.is_dir and not self.children:
             # Lazy loading - children will be loaded when expanded

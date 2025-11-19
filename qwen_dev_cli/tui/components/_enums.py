@@ -17,3 +17,4 @@ class ProgressStyle(Enum):
     BAR = "bar"
     SPINNER = "spinner"
     DOTS = "dots"
+    MINIMAL = "minimal"
