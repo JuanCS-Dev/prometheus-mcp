@@ -176,8 +176,79 @@ def config_show():
 
 
 @app.command()
+def chat(
+    message: Optional[str] = typer.Option(None, "-m", "--message", help="Single message (non-interactive mode)"),
+    output: Optional[str] = typer.Option(None, "-o", "--output", help="Save output to file"),
+    json_output: bool = typer.Option(False, "--json", help="Output in JSON format"),
+    no_context: bool = typer.Option(False, "--no-context", help="Skip project context"),
+):
+    """
+    Chat with AI assistant. Use -m for single message, or run interactively.
+    """
+    if message:
+        # Non-interactive mode
+        from .core.single_shot import execute_single_shot
+        import json
+        
+        console.print(f"[cyan]💬 Processing:[/cyan] {message}\n")
+        
+        try:
+            result = asyncio.run(execute_single_shot(
+                message=message,
+                include_context=not no_context
+            ))
+            
+            if json_output:
+                # JSON output
+                output_data = {
+                    'success': result['success'],
+                    'output': result['output'],
+                    'actions_taken': result['actions_taken'],
+                    'errors': result['errors']
+                }
+                json_str = json.dumps(output_data, indent=2)
+                
+                if output:
+                    Path(output).write_text(json_str)
+                    console.print(f"[green]✅ Saved JSON to:[/green] {output}")
+                else:
+                    console.print(json_str)
+            else:
+                # Text output
+                if output:
+                    Path(output).write_text(result['output'])
+                    console.print(f"[green]✅ Saved to:[/green] {output}")
+                else:
+                    console.print(result['output'])
+            
+            # Exit with appropriate code
+            exit_code = 0 if result['success'] else 1
+            raise typer.Exit(exit_code)
+            
+        except Exception as e:
+            console.print(f"[red]❌ Error:[/red] {e}")
+            raise typer.Exit(1)
+    else:
+        # Interactive mode (start shell)
+        from .shell import InteractiveShell
+        
+        console.print("[cyan]Starting interactive shell...[/cyan]")
+        
+        try:
+            shell_instance = InteractiveShell()
+            asyncio.run(shell_instance.run())
+        except KeyboardInterrupt:
+            console.print("\n[yellow]Shell interrupted[/yellow]")
+        except Exception as e:
+            console.print(f"[red]Error: {e}[/red]")
+            import traceback
+            traceback.print_exc()
+
+
+@app.command()
 def shell():
-    """Start interactive shell with tool-based architecture."""
+    """Start interactive shell with tool-based architecture (legacy command)."""
+    # Redirect to chat command without message (interactive mode)
     from .shell import InteractiveShell
     
     console.print("[cyan]Starting interactive shell...[/cyan]")
