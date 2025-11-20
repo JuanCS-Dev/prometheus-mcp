@@ -35,7 +35,7 @@ class BashCommandTool(ValidatedTool):
         }
     def get_validators(self):
         """Validate parameters."""
-        return {{}}
+        return {}
 
     
     async def _execute_validated(self, command: str, cwd: Optional[str] = None, timeout: int = 30) -> ToolResult:

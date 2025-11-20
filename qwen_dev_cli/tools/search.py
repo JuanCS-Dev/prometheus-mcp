@@ -42,7 +42,7 @@ class SearchFilesTool(ValidatedTool):
         }
     def get_validators(self):
         """Validate parameters."""
-        return {{}}
+        return {}
 
     
     async def _execute_validated(self, pattern: str, path: str = ".", file_pattern: Optional[str] = None, max_results: int = 50) -> ToolResult:
@@ -151,7 +151,7 @@ class GetDirectoryTreeTool(ValidatedTool):
         }
     def get_validators(self):
         """Validate parameters."""
-        return {{}}
+        return {}
 
     
     async def _execute_validated(self, path: str = ".", max_depth: int = 3) -> ToolResult:

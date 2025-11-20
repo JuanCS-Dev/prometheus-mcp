@@ -75,7 +75,7 @@ class SaveSessionTool(ValidatedTool):
         }
     def get_validators(self):
         """Validate parameters."""
-        return {{}}
+        return {}
 
     
     async def _execute_validated(self, path: str, format: str = "markdown", session_context=None) -> ToolResult:
@@ -154,7 +154,7 @@ class RestoreBackupTool(ValidatedTool):
         }
     def get_validators(self):
         """Validate parameters."""
-        return {{}}
+        return {}
 
     
     async def _execute_validated(self, file: str, backup_id: Optional[str] = None) -> ToolResult:

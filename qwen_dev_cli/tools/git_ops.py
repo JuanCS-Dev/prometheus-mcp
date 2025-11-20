@@ -101,7 +101,7 @@ class GitDiffTool(ValidatedTool):
         }
     def get_validators(self):
         """Validate parameters."""
-        return {{}}
+        return {}
 
     
     async def _execute_validated(self, file: Optional[str] = None, staged: bool = False) -> ToolResult:

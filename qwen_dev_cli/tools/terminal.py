@@ -26,7 +26,7 @@ class CdTool(ValidatedTool):
         }
     def get_validators(self):
         """Validate parameters."""
-        return {{}}
+        return {}
 
     
     async def _execute_validated(self, path: str) -> ToolResult:
@@ -95,7 +95,7 @@ class LsTool(ValidatedTool):
         }
     def get_validators(self):
         """Validate parameters."""
-        return {{}}
+        return {}
 
     
     async def _execute_validated(self, path: str = ".", all: bool = False, long: bool = False) -> ToolResult:
@@ -194,7 +194,7 @@ class MkdirTool(ValidatedTool):
         }
     def get_validators(self):
         """Validate parameters."""
-        return {{}}
+        return {}
 
     
     async def _execute_validated(self, path: str, parents: bool = True) -> ToolResult:
@@ -245,7 +245,7 @@ class RmTool(ValidatedTool):
         }
     def get_validators(self):
         """Validate parameters."""
-        return {{}}
+        return {}
 
     
     async def _execute_validated(self, path: str, recursive: bool = False, force: bool = False) -> ToolResult:
@@ -320,7 +320,7 @@ class CpTool(ValidatedTool):
         }
     def get_validators(self):
         """Validate parameters."""
-        return {{}}
+        return {}
 
     
     async def _execute_validated(self, source: str, destination: str, recursive: bool = False) -> ToolResult:
@@ -379,7 +379,7 @@ class MvTool(ValidatedTool):
         }
     def get_validators(self):
         """Validate parameters."""
-        return {{}}
+        return {}
 
     
     async def _execute_validated(self, source: str, destination: str) -> ToolResult:
@@ -424,7 +424,7 @@ class TouchTool(ValidatedTool):
         }
     def get_validators(self):
         """Validate parameters."""
-        return {{}}
+        return {}
 
     
     async def _execute_validated(self, path: str) -> ToolResult:
@@ -471,7 +471,7 @@ class CatTool(ValidatedTool):
         }
     def get_validators(self):
         """Validate parameters."""
-        return {{}}
+        return {}
 
     
     async def _execute_validated(self, path: str, lines: Optional[int] = None) -> ToolResult:
