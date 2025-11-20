@@ -75,6 +75,10 @@ from .tui.styles import PRESET_STYLES, get_rich_theme
 from .tui.input_enhanced import EnhancedInputSession, InputContext
 from .tui.history import CommandHistory, HistoryEntry, SessionReplay
 
+# Phase 3: Visual Workflow System (DAY 8)
+from .tui.components.workflow_visualizer import WorkflowVisualizer, StepStatus
+from .tui.components.execution_timeline import ExecutionTimeline
+
 
 class SessionContext:
     """Persistent context across shell session."""
@@ -167,6 +171,10 @@ class InteractiveShell:
         # Command history with analytics (DAY 8: Phase 2)
         self.cmd_history = CommandHistory()
         self.session_replay = SessionReplay(self.cmd_history)
+        
+        # Workflow visualization (DAY 8: Phase 3)
+        self.workflow_viz = WorkflowVisualizer(console=self.console)
+        self.execution_timeline = ExecutionTimeline(console=self.console)
         
         # Legacy session (fallback)
         self.session = PromptSession(
