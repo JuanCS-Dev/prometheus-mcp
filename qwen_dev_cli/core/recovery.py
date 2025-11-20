@@ -121,6 +121,8 @@ class ErrorRecoveryEngine:
         llm_client,
         max_attempts: int = 2,  # Constitutional P6
         enable_learning: bool = True,
+        enable_retry_policy: bool = True,
+        enable_circuit_breaker: bool = True,
     ):
         """Initialize recovery engine.
         
@@ -128,10 +130,16 @@ class ErrorRecoveryEngine:
             llm_client: LLM client for diagnosis
             max_attempts: Maximum recovery attempts (P6: should be 2)
             enable_learning: Enable learning from recovery attempts
+            enable_retry_policy: Enable exponential backoff + jitter (DAY 7)
+            enable_circuit_breaker: Enable circuit breaker pattern (DAY 7)
         """
         self.llm = llm_client
         self.max_attempts = max_attempts
         self.enable_learning = enable_learning
+        
+        # DAY 7: Retry policy and circuit breaker
+        self.retry_policy = RetryPolicy() if enable_retry_policy else None
+        self.circuit_breaker = RecoveryCircuitBreaker() if enable_circuit_breaker else None
         
         # Learning database
         self.recovery_history: List[Dict[str, Any]] = []
@@ -140,7 +148,8 @@ class ErrorRecoveryEngine:
         
         logger.info(
             f"Initialized ErrorRecoveryEngine "
-            f"(max_attempts={max_attempts}, learning={enable_learning})"
+            f"(max_attempts={max_attempts}, learning={enable_learning}, "
+            f"retry_policy={enable_retry_policy}, circuit_breaker={enable_circuit_breaker})"
         )
     
     def categorize_error(self, error: str) -> ErrorCategory:
@@ -436,6 +445,98 @@ Please diagnose the error and suggest a correction."""
             what_worked="LLM provided correction"
         )
     
+    async def attempt_recovery_with_backoff(
+        self,
+        context: RecoveryContext,
+        error: Exception
+    ) -> RecoveryResult:
+        """
+        Attempt recovery with retry policy and circuit breaker (DAY 7 enhancement).
+        
+        Adds intelligent retry logic:
+        - Exponential backoff between attempts
+        - Circuit breaker to prevent cascading failures
+        - Smart retry decisions based on error type
+        
+        Args:
+            context: Recovery context
+            error: Exception that triggered recovery
+        
+        Returns:
+            Recovery result
+        """
+        # Check circuit breaker first
+        if self.circuit_breaker:
+            allowed, reason = self.circuit_breaker.should_allow_recovery()
+            
+            if not allowed:
+                logger.warning(f"Circuit breaker prevented recovery: {reason}")
+                return RecoveryResult(
+                    success=False,
+                    recovered=False,
+                    attempts_used=context.attempt_number,
+                    final_error=context.error,
+                    escalation_reason=f"Circuit breaker OPEN: {reason}"
+                )
+        
+        # Check retry policy and apply backoff
+        if self.retry_policy:
+            # Check if should retry
+            should_retry = self.retry_policy.should_retry(
+                context.attempt_number,
+                context.max_attempts,
+                error
+            )
+            
+            if not should_retry:
+                logger.info(f"Retry policy decided not to retry: {error}")
+                return RecoveryResult(
+                    success=False,
+                    recovered=False,
+                    attempts_used=context.attempt_number,
+                    final_error=context.error,
+                    escalation_reason="Retry policy rejected (permanent error detected)"
+                )
+            
+            # Apply backoff delay if this is a retry (attempt > 1)
+            if context.attempt_number > 1:
+                delay = self.retry_policy.get_delay(context.attempt_number)
+                logger.info(f"Applying exponential backoff: {delay:.2f}s")
+                
+                # Wait before retry
+                import asyncio
+                await asyncio.sleep(delay)
+        
+        # Attempt recovery
+        try:
+            result = await self.attempt_recovery(context)
+            
+            # Update circuit breaker based on whether we got a correction
+            # (actual success will be determined after executing the correction)
+            if self.circuit_breaker:
+                # If we got a correction or successfully escalated, consider it handled
+                if result.success or result.corrected_args:
+                    self.circuit_breaker.record_success()
+                else:
+                    self.circuit_breaker.record_failure()
+            
+            return result
+            
+        except Exception as e:
+            logger.error(f"Recovery attempt failed with exception: {e}")
+            
+            # Update circuit breaker on exception
+            if self.circuit_breaker:
+                self.circuit_breaker.record_failure()
+            
+            return RecoveryResult(
+                success=False,
+                recovered=False,
+                attempts_used=context.attempt_number,
+                final_error=str(e),
+                escalation_reason=f"Recovery raised exception: {e}"
+            )
+    
     def record_recovery_outcome(
         self,
         context: RecoveryContext,
@@ -478,23 +579,47 @@ Please diagnose the error and suggest a correction."""
     
     def get_statistics(self) -> Dict[str, Any]:
         """Get recovery statistics."""
+        stats = {}
+        
         if not self.enable_learning:
-            return {"learning_disabled": True}
+            stats["learning_disabled"] = True
+        else:
+            total_attempts = len(self.recovery_history)
+            successful_recoveries = sum(1 for r in self.recovery_history if r["final_success"])
+            
+            stats.update({
+                "total_recovery_attempts": total_attempts,
+                "successful_recoveries": successful_recoveries,
+                "success_rate": successful_recoveries / total_attempts if total_attempts > 0 else 0.0,
+                "common_errors": dict(sorted(
+                    self.common_errors.items(),
+                    key=lambda x: x[1],
+                    reverse=True
+                )[:10]),  # Top 10
+                "learned_fixes": len(self.successful_fixes),
+            })
         
-        total_attempts = len(self.recovery_history)
-        successful_recoveries = sum(1 for r in self.recovery_history if r["final_success"])
+        # Add circuit breaker status (DAY 7)
+        if self.circuit_breaker:
+            stats["circuit_breaker"] = self.circuit_breaker.get_status()
         
-        return {
-            "total_recovery_attempts": total_attempts,
-            "successful_recoveries": successful_recoveries,
-            "success_rate": successful_recoveries / total_attempts if total_attempts > 0 else 0.0,
-            "common_errors": dict(sorted(
-                self.common_errors.items(),
-                key=lambda x: x[1],
-                reverse=True
-            )[:10]),  # Top 10
-            "learned_fixes": len(self.successful_fixes),
-        }
+        return stats
+    
+    def get_circuit_breaker_status(self) -> Optional[Dict[str, Any]]:
+        """Get circuit breaker status (DAY 7 enhancement).
+        
+        Returns:
+            Circuit breaker status dict or None if disabled
+        """
+        if self.circuit_breaker:
+            return self.circuit_breaker.get_status()
+        return None
+    
+    def reset_circuit_breaker(self):
+        """Reset circuit breaker to CLOSED state (DAY 7 enhancement)."""
+        if self.circuit_breaker:
+            self.circuit_breaker.reset()
+            logger.info("Circuit breaker manually reset")
 
 
 # Helper function for shell integration
