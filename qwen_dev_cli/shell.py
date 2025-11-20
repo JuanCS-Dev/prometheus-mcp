@@ -85,6 +85,9 @@ from .tui.components.palette import (
     CATEGORY_CONFIG
 )
 
+# Phase 5: Animations (Integration Sprint Week 1: Day 3)
+from .tui.animations import Animator, AnimationConfig, StateTransition
+
 
 class SessionContext:
     """Persistent context across shell session."""
@@ -192,6 +195,10 @@ class InteractiveShell:
             max_context_tokens=100_000,  # 100k token window
             console=self.console
         )
+        
+        # Animations (Integration Sprint Week 1: Day 3 - Task 1.5)
+        self.animator = Animator(AnimationConfig(duration=0.3, easing="ease-out"))
+        self.state_transition = StateTransition("idle")
         
         # Legacy session (fallback)
         self.session = PromptSession(
@@ -983,6 +990,15 @@ Tool calls: {len(self.context.tool_calls)}
                     doc_preview = symbol.docstring.split('\n')[0][:60]
                     self.console.print(f"    [dim]→ {doc_preview}...[/dim]")
             
+            return False, None
+        
+        elif cmd == "/workflow":
+            # Workflow Visualizer (Task 1.4)
+            if self.workflow_viz.current_workflow:
+                viz = self.workflow_viz.render_workflow()
+                self.console.print(viz)
+            else:
+                self.console.print("[dim]No active workflow. Execute a command to see workflow.[/dim]")
             return False, None
         
         elif cmd == "/tokens":
