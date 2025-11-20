@@ -28,7 +28,13 @@
 - Safety validation for dangerous operations
 - Rate limiting & resource protection
 
-### 🎨 **Interactive REPL**
+### 🎨 **Interactive REPL** (NEW: Integration Sprint Week 1)
+- **Command Palette** (Ctrl+K) - Fuzzy search 9+ commands
+- **Token Tracking** - Real-time usage + cost estimation
+- **Inline Preview** - Review diffs before applying changes
+- **Workflow Visualizer** - Track operation progress
+- **Animations** - Smooth state transitions (ease-out)
+- **Dashboard** - Live system metrics & operation history
 - Reactive TUI with real-time streaming
 - Multi-line input with syntax highlighting
 - Session persistence & command history

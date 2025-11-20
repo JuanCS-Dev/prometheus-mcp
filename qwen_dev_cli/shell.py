@@ -1007,6 +1007,12 @@ Tool calls: {len(self.context.tool_calls)}
                 self.console.print("[dim]No active workflow. Execute a command to see workflow.[/dim]")
             return False, None
         
+        elif cmd == "/dash" or cmd == "/dashboard":
+            # Dashboard (Task 1.6)
+            dashboard_view = self.dashboard.render_dashboard()
+            self.console.print(dashboard_view)
+            return False, None
+        
         elif cmd == "/tokens":
             # Token Tracking (Integration Sprint Week 1: Day 1 - Task 1.2)
             # Show detailed token usage
@@ -1393,6 +1399,16 @@ Tool calls: {len(self.context.tool_calls)}
         self.state_transition.transition_to("thinking")
         self.workflow_viz.add_step("analyze", "Analyzing request", StepStatus.IN_PROGRESS)
         
+        # Track operation in dashboard (Task 1.6)
+        op_id = f"llm_{int(time.time() * 1000)}"
+        operation = Operation(
+            id=op_id,
+            type="llm",
+            description=f"Process: {user_input[:40]}...",
+            status=OperationStatus.RUNNING
+        )
+        self.dashboard.add_operation(operation)
+        
         # Animated status message (Task 1.5)
         from rich.text import Text
         text = Text("[THINKING] Step 1/3: Analyzing request...", style="cyan")
@@ -1488,6 +1504,9 @@ Tool calls: {len(self.context.tool_calls)}
                 self.state_transition.transition_to("success")
                 self.workflow_viz.update_step_status("execute", StepStatus.COMPLETED)
                 
+                # Complete dashboard operation (Task 1.6)
+                self.dashboard.complete_operation(op_id, OperationStatus.SUCCESS, tokens_used=0, cost=0.0)
+                
                 # Animated success message (Task 1.5)
                 text = Text("✓ Success", style="green bold")
                 self.console.print(text)
@@ -1501,6 +1520,9 @@ Tool calls: {len(self.context.tool_calls)}
             else:
                 self.state_transition.transition_to("error")
                 self.workflow_viz.update_step_status("execute", StepStatus.FAILED)
+                
+                # Complete dashboard operation as error (Task 1.6)
+                self.dashboard.complete_operation(op_id, OperationStatus.ERROR)
                 
                 # Animated error message (Task 1.5)
                 text = Text("❌ Failed", style="red bold")
