@@ -25,6 +25,12 @@ from rich.text import Text
 from textual.widgets import Static
 from textual.containers import Horizontal, Vertical
 
+# Pygments for syntax highlighting (UX Polish Sprint)
+from pygments import highlight
+from pygments.lexers import get_lexer_by_name, guess_lexer
+from pygments.formatters import TerminalFormatter
+from pygments.util import ClassNotFound
+
 from qwen_dev_cli.tui.theme import COLORS
 
 
@@ -488,15 +494,16 @@ class EditPreview:
             return response.lower() in ['y', 'yes']
     
     def _render_simple_diff(self, original: str, proposed: str, language: str) -> Table:
-        """Render simple side-by-side diff"""
+        """Render simple side-by-side diff WITH SYNTAX HIGHLIGHTING (UX Polish Sprint)"""
         from rich.columns import Columns
         
         table = Table(show_header=True, header_style="bold", box=None)
         table.add_column("Original", style="red", width=60)
         table.add_column("Proposed", style="green", width=60)
         
-        old_lines = original.splitlines()
-        new_lines = proposed.splitlines()
+        # Apply syntax highlighting using Pygments
+        old_lines = self._highlight_code(original, language).splitlines()
+        new_lines = self._highlight_code(proposed, language).splitlines()
         
         max_lines = max(len(old_lines), len(new_lines))
         
@@ -534,6 +541,44 @@ class EditPreview:
             "removed": removed,
             "modified": 0  # Simplified, would need line-by-line comparison
         }
+    
+    def _highlight_code(self, code: str, language: str) -> str:
+        """
+        Apply syntax highlighting using Pygments (UX Polish Sprint)
+        
+        Args:
+            code: Source code to highlight
+            language: Programming language (python, javascript, etc)
+            
+        Returns:
+            ANSI-colored code string
+        """
+        try:
+            # Get lexer for language
+            if language in ['py', 'python']:
+                lexer = get_lexer_by_name('python')
+            elif language in ['js', 'javascript', 'jsx']:
+                lexer = get_lexer_by_name('javascript')
+            elif language in ['ts', 'typescript', 'tsx']:
+                lexer = get_lexer_by_name('typescript')
+            elif language in ['json']:
+                lexer = get_lexer_by_name('json')
+            elif language in ['md', 'markdown']:
+                lexer = get_lexer_by_name('markdown')
+            elif language in ['sh', 'bash', 'shell']:
+                lexer = get_lexer_by_name('bash')
+            else:
+                # Try to guess
+                lexer = guess_lexer(code)
+            
+            # Apply terminal colors
+            formatter = TerminalFormatter()
+            highlighted = highlight(code, lexer, formatter)
+            return highlighted.rstrip('\n')  # Remove trailing newline
+            
+        except (ClassNotFound, Exception):
+            # Fallback: return plain code
+            return code
 
 
 if __name__ == "__main__":
