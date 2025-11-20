@@ -264,8 +264,8 @@ class EnhancedMarkdown:
         def replace_mermaid(match: Match[str]) -> str:
             diagram = match.group(1)
             
-            # Simple ASCII rendering (basic support)
-            # TODO: Full Mermaid rendering requires external library
+            # Simple ASCII rendering with basic Mermaid support
+            # Note: Full rendering would require heavy external dependencies
             
             ascii_diagram = self._mermaid_to_ascii(diagram)
             return f"\n```\n{ascii_diagram}\n```\n"

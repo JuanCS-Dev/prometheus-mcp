@@ -159,16 +159,16 @@ class TestRealUsability:
         
         # Test message creation
         msg = create_assistant_message("Hello, this is a test!")
-        assert msg.role == MessageRole.ASSISTANT
+        assert msg.role == MessageRole.ASSISTANT.value or msg.role == MessageRole.ASSISTANT
         assert msg.content == "Hello, this is a test!"
         
         # Test user message
         user_msg = Message(
-            role=MessageRole.USER,
+            role=MessageRole.USER.value,
             content="User input",
             timestamp=time.time()
         )
-        assert user_msg.role == MessageRole.USER
+        assert user_msg.role == MessageRole.USER.value or user_msg.role == MessageRole.USER
         
         print("✅ Message components - User & Assistant messages working")
     

@@ -4,7 +4,7 @@ import asyncio
 import os
 from pathlib import Path
 from qwen_dev_cli.core.llm import LLMClient
-from qwen_dev_cli.core.context import ContextBuilder as ContextManager
+from qwen_dev_cli.core.context import ContextBuilder
 from qwen_dev_cli.core.config import Config
 
 
@@ -19,15 +19,15 @@ def config():
 
 
 @pytest.fixture
-def llm(config):
+def llm():
     """Real LLM client."""
-    return LLMClient(config)
+    return LLMClient()
 
 
 @pytest.fixture
-def context_mgr(config):
+def context_mgr():
     """Real context manager."""
-    return ContextManager(config)
+    return ContextBuilder()
 
 
 class TestRealUsageScenarios:
@@ -91,12 +91,9 @@ def divide_numbers(a, b):
     async def test_context_aware_response(self, llm, context_mgr):
         """Real scenario: Response considers project context."""
         # Simulate project context
-        context_mgr.add_file_to_context(
-            Path(__file__),
-            "Test file with pytest usage"
-        )
+        context_mgr.add_file(str(Path(__file__)))
         
-        context = context_mgr.get_context_for_prompt()
+        context = context_mgr.build()
         prompt = f"{context}\n\nWhat testing framework is being used?"
         
         response = await llm.generate(prompt, max_tokens=100)
@@ -211,10 +208,10 @@ class TestContextManagerRealUsage:
         file2 = tmp_path / "utils.py"
         file2.write_text("def helper(): pass")
         
-        context_mgr.add_file_to_context(file1, "Main entry")
-        context_mgr.add_file_to_context(file2, "Helper utils")
+        context_mgr.add_file(str(file1))
+        context_mgr.add_file(str(file2))
         
-        context = context_mgr.get_context_for_prompt()
+        context = context_mgr.build()
         
         assert "main.py" in context
         assert "utils.py" in context
@@ -227,7 +224,7 @@ class TestContextManagerRealUsage:
         for i in range(50):
             f = tmp_path / f"file{i}.py"
             f.write_text(f"def func{i}(): pass\n" * 100)
-            context_mgr.add_file_to_context(f, f"File {i}")
+            context_mgr.add_file(str(f))
         
         context = context_mgr.get_context_for_prompt()
         
@@ -239,11 +236,11 @@ class TestContextManagerRealUsage:
         file1 = tmp_path / "test.py"
         file1.write_text("test content")
         
-        context_mgr.add_file_to_context(file1, "Test")
-        assert len(context_mgr.get_context_for_prompt()) > 0
+        context_mgr.add_file(str(file1))
+        assert len(context_mgr.build()) > 0
         
-        context_mgr.clear_context()
-        assert len(context_mgr.get_context_for_prompt()) == 0
+        context_mgr.files.clear()
+        assert len(context_mgr.build()) == 0
 
 
 class TestErrorHandlingRealWorld:
