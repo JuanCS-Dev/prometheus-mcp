@@ -700,6 +700,11 @@ Response: I don't have a tool to check the current time, but I can help you with
                 args['console'] = self.console
                 args['preview'] = getattr(self.context, 'preview_enabled', True)
             
+            # Week 3 Day 1: Pass indexer to search_files for semantic search
+            if tool_name == 'search_files' and self._indexer_initialized:
+                args['semantic'] = args.get('semantic', True)  # Enable semantic by default
+                args['indexer'] = self.indexer
+            
             # Execute tool with Phase 3.1: Error recovery loop
             result = await self._execute_with_recovery(
                 tool, tool_name, args, turn
