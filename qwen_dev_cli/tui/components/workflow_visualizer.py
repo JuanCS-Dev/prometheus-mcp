@@ -155,13 +155,15 @@ class WorkflowVisualizer:
         step_id: str,
         name: str,
         dependencies: Optional[List[str]] = None
-    ) -> None:
+    ) -> "WorkflowStep":
         """Add a workflow step"""
-        self.steps[step_id] = WorkflowStep(
+        step = WorkflowStep(
             id=step_id,
             name=name,
             dependencies=dependencies or []
         )
+        self.steps[step_id] = step
+        return step
         
     def update_step(
         self,
