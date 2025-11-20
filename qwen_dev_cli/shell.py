@@ -186,6 +186,13 @@ class InteractiveShell:
         self.palette = create_default_palette()
         self._register_palette_commands()
         
+        # Token Tracking (Integration Sprint Week 1: Day 1 - Task 1.2)
+        from .tui.components.context_awareness import ContextAwarenessEngine
+        self.context_engine = ContextAwarenessEngine(
+            max_context_tokens=100_000,  # 100k token window
+            console=self.console
+        )
+        
         # Legacy session (fallback)
         self.session = PromptSession(
             history=FileHistory(str(history_file)),
@@ -978,6 +985,36 @@ Tool calls: {len(self.context.tool_calls)}
             
             return False, None
         
+        elif cmd == "/tokens":
+            # Token Tracking (Integration Sprint Week 1: Day 1 - Task 1.2)
+            # Show detailed token usage
+            token_panel = self.context_engine.render_token_usage_realtime()
+            self.console.print(token_panel)
+            
+            # Show token usage history
+            if self.context_engine.window.usage_history:
+                history_table = Table(title="Token Usage History (Last 10 Interactions)")
+                history_table.add_column("Time", style="cyan", width=10)
+                history_table.add_column("Input", justify="right", width=10)
+                history_table.add_column("Output", justify="right", width=10)
+                history_table.add_column("Total", justify="right", width=10)
+                history_table.add_column("Cost", justify="right", width=10)
+                
+                for snapshot in list(self.context_engine.window.usage_history)[-10:]:
+                    history_table.add_row(
+                        snapshot.timestamp.strftime("%H:%M:%S"),
+                        f"{snapshot.input_tokens:,}",
+                        f"{snapshot.output_tokens:,}",
+                        f"{snapshot.total_tokens:,}",
+                        f"${snapshot.cost_estimate_usd:.4f}"
+                    )
+                
+                self.console.print(history_table)
+            else:
+                self.console.print("\n[dim]No token usage history yet. Start a conversation to track tokens.[/dim]")
+            
+            return False, None
+        
         else:
             return False, f"Unknown command: {cmd}"
     
@@ -1221,6 +1258,28 @@ Tool calls: {len(self.context.tool_calls)}
                     success = True
                     try:
                         await self._process_request_with_llm(user_input, suggestion_engine)
+                        
+                        # Show token usage after LLM response (Integration Sprint Week 1: Task 1.2)
+                        if self.context_engine.window.current_output_tokens > 0:
+                            token_panel = self.context_engine.render_token_usage_realtime()
+                            self.console.print(token_panel)
+                            
+                            # Warning if approaching limit
+                            usage_percent = (self.context_engine.window.total_tokens / 
+                                           self.context_engine.max_context_tokens * 100)
+                            
+                            if usage_percent >= 90:
+                                self.console.print(
+                                    "\n[bold red]⚠️  WARNING: Context window >90% full![/bold red]"
+                                )
+                                self.console.print(
+                                    "[yellow]Consider using /clear to reset context[/yellow]\n"
+                                )
+                            elif usage_percent >= 80:
+                                self.console.print(
+                                    "\n[yellow]⚠️  Context window >80% full[/yellow]\n"
+                                )
+                    
                     except Exception as proc_error:
                         success = False
                         raise proc_error
