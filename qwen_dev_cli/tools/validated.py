@@ -11,8 +11,6 @@ from typing import Dict, Any, Optional
 from abc import ABC, abstractmethod
 
 from .base import Tool, ToolResult
-from .validated import ValidatedTool
-from ..core.validation import Required, TypeCheck
 from ..core.validation import (
     Validator,
     ValidationResultImpl,
@@ -50,7 +48,7 @@ class ValidatedTool(Tool, ABC):
         """
         return {}
     
-    async def _execute_validated(self, **kwargs) -> ToolResult:
+    async def execute(self, **kwargs) -> ToolResult:
         """
         Execute tool with validation.
         
