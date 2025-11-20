@@ -118,7 +118,7 @@ class ErrorRecoveryEngine:
     
     def __init__(
         self,
-        llm_client,
+        llm_client: Any,  # LLM client (Any to avoid circular import)
         max_attempts: int = 2,  # Constitutional P6
         enable_learning: bool = True,
         enable_retry_policy: bool = True,
@@ -350,7 +350,7 @@ Please diagnose the error and suggest a correction."""
                             break
                 
                 json_str = diagnosis_text[json_start:json_end]
-                correction = json.loads(json_str)
+                correction: Dict[str, Any] = json.loads(json_str)
                 return correction
             except (ValueError, json.JSONDecodeError, IndexError) as e:
                 logger.debug(f"Failed to extract JSON correction: {e}")
@@ -360,10 +360,10 @@ Please diagnose the error and suggest a correction."""
             # Look for {... } pattern
             json_match = re.search(r'\{[^}]+\}', diagnosis_text)
             if json_match:
-                correction = json.loads(json_match.group())
+                correction_data: Dict[str, Any] = json.loads(json_match.group())
                 # Validate it has tool and args
-                if "tool" in correction and "args" in correction:
-                    return correction
+                if "tool" in correction_data and "args" in correction_data:
+                    return correction_data
         except (json.JSONDecodeError, AttributeError) as e:
             logger.debug(f"Failed to parse correction JSON: {e}")
         
@@ -542,7 +542,7 @@ Please diagnose the error and suggest a correction."""
         context: RecoveryContext,
         result: RecoveryResult,
         final_success: bool
-    ):
+    ) -> None:
         """
         Record recovery outcome for learning.
         
@@ -579,7 +579,7 @@ Please diagnose the error and suggest a correction."""
     
     def get_statistics(self) -> Dict[str, Any]:
         """Get recovery statistics."""
-        stats = {}
+        stats: Dict[str, Any] = {}
         
         if not self.enable_learning:
             stats["learning_disabled"] = True
@@ -615,7 +615,7 @@ Please diagnose the error and suggest a correction."""
             return self.circuit_breaker.get_status()
         return None
     
-    def reset_circuit_breaker(self):
+    def reset_circuit_breaker(self) -> None:
         """Reset circuit breaker to CLOSED state (DAY 7 enhancement)."""
         if self.circuit_breaker:
             self.circuit_breaker.reset()
@@ -624,8 +624,8 @@ Please diagnose the error and suggest a correction."""
 
 # Helper function for shell integration
 async def create_recovery_context(
-    conversation_manager,
-    turn,
+    conversation_manager: Any,  # ConversationManager (Any to avoid circular import)
+    turn: Any,  # ConversationTurn (Any to avoid circular import)
     failed_tool: str,
     failed_args: Dict[str, Any],
     error: str,
@@ -835,7 +835,7 @@ class RecoveryCircuitBreaker:
             f"timeout={timeout}s)"
         )
     
-    def record_success(self):
+    def record_success(self) -> None:
         """Record successful recovery attempt."""
         self.success_count += 1
         
@@ -851,7 +851,7 @@ class RecoveryCircuitBreaker:
             # Reset failure count on success
             self.failure_count = max(0, self.failure_count - 1)
     
-    def record_failure(self):
+    def record_failure(self) -> None:
         """Record failed recovery attempt."""
         self.failure_count += 1
         self.success_count = 0
@@ -911,7 +911,7 @@ class RecoveryCircuitBreaker:
             "timeout": self.timeout
         }
     
-    def reset(self):
+    def reset(self) -> None:
         """Reset circuit breaker to closed state."""
         self.state = "CLOSED"
         self.failure_count = 0

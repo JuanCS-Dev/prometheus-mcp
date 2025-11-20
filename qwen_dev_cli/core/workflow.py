@@ -76,7 +76,7 @@ class ThoughtPath:
     efficiency_score: float = 0.0    # P6: Eficiência
     total_score: float = 0.0
     
-    def calculate_score(self):
+    def calculate_score(self) -> float:
         """Calculate total score using Constitutional weights."""
         self.total_score = (
             self.completeness_score * 0.4 +
@@ -133,11 +133,11 @@ class DependencyGraph:
     - Parallel execution identification
     """
     
-    def __init__(self):
+    def __init__(self) -> None:
         self.nodes: Dict[str, WorkflowStep] = {}
         self.edges: List[Tuple[str, str]] = []  # (from, to)
     
-    def add_step(self, step: WorkflowStep):
+    def add_step(self, step: WorkflowStep) -> None:
         """Add step to graph."""
         self.nodes[step.step_id] = step
         
@@ -191,7 +191,7 @@ class DependencyGraph:
             List of groups, where each group can run in parallel
         """
         sorted_steps = self.topological_sort()
-        groups = []
+        groups: List[List[WorkflowStep]] = []
         
         processed = set()
         
@@ -430,7 +430,7 @@ class AutoCritique:
     - LEI calculation (Constitutional metric)
     """
     
-    def __init__(self):
+    def __init__(self) -> None:
         self.lei_threshold = 1.0  # Constitutional requirement
     
     def critique_step(self, step: WorkflowStep, result: Any) -> Critique:
@@ -634,7 +634,7 @@ class CheckpointManager:
         logger.info(f"Created checkpoint: {checkpoint_id}")
         return checkpoint
     
-    def backup_file(self, checkpoint_id: str, file_path: str):
+    def backup_file(self, checkpoint_id: str, file_path: str) -> None:
         """Backup file before modification."""
         if checkpoint_id not in self.checkpoints:
             logger.warning(f"Checkpoint {checkpoint_id} not found")
@@ -696,7 +696,7 @@ class Transaction:
         self.operations: List[Tuple[WorkflowStep, Any]] = []
         self.committed = False
     
-    def add_operation(self, step: WorkflowStep, result: Any):
+    def add_operation(self, step: WorkflowStep, result: Any) -> None:
         """Add completed operation."""
         self.operations.append((step, result))
     
@@ -711,7 +711,7 @@ class Transaction:
         
         return True
     
-    async def commit(self):
+    async def commit(self) -> None:
         """Commit transaction."""
         self.committed = True
         logger.info(f"Transaction committed: {self.transaction_id}")
@@ -807,8 +807,8 @@ class WorkflowEngine:
         transaction = Transaction(f"workflow_{int(time.time())}")
         
         # 4. Execute steps with checkpoints
-        completed = []
-        critiques = []
+        completed: List[WorkflowStep] = []
+        critiques: List[Dict[str, Any]] = []
         
         for i, step in enumerate(execution_order):
             # Create checkpoint before risky operations
@@ -928,7 +928,7 @@ class GitRollback:
     Allows atomic rollback of multi-file changes.
     """
     
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize git rollback manager."""
         self.commits_made: List[str] = []
         self.checkpoints: Dict[str, str] = {}  # checkpoint_id -> commit_sha
@@ -1064,7 +1064,7 @@ class GitRollback:
         """
         return self.commits_made.copy()
     
-    def clear_checkpoints(self):
+    def clear_checkpoints(self) -> None:
         """Clear checkpoint history."""
         self.commits_made.clear()
         self.checkpoints.clear()
@@ -1077,7 +1077,7 @@ class PartialRollback:
     individually or in groups. Useful for fine-grained error recovery.
     """
     
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize partial rollback manager."""
         self.operations: List[Dict[str, Any]] = []
     
@@ -1086,7 +1086,7 @@ class PartialRollback:
         op_type: str,
         data: Dict[str, Any],
         reversible: bool = True
-    ):
+    ) -> None:
         """Add reversible operation to stack.
         
         Args:
@@ -1150,7 +1150,7 @@ class PartialRollback:
         
         return await self.rollback_last_n(count)
     
-    async def _rollback_operation(self, op: Dict[str, Any]):
+    async def _rollback_operation(self, op: Dict[str, Any]) -> None:
         """Rollback single operation.
         
         Args:
@@ -1195,7 +1195,7 @@ class PartialRollback:
         """
         return self.operations.copy()
     
-    def clear_operations(self):
+    def clear_operations(self) -> None:
         """Clear operations stack."""
         self.operations.clear()
     
