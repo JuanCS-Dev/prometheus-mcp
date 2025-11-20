@@ -3,17 +3,23 @@
 import os
 import shutil
 from pathlib import Path
-from typing import Optional
+from typing import Optional, Dict, Any
 from datetime import datetime
 import logging
 
 from .base import Tool, ToolResult, ToolCategory
+from .validated import ValidatedTool
+from .preview_mixin import PreviewMixin
+from ..core.validation import Required, TypeCheck, PathExists
 
 logger = logging.getLogger(__name__)
 
 
-class ReadFileTool(Tool):
-    """Read complete contents of a file."""
+class ReadFileTool(ValidatedTool):
+    """Read complete contents of a file.
+    
+    Boris Cherny: Type-safe file reading with validation.
+    """
     
     def __init__(self):
         super().__init__()
@@ -32,7 +38,14 @@ class ReadFileTool(Tool):
             }
         }
     
-    async def execute(self, path: str, line_range: Optional[tuple] = None) -> ToolResult:
+    def get_validators(self) -> Dict[str, Any]:
+        """Validate input parameters."""
+        return {
+            'path': Required('path'),
+            'line_range': TypeCheck((list, tuple, type(None)), 'line_range')
+        }
+    
+    async def _execute_validated(self, path: str, line_range: Optional[tuple] = None, **kwargs) -> ToolResult:
         """Read file contents."""
         try:
             file_path = Path(path)
