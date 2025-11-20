@@ -164,7 +164,8 @@ class TestPreviewCommands:
         shell.conversation = Mock()
         shell.conversation.add_tool_result = Mock()
         shell._execute_with_recovery = AsyncMock()
-        shell.workflow_viz = Mock()  # Add workflow_viz
+        shell.workflow_viz = Mock()
+        shell.dashboard = Mock()  # Add dashboard
         return shell
     
     @pytest.mark.asyncio

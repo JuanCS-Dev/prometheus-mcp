@@ -675,6 +675,16 @@ Response: I don't have a tool to check the current time, but I can help you with
             # Week 2 Integration: Start executing step
             self.workflow_viz.update_step_status(step_id, StepStatus.RUNNING)
             
+            # Week 2 Day 2: Add operation to dashboard
+            op_id = f"{tool_name}_{i}_{int(time.time() * 1000)}"
+            operation = Operation(
+                id=op_id,
+                type=tool_name,
+                description=f"{tool_name}({', '.join(f'{k}={v}' for k, v in list(args.items())[:2])})",
+                status=OperationStatus.RUNNING
+            )
+            self.dashboard.add_operation(operation)
+            
             # TUI: Show status badge for operation
             args_str = ', '.join(f'{k}={v}' for k, v in args.items() if len(str(v)) < 50)
             status = StatusBadge(f"{tool_name}({args_str})", StatusLevel.PROCESSING, show_icon=True)
@@ -699,13 +709,24 @@ Response: I don't have a tool to check the current time, but I can help you with
                 results.append(f"❌ {tool_name} failed after recovery attempts")
                 # Week 2 Integration: Mark as failed
                 self.workflow_viz.update_step_status(step_id, StepStatus.FAILED)
+                # Week 2 Day 2: Update dashboard
+                self.dashboard.complete_operation(op_id, OperationStatus.ERROR)
                 continue
             
             # Week 2 Integration: Mark step completion based on result
             if result.success:
                 self.workflow_viz.update_step_status(step_id, StepStatus.COMPLETED)
+                # Week 2 Day 2: Update dashboard with success
+                self.dashboard.complete_operation(
+                    op_id,
+                    OperationStatus.SUCCESS,
+                    tokens_used=result.metadata.get('tokens', 0),
+                    cost=result.metadata.get('cost', 0.0)
+                )
             else:
                 self.workflow_viz.update_step_status(step_id, StepStatus.FAILED)
+                # Week 2 Day 2: Update dashboard with error
+                self.dashboard.complete_operation(op_id, OperationStatus.ERROR)
             
             # Format result
             if result.success:
@@ -1065,8 +1086,8 @@ Tool calls: {len(self.context.tool_calls)}
             return False, None
         
         elif cmd == "/dash" or cmd == "/dashboard":
-            # Dashboard (Task 1.6)
-            dashboard_view = self.dashboard.render_dashboard()
+            # Dashboard (Week 2 Day 2: Auto-updating dashboard)
+            dashboard_view = self.dashboard.render()
             self.console.print(dashboard_view)
             return False, None
         
