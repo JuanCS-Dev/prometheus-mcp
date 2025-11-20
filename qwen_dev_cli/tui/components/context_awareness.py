@@ -118,6 +118,12 @@ class ContextWindow:
         self.usage_history.append(snapshot)
         self.current_input_tokens = input_tokens
         self.current_output_tokens = output_tokens
+        # Update total tokens
+        self.total_tokens = input_tokens + output_tokens
+    
+    def update_tokens(self, input_tokens: int, output_tokens: int, cost: float = 0.0) -> None:
+        """Alias for add_token_snapshot for easier testing"""
+        self.add_token_snapshot(input_tokens, output_tokens, cost)
 
 
 class ContextAwarenessEngine:
