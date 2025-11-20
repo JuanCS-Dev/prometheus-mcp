@@ -1,12 +1,20 @@
 """
 🎬 TUI Animations - Apple-style smooth transitions
 Implements cubic bezier easing, fade effects, and smooth state changes
+
+UX Polish Sprint additions:
+- Loading spinners (dots, bars, braille)
+- Fade in/out effects
+- Micro-interactions (pulse, bounce)
 """
 
 import time
 import math
-from typing import Callable, Optional
+import asyncio
+from typing import Callable, Optional, Literal
 from dataclasses import dataclass
+from rich.console import Console
+from rich.text import Text
 
 
 @dataclass
@@ -212,3 +220,235 @@ class SlideTransition:
 smooth_animator = Animator(AnimationConfig(duration=0.3, easing="ease-out"))
 quick_animator = Animator(AnimationConfig(duration=0.15, easing="ease-out"))
 spring_animator = Animator(AnimationConfig(duration=0.4, easing="spring"))
+
+
+# ===== UX POLISH SPRINT: ADVANCED ANIMATIONS =====
+
+class LoadingSpinner:
+    """
+    Modern loading spinners (UX Polish Sprint)
+    
+    Styles:
+    - dots: "⠋⠙⠹⠸⠼⠴⠦⠧⠇⠏" (braille, 10 frames)
+    - line: "|/-\\" (classic, 4 frames)
+    - arc: "◜◠◝◞◡◟" (arc, 6 frames)
+    - dots3: "⣾⣽⣻⢿⡿⣟⣯⣷" (3-dot, 8 frames)
+    - pulse: "●○○ ●●○ ●●● ○●● ○○●" (pulse, 5 frames)
+    """
+    
+    SPINNERS = {
+        "dots": ["⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"],
+        "line": ["|", "/", "-", "\\"],
+        "arc": ["◜", "◠", "◝", "◞", "◡", "◟"],
+        "dots3": ["⣾", "⣽", "⣻", "⢿", "⡿", "⣟", "⣯", "⣷"],
+        "pulse": ["●○○", "●●○", "●●●", "○●●", "○○●"],
+        "bounce": ["⠁", "⠂", "⠄", "⡀", "⢀", "⠠", "⠐", "⠈"],
+    }
+    
+    def __init__(self, style: str = "dots", color: str = "cyan"):
+        """
+        Initialize spinner
+        
+        Args:
+            style: Spinner style (dots, line, arc, dots3, pulse, bounce)
+            color: Rich color name
+        """
+        self.frames = self.SPINNERS.get(style, self.SPINNERS["dots"])
+        self.color = color
+        self.current_frame = 0
+        self.running = False
+    
+    def get_frame(self) -> Text:
+        """Get current frame as Rich Text"""
+        frame = self.frames[self.current_frame % len(self.frames)]
+        self.current_frame += 1
+        return Text(frame, style=f"bold {self.color}")
+    
+    async def spin(self, console: Console, message: str = "Loading", duration: float = 2.0):
+        """
+        Animate spinner for duration
+        
+        Args:
+            console: Rich Console
+            message: Message to show
+            duration: How long to spin (seconds)
+        """
+        from rich.live import Live
+        
+        self.running = True
+        start_time = time.time()
+        
+        with Live(console=console, refresh_per_second=10) as live:
+            while self.running and (time.time() - start_time) < duration:
+                frame = self.get_frame()
+                text = Text()
+                text.append(frame)
+                text.append(f" {message}", style="dim")
+                live.update(text)
+                await asyncio.sleep(0.1)
+    
+    def stop(self):
+        """Stop spinner"""
+        self.running = False
+
+
+class FadeEffect:
+    """
+    Fade in/out effects (UX Polish Sprint)
+    
+    Uses opacity simulation with dim/bold styles
+    """
+    
+    @staticmethod
+    def fade_in(text: str, progress: float, color: str = "white") -> Text:
+        """
+        Fade text in (0.0 → 1.0)
+        
+        Args:
+            text: Text to fade
+            progress: 0.0 (invisible) to 1.0 (full)
+            color: Text color
+        """
+        result = Text(text)
+        
+        if progress < 0.3:
+            # Very dim (0-30%)
+            result.stylize(f"dim {color}")
+        elif progress < 0.6:
+            # Medium (30-60%)
+            result.stylize(color)
+        else:
+            # Bold (60-100%)
+            result.stylize(f"bold {color}")
+        
+        return result
+    
+    @staticmethod
+    def fade_out(text: str, progress: float, color: str = "white") -> Text:
+        """
+        Fade text out (1.0 → 0.0)
+        
+        Args:
+            text: Text to fade
+            progress: 1.0 (full) to 0.0 (invisible)
+            color: Text color
+        """
+        return FadeEffect.fade_in(text, 1.0 - progress, color)
+    
+    @staticmethod
+    async def fade_in_animated(
+        console: Console,
+        text: str,
+        duration: float = 0.5,
+        color: str = "white"
+    ):
+        """Animate fade in effect"""
+        from rich.live import Live
+        
+        steps = 20
+        delay = duration / steps
+        
+        with Live(console=console, refresh_per_second=30) as live:
+            for i in range(steps + 1):
+                progress = i / steps
+                faded = FadeEffect.fade_in(text, progress, color)
+                live.update(faded)
+                await asyncio.sleep(delay)
+
+
+class MicroInteraction:
+    """
+    Subtle micro-interactions (UX Polish Sprint)
+    
+    Examples:
+    - Pulse: Scale effect (success, error)
+    - Bounce: Attention grabber
+    - Shake: Error indication
+    """
+    
+    @staticmethod
+    def pulse(text: str, scale: float = 1.2) -> str:
+        """
+        Pulse effect (grow slightly)
+        
+        Args:
+            text: Text to pulse
+            scale: Scale factor (1.0 = normal, 1.2 = 20% bigger)
+        """
+        # Simulate scale with spacing
+        if scale > 1.0:
+            return f" {text} "
+        return text
+    
+    @staticmethod
+    async def bounce_text(console: Console, text: str, color: str = "cyan"):
+        """
+        Bounce animation (4 frames)
+        
+        Args:
+            console: Rich Console
+            text: Text to bounce
+            color: Text color
+        """
+        from rich.live import Live
+        
+        # Bounce positions (vertical offset simulation)
+        positions = [0, -1, -2, -1, 0]  # Simulate bounce
+        
+        with Live(console=console, refresh_per_second=30) as live:
+            for pos in positions:
+                # Simulate vertical offset with newlines
+                bounced = Text()
+                if pos < 0:
+                    bounced.append("" * abs(pos))  # Empty lines
+                bounced.append(text, style=f"bold {color}")
+                live.update(bounced)
+                await asyncio.sleep(0.1)
+    
+    @staticmethod
+    async def shake_text(console: Console, text: str, color: str = "red"):
+        """
+        Shake animation (error indication)
+        
+        Args:
+            console: Rich Console
+            text: Text to shake
+            color: Text color (typically red for errors)
+        """
+        from rich.live import Live
+        
+        # Shake offsets (horizontal simulation)
+        offsets = [0, -1, 1, -1, 1, 0]
+        
+        with Live(console=console, refresh_per_second=30) as live:
+            for offset in offsets:
+                shaken = Text()
+                if offset < 0:
+                    shaken.append(" " * abs(offset))
+                shaken.append(text, style=f"bold {color}")
+                live.update(shaken)
+                await asyncio.sleep(0.05)
+
+
+# ===== CONVENIENCE FUNCTIONS =====
+
+async def show_loading(console: Console, message: str = "Processing", duration: float = 2.0):
+    """Quick loading spinner"""
+    spinner = LoadingSpinner(style="dots", color="cyan")
+    await spinner.spin(console, message, duration)
+
+
+async def fade_in_message(console: Console, message: str, color: str = "green"):
+    """Quick fade in effect"""
+    await FadeEffect.fade_in_animated(console, message, duration=0.5, color=color)
+
+
+async def success_pulse(console: Console, message: str = "✓ Success"):
+    """Show success with pulse effect"""
+    pulse_text = MicroInteraction.pulse(message, scale=1.2)
+    await fade_in_message(console, pulse_text, color="green")
+
+
+async def error_shake(console: Console, message: str = "✗ Error"):
+    """Show error with shake effect"""
+    await MicroInteraction.shake_text(console, message, color="red")
