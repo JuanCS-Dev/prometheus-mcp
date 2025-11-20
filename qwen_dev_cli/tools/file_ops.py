@@ -108,16 +108,37 @@ class WriteFileTool(Tool):
             }
         }
     
-    async def execute(self, path: str, content: str, create_dirs: bool = True) -> ToolResult:
+    async def execute(self, path: str, content: str, create_dirs: bool = True, 
+                     preview: bool = True, console=None) -> ToolResult:
         """Create file with content."""
         try:
             file_path = Path(path)
             
+            # Show preview if file exists (Integration Sprint Week 1: Task 1.3)
             if file_path.exists():
-                return ToolResult(
-                    success=False,
-                    error=f"File already exists: {path}. Use edit_file to modify."
-                )
+                if preview and console:
+                    from ..tui.components.preview import EditPreview
+                    
+                    original_content = file_path.read_text()
+                    preview_component = EditPreview()
+                    accepted = await preview_component.show_diff_interactive(
+                        original_content=original_content,
+                        proposed_content=content,
+                        file_path=str(file_path),
+                        console=console
+                    )
+                    
+                    if not accepted:
+                        return ToolResult(
+                            success=False,
+                            data={"path": str(path), "message": "Overwrite cancelled by user"},
+                            error="Overwrite cancelled by user"
+                        )
+                else:
+                    return ToolResult(
+                        success=False,
+                        error=f"File already exists: {path}. Use edit_file to modify."
+                    )
             
             # Create parent directories if needed
             if create_dirs and not file_path.parent.exists():
@@ -209,7 +230,8 @@ class EditFileTool(Tool):
             }
         }
     
-    async def execute(self, path: str, edits: list[dict], create_backup: bool = True) -> ToolResult:
+    async def execute(self, path: str, edits: list[dict], create_backup: bool = True, 
+                     preview: bool = True, console=None) -> ToolResult:
         """Edit file with search/replace operations."""
         try:
             file_path = Path(path)
@@ -246,6 +268,25 @@ class EditFileTool(Tool):
                     return ToolResult(
                         success=False,
                         error=f"Search string not found: {search[:50]}..."
+                    )
+            
+            # Show preview if enabled (Integration Sprint Week 1: Task 1.3)
+            if preview and console and original_content != modified_content:
+                from ..tui.components.preview import EditPreview
+                
+                preview_component = EditPreview()
+                accepted = await preview_component.show_diff_interactive(
+                    original_content=original_content,
+                    proposed_content=modified_content,
+                    file_path=str(file_path),
+                    console=console
+                )
+                
+                if not accepted:
+                    return ToolResult(
+                        success=False,
+                        data={"path": str(path), "message": "Edit cancelled by user"},
+                        error="Edit cancelled by user"
                     )
             
             # Write modified content

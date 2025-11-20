@@ -419,6 +419,123 @@ def preview_file_change(
     )
 
 
+class EditPreview:
+    """
+    Interactive edit preview (Integration Sprint Week 1: Task 1.3)
+    Shows side-by-side diff and asks user to accept/reject
+    """
+    
+    def __init__(self):
+        self.diff_generator = DiffGenerator()
+    
+    async def show_diff_interactive(
+        self,
+        original_content: str,
+        proposed_content: str,
+        file_path: str,
+        console
+    ) -> bool:
+        """
+        Show interactive diff and ask user to accept/reject
+        
+        Args:
+            original_content: Original file content
+            proposed_content: Proposed new content
+            file_path: Path to file being edited
+            console: Rich Console instance
+            
+        Returns:
+            True if user accepts, False if rejects
+        """
+        from pathlib import Path
+        
+        # Detect language from file extension
+        language = Path(file_path).suffix.lstrip('.') or 'text'
+        
+        # Generate diff
+        file_diff = DiffGenerator.generate_diff(
+            old_content=original_content,
+            new_content=proposed_content,
+            file_path=file_path,
+            language=language
+        )
+        
+        # Calculate stats
+        stats = self._calculate_diff_stats(original_content, proposed_content)
+        
+        # Show diff panel
+        console.print(Panel(
+            self._render_simple_diff(original_content, proposed_content, language),
+            title=f"[bold cyan]Preview: {file_path}[/bold cyan]",
+            border_style="cyan"
+        ))
+        
+        # Show stats
+        console.print(
+            f"\n[green]+{stats['added']} lines[/green] "
+            f"[red]-{stats['removed']} lines[/red] "
+            f"[yellow]~{stats['modified']} lines[/yellow]\n"
+        )
+        
+        # Ask user (simple prompt for now, can be enhanced with prompt_toolkit)
+        try:
+            from prompt_toolkit import prompt
+            response = await prompt("Accept changes? (y/n): ", async_=True)
+            return response.lower() in ['y', 'yes']
+        except:
+            # Fallback to input()
+            response = input("Accept changes? (y/n): ")
+            return response.lower() in ['y', 'yes']
+    
+    def _render_simple_diff(self, original: str, proposed: str, language: str) -> Table:
+        """Render simple side-by-side diff"""
+        from rich.columns import Columns
+        
+        table = Table(show_header=True, header_style="bold", box=None)
+        table.add_column("Original", style="red", width=60)
+        table.add_column("Proposed", style="green", width=60)
+        
+        old_lines = original.splitlines()
+        new_lines = proposed.splitlines()
+        
+        max_lines = max(len(old_lines), len(new_lines))
+        
+        for i in range(min(10, max_lines)):  # Show first 10 lines
+            old_line = old_lines[i] if i < len(old_lines) else ""
+            new_line = new_lines[i] if i < len(new_lines) else ""
+            
+            # Truncate long lines
+            if len(old_line) > 58:
+                old_line = old_line[:55] + "..."
+            if len(new_line) > 58:
+                new_line = new_line[:55] + "..."
+            
+            table.add_row(old_line or "[dim](empty)[/dim]", new_line or "[dim](empty)[/dim]")
+        
+        if max_lines > 10:
+            table.add_row(
+                f"[dim]... ({len(old_lines) - 10} more lines)[/dim]",
+                f"[dim]... ({len(new_lines) - 10} more lines)[/dim]"
+            )
+        
+        return table
+    
+    def _calculate_diff_stats(self, original: str, proposed: str) -> Dict[str, int]:
+        """Calculate diff statistics"""
+        old_lines = set(original.splitlines())
+        new_lines = set(proposed.splitlines())
+        
+        added = len(new_lines - old_lines)
+        removed = len(old_lines - new_lines)
+        modified = len(old_lines & new_lines)
+        
+        return {
+            "added": added,
+            "removed": removed,
+            "modified": 0  # Simplified, would need line-by-line comparison
+        }
+
+
 if __name__ == "__main__":
     # Demo
     print("🔍 Real-Time Edit Preview System")
