@@ -235,6 +235,18 @@ class LLMClient:
                 logger.info("Nebius provider initialized")
             except Exception as e:
                 logger.warning(f"Nebius init failed: {e}")
+        
+        # Gemini provider
+        self.gemini_client = None
+        gemini_key = os.getenv("GEMINI_API_KEY")
+        if gemini_key:
+            try:
+                from .providers.gemini import GeminiProvider
+                self.gemini_client = GeminiProvider(api_key=gemini_key)
+                logger.info("Gemini provider initialized")
+            except Exception as e:
+                logger.warning(f"Gemini init failed: {e}")
+        
         self.ollama_client = None
         if config.ollama_enabled:
             try:
@@ -243,8 +255,8 @@ class LLMClient:
             except ImportError:
                 logger.warning("Ollama not installed")
         
-        # Provider priority for failover
-        self.provider_priority = ["nebius", "hf", "ollama"]
+        # Provider priority for failover (Gemini first - most powerful)
+        self.provider_priority = ["gemini", "nebius", "hf", "ollama"]
         self.default_provider = "auto"
     
     def _calculate_backoff(self, attempt: int) -> float:

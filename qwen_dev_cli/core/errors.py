@@ -522,27 +522,21 @@ class LLMError(QwenError):
         super().__init__(message, context, recoverable=True, cause=cause)
 
 
-class LLMValidationError(LLMError):
+class LLMValidationError(QwenError):
     """LLM backend not available."""
     
     def __init__(self, message: str):
-        super().__init__(
-            message,
-            provider=None,
-            model=None,
+        context = ErrorContext(
+            category=ErrorCategory.NETWORK,
+            metadata={},
+            suggestions=(
+                "Configure at least one LLM backend",
+                "Set HF_TOKEN, GEMINI_API_KEY, or NEBIUS_API_KEY",
+                "Check .env file configuration",
+                "See documentation for setup instructions",
+            ),
         )
-        # Override suggestions
-        if self.context:
-            self.context = ErrorContext(
-                category=self.context.category,
-                metadata=self.context.metadata,
-                suggestions=(
-                    "Configure at least one LLM backend",
-                    "Set HF_TOKEN, GEMINI_API_KEY, or NEBIUS_API_KEY",
-                    "Check .env file configuration",
-                    "See documentation for setup instructions",
-                ),
-            )
+        super().__init__(message, context=context, recoverable=True)
 
 
 # ============================================================================

@@ -85,8 +85,9 @@ class PreviewMixin:
             self.console.print("[yellow]⚠️  No changes detected[/yellow]")
             return Confirm.ask("Proceed anyway?", default=False)
         
-        # Render diff
-        self.diff_viewer.render_diff(
+        # Render diff (create viewer on demand)
+        diff_viewer = DiffViewer()
+        diff_viewer.render_diff(
             old_content=old_content,
             new_content=new_content,
             old_label=f"{path} (current)",
