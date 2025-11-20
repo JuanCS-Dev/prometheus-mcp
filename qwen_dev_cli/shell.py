@@ -195,7 +195,12 @@ class InteractiveShell:
         self.palette = create_default_palette()
         self._register_palette_commands()
         
-        # Token Tracking (Integration Sprint Week 1: Day 1 - Task 1.2)
+        # Token Tracking (Integration Sprint Week 1: Day 1 - Task 1.2 - ACTIVATED)
+        self.token_tracker = TokenTracker(
+            budget=1000000,  # 1M tokens budget
+            cost_per_1k=0.002  # Gemini Pro pricing ($0.002 per 1k tokens)
+        )
+        
         from .tui.components.context_awareness import ContextAwarenessEngine
         self.context_engine = ContextAwarenessEngine(
             max_context_tokens=100_000,  # 100k token window
