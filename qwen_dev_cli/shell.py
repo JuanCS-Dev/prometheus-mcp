@@ -88,6 +88,9 @@ from .tui.components.palette import (
 # Phase 5: Animations (Integration Sprint Week 1: Day 3)
 from .tui.animations import Animator, AnimationConfig, StateTransition
 
+# Phase 6: Dashboard (Integration Sprint Week 1: Day 3)
+from .tui.components.dashboard import Dashboard, Operation, OperationStatus
+
 
 class SessionContext:
     """Persistent context across shell session."""
@@ -199,6 +202,9 @@ class InteractiveShell:
         # Animations (Integration Sprint Week 1: Day 3 - Task 1.5)
         self.animator = Animator(AnimationConfig(duration=0.3, easing="ease-out"))
         self.state_transition = StateTransition("idle")
+        
+        # Dashboard (Integration Sprint Week 1: Day 3 - Task 1.6)
+        self.dashboard = Dashboard(console=self.console, max_history=5)
         
         # Legacy session (fallback)
         self.session = PromptSession(
@@ -1384,8 +1390,13 @@ Tool calls: {len(self.context.tool_calls)}
         )
         
         # Step 1/3: Analyze request (Cursor: multi-step breakdown)
+        self.state_transition.transition_to("thinking")
         self.workflow_viz.add_step("analyze", "Analyzing request", StepStatus.IN_PROGRESS)
-        self.console.print("[cyan][THINKING][/cyan] Step 1/3: Analyzing request...")
+        
+        # Animated status message (Task 1.5)
+        from rich.text import Text
+        text = Text("[THINKING] Step 1/3: Analyzing request...", style="cyan")
+        self.console.print(text)
         start_time = time.time()
         
         # Get LLM suggestion
@@ -1460,9 +1471,13 @@ Tool calls: {len(self.context.tool_calls)}
                     return
         
         # [EXECUTING] Run command
+        self.state_transition.transition_to("executing")
         self.workflow_viz.update_step_status("safety", StepStatus.COMPLETED)
         self.workflow_viz.add_step("execute", "Executing command", StepStatus.IN_PROGRESS)
-        self.console.print("[cyan][EXECUTING][/cyan] Running command...")
+        
+        # Animated status message (Task 1.5)
+        text = Text("[EXECUTING] Running command...", style="cyan")
+        self.console.print(text)
         self.console.print()
         
         try:
@@ -1470,8 +1485,12 @@ Tool calls: {len(self.context.tool_calls)}
             
             # Show result
             if result.get('success'):
+                self.state_transition.transition_to("success")
                 self.workflow_viz.update_step_status("execute", StepStatus.COMPLETED)
-                self.console.print("[green]✓ Success[/green]")
+                
+                # Animated success message (Task 1.5)
+                text = Text("✓ Success", style="green bold")
+                self.console.print(text)
                 if result.get('output'):
                     self.console.print(result['output'])
                 
@@ -1480,8 +1499,12 @@ Tool calls: {len(self.context.tool_calls)}
                 self.session_state.add_message("assistant", response)
                 self.session_state.increment_tool_calls()
             else:
+                self.state_transition.transition_to("error")
                 self.workflow_viz.update_step_status("execute", StepStatus.FAILED)
-                self.console.print("[red]❌ Failed[/red]")
+                
+                # Animated error message (Task 1.5)
+                text = Text("❌ Failed", style="red bold")
+                self.console.print(text)
                 
                 # P1: Intelligent error parsing
                 if result.get('error'):
