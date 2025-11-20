@@ -117,7 +117,7 @@ class RichContextBuilder:
                             'size': stat.st_size,
                             'modified': stat.st_mtime
                         })
-                    except:
+                    except Exception:
                         continue
             
             files.sort(key=lambda x: x['modified'], reverse=True)

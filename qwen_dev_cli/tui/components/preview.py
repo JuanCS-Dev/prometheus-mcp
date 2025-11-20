@@ -614,7 +614,7 @@ class EditPreview:
         try:
             from prompt_toolkit import prompt
             response = await prompt("Choice (a/r/p/u/h/q): ", async_=True)
-        except:
+        except Exception:
             # Fallback to input()
             response = input("Choice (a/r/p/u/h/q): ")
         
@@ -701,7 +701,7 @@ class EditPreview:
             try:
                 from prompt_toolkit import prompt
                 choice = await prompt(f"Apply hunk {idx + 1}? (y/n): ", async_=True)
-            except:
+            except Exception:
                 choice = input(f"Apply hunk {idx + 1}? (y/n): ")
             
             if choice.lower().strip() in ['y', 'yes']:

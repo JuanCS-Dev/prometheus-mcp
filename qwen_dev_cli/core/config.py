@@ -9,14 +9,22 @@ from dataclasses import dataclass
 # Load .env file if it exists
 def load_env():
     """Load environment variables from .env file."""
-    env_file = Path(__file__).parent.parent.parent / ".env"
-    if env_file.exists():
-        with open(env_file) as f:
-            for line in f:
-                line = line.strip()
-                if line and not line.startswith('#') and '=' in line:
-                    key, value = line.split('=', 1)
-                    os.environ[key.strip()] = value.strip()
+    try:
+        from dotenv import load_dotenv
+        env_file = Path(__file__).parent.parent.parent / ".env"
+        if env_file.exists():
+            load_dotenv(env_file)
+            print(f"✓ Loaded .env from {env_file}")
+    except ImportError:
+        # Fallback to manual parsing if python-dotenv not installed
+        env_file = Path(__file__).parent.parent.parent / ".env"
+        if env_file.exists():
+            with open(env_file) as f:
+                for line in f:
+                    line = line.strip()
+                    if line and not line.startswith('#') and '=' in line:
+                        key, value = line.split('=', 1)
+                        os.environ[key.strip()] = value.strip()
 
 
 # Load env before defining config

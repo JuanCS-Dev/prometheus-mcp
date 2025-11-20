@@ -25,3 +25,4 @@ pytest-asyncio
 openai>=1.0.0
 prompt_toolkit>=3.0.0
 textual>=6.0.0
+psutil>=5.9.0

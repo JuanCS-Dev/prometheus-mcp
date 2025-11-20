@@ -128,7 +128,7 @@ class ContextBuilder:
                             'size': stat.st_size,
                             'modified': stat.st_mtime
                         })
-                    except:
+                    except Exception:
                         continue
             
             # Sort by modification time

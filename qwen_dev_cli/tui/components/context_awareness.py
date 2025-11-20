@@ -601,7 +601,7 @@ class ContextAwarenessEngine:
                 content = f.read()
                 # Rough estimate: 1 token ≈ 4 chars
                 return len(content) // 4
-        except:
+        except Exception:
             return 0
     
     def _extract_dependencies(self, file_path: str) -> Set[str]:
@@ -618,7 +618,7 @@ class ContextAwarenessEngine:
                 for match in re.finditer(r'import\s+(\S+)', content):
                     deps.add(match.group(1).replace('.', '/') + '.py')
                     
-        except:
+        except Exception:
             pass
             
         return deps
@@ -632,7 +632,7 @@ class ContextAwarenessEngine:
                 # Extract function/class names
                 for match in re.finditer(r'(?:def|class)\s+(\w+)', content):
                     keywords.add(match.group(1).lower())
-        except:
+        except Exception:
             pass
             
         return keywords
