@@ -236,6 +236,122 @@ class KeyboardNavigation:
         return descriptions.get(action, action.replace("_", " ").title())
 
 
+class AccessibilityManager:
+    """
+    Comprehensive accessibility management for Phase 5.2
+    Adds missing methods for test compatibility
+    """
+    
+    def __init__(self):
+        self.high_contrast = self._detect_high_contrast()
+        self.reduced_motion = self._detect_reduced_motion()
+        
+    def _detect_high_contrast(self) -> bool:
+        """Detect high contrast mode"""
+        import os
+        return os.environ.get('HIGH_CONTRAST', '0') == '1'
+    
+    def _detect_reduced_motion(self) -> bool:
+        """Detect reduced motion preference"""
+        import os
+        return os.environ.get('REDUCE_MOTION', '0') == '1'
+    
+    def calculate_contrast_ratio(self, fg: str, bg: str) -> float:
+        """Calculate contrast ratio (returns float for compatibility)"""
+        result = calculate_contrast_ratio(fg, bg)
+        return result.ratio
+    
+    def is_wcag_aa_compliant(self, fg: str, bg: str, large_text: bool = False) -> bool:
+        """Check WCAG AA compliance"""
+        result = calculate_contrast_ratio(fg, bg)
+        return result.aa_large if large_text else result.aa_normal
+    
+    def get_aria_label(self, element_type: str, **kwargs) -> str:
+        """Generate ARIA label"""
+        if element_type == "progress":
+            value = kwargs.get('value', 0)
+            max_val = kwargs.get('max', 100)
+            return f"Progress: {value} of {max_val}"
+        return element_type
+    
+    def get_alt_text(self, visual_element: str) -> str:
+        """Get alt text for visual element"""
+        alt_texts = {
+            "spinner": "Loading in progress",
+            "checkmark": "Success",
+            "success": "Operation completed successfully",
+            "error": "Error occurred",
+            "warning": "Warning",
+            "info": "Information",
+        }
+        return alt_texts.get(visual_element, ScreenReaderText.describe_status(visual_element))
+    
+    def get_focus_style(self) -> dict:
+        """Get focus indicator style"""
+        return {
+            "border": "double",
+            "border_color": "cyan",
+            "visibility": "visible"
+        }
+    
+    def get_min_interactive_width(self) -> int:
+        """Minimum width for interactive elements"""
+        return 10
+    
+    def should_announce_progress(self, old_value: int, new_value: int) -> bool:
+        """Check if progress should be announced"""
+        return (new_value // 10) > (old_value // 10)
+    
+    def get_announcement(self, event_type: str, **kwargs) -> str:
+        """Generate announcement for screen reader"""
+        if event_type == "status_change":
+            return f"Status changed from {kwargs.get('old')} to {kwargs.get('new')}"
+        elif event_type == "error":
+            return f"Error: {kwargs.get('message', 'Unknown error')}"
+        return f"Event: {event_type}"
+    
+    def get_announcement_priority(self, event_type: str) -> str:
+        """Get announcement priority"""
+        if event_type in ["error", "critical"]:
+            return "assertive"
+        return "polite"
+    
+    def is_high_contrast_mode(self) -> bool:
+        """Check if high contrast mode is active"""
+        return self.high_contrast
+    
+    def prefers_reduced_motion(self) -> bool:
+        """Check if reduced motion is preferred"""
+        return self.reduced_motion
+    
+    def should_animate(self) -> bool:
+        """Check if animations should be shown"""
+        return not self.reduced_motion
+    
+    def get_color_scheme(self, high_contrast: bool = None) -> dict:
+        """Get color scheme"""
+        if high_contrast is None:
+            high_contrast = self.high_contrast
+        
+        if high_contrast:
+            return {
+                "background": "#000000",
+                "foreground": "#FFFFFF",
+                "accent": "#FFFF00",
+                "error": "#FF0000",
+                "warning": "#FFFF00",
+                "success": "#00FF00",
+            }
+        return {
+            "background": "#1E1E1E",
+            "foreground": "#D4D4D4",
+            "accent": "#007ACC",
+            "error": "#F48771",
+            "warning": "#DDB65F",
+            "success": "#89D185",
+        }
+
+
 def generate_accessibility_report() -> str:
     """Generate full accessibility compliance report"""
     from rich.console import Console
