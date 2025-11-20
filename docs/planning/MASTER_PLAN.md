@@ -1891,13 +1891,78 @@ Breakdown:
 - [ ] Command history with search
 - Tests: 25+ tests
 
-**Phase 2: Visual Excellence (3h)**
-- [ ] Visual diff viewer (side-by-side)
-- [ ] Progress indicators (streaming)
-- [ ] Syntax highlighting improvements
-- [ ] Better error visualization
-- [ ] Status bar enhancements
-- Tests: 20+ tests
+**Phase 2: Visual Excellence (3h)** ✅ COMPLETED
+- [x] Visual diff viewer (side-by-side)
+- [x] Progress indicators (streaming)
+- [x] Syntax highlighting improvements
+- [x] Better error visualization
+- [x] Status bar enhancements
+- Tests: 20+ tests ✅
+
+**Phase 3: Visual Workflow System (2h)** 🔄 IN PROGRESS
+
+**Research Findings (Nov 2025 - Competitors):**
+
+1. **Cursor AI Composer Mode:**
+   - Multi-step visual workflow with approval gates
+   - Real-time dependency visualization
+   - Inline diffs with accept/reject buttons
+   - Streaming token-by-token feedback
+
+2. **Windsurf Cascade + Flows:**
+   - Tree-view workflow representation (ASCII art style)
+   - Step-by-step approval mode
+   - Parallel execution visualization
+   - Memory of workflow context across steps
+
+3. **Claude Sonnet 4.5 Extended Thinking:**
+   - Thinking process visualization (<thinking> tags)
+   - Reasoning step breakdown
+   - Confidence indicators per step
+
+4. **GitHub Copilot Workspace:**
+   - Task decomposition viewer
+   - File change preview before execution
+   - Multi-file coordination display
+   - Progress tracking per task
+
+**Synthesis (Best Features to Implement):**
+
+**3.1 Workflow Visualizer (1h)** 🔄 STARTING
+- [ ] ASCII tree workflow representation (Windsurf-style)
+- [ ] Real-time step status indicators (Cursor-style)
+- [ ] Dependency graph rendering with arrows
+- [ ] Parallel execution lanes visualization
+- [ ] Step approval gates (optional interactive mode)
+
+**3.2 Execution Timeline (45min)**
+- [ ] Time-based progress bars (per-step)
+- [ ] Duration tracking with performance metrics
+- [ ] Bottleneck detection (slowest steps highlighted)
+- [ ] Token-by-token streaming visualization (Cursor-style)
+- [ ] Thinking process display (Claude-style <thinking> tags)
+
+**3.3 Integration with Workflow Engine (15min)**
+- [ ] Hook into existing workflow.py
+- [ ] Live updates during execution
+- [ ] Error state visualization (red indicators)
+- [ ] Success/failure icons per step
+- [ ] Rollback visualization (if triggered)
+
+**Target UX:**
+```
+╭─ Workflow: Multi-file Refactor ────────────────────────╮
+│ ┌─ Step 1: Analyze dependencies ✅ (0.8s)             │
+│ ├─ Step 2: Update imports       🔄 (in progress...)   │
+│ │  ├─ file1.py ✅ (0.3s)                              │
+│ │  ├─ file2.py 🔄 (0.2s elapsed...)                   │
+│ │  └─ file3.py ⏳ (queued)                            │
+│ └─ Step 3: Run tests            ⏳ (pending Step 2)   │
+│                                                        │
+│ Progress: ████████░░░░░░░░ 45% (2/3 files)           │
+│ Elapsed: 1.3s | Est. remaining: 1.5s                 │
+╰────────────────────────────────────────────────────────╯
+```
 
 **Phase 3: Power User Features (2h)**
 - [ ] Theme system (light/dark/custom)
