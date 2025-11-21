@@ -29,16 +29,20 @@ body {
 .gr-block,
 .gr-box,
 .gr-form,
-.gr-panel {
+.gr-panel,
+.gr-file,
+.gr-dataframe {
     background: #FFFFFF !important;
     border: 1px solid #E2E8F0 !important;
-    border-radius: 12px !important;
+    border-radius: 8px !important;
     box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05) !important;
-    transition: all 200ms cubic-bezier(0.4, 0.0, 0.2, 1) !important;
+    transition: all 150ms cubic-bezier(0.4, 0.0, 0.2, 1) !important;
 }
 
-.block:hover {
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1) !important;
+.block:hover,
+.gr-file:hover,
+.gr-dataframe:hover {
+    box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.08) !important;
     border-color: #CBD5E0 !important;
 }
 
@@ -56,6 +60,33 @@ body {
 .gr-row,
 .gr-column {
     gap: 16px !important;
+}
+
+/* Sidebar refinements */
+.sidebar .gr-file,
+.sidebar .gr-dataframe {
+    border-radius: 8px !important;
+}
+
+/* Remove dark backgrounds */
+.gr-file-content,
+.gr-dataframe-content {
+    background: #FFFFFF !important;
+    color: #1A202C !important;
+}
+
+/* Links hover effect */
+a,
+.gr-link {
+    color: #4A5568 !important;
+    text-decoration: none !important;
+    transition: all 150ms !important;
+}
+
+a:hover,
+.gr-link:hover {
+    color: #3B82F6 !important;
+    text-decoration: underline !important;
 }
 
 /* ===== LAYOUT ===== */
@@ -102,6 +133,36 @@ code {
     border-radius: 8px !important;
     font-family: 'JetBrains Mono', 'Fira Code', monospace !important;
     font-size: 0.875rem !important;
+    color: #1A202C !important;
+}
+
+/* Force light backgrounds everywhere */
+.gr-input,
+.gr-textbox,
+textarea,
+input,
+.gr-dropdown,
+.gr-file-preview {
+    background: #FFFFFF !important;
+    color: #1A202C !important;
+}
+
+/* Table styling */
+table,
+thead,
+tbody,
+tr,
+th,
+td {
+    background: #FFFFFF !important;
+    color: #1A202C !important;
+    border-color: #E2E8F0 !important;
+}
+
+th {
+    background: #F5F7FA !important;
+    font-weight: 600 !important;
+    color: #4A5568 !important;
 }
 
 /* ===== STATUS BAR ===== */

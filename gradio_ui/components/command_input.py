@@ -33,52 +33,52 @@ def create_command_interface() -> Tuple[gr.Textbox, gr.HTML]:
             <div style="display: flex; flex-wrap: wrap; gap: 8px;">
                 <span style="
                     display: inline-block;
-                    background: #EFF6FF;
-                    border: 1px solid #DBEAFE;
-                    color: #1E40AF;
+                    background: #F5F7FA;
+                    border: 1px solid #E2E8F0;
+                    color: #4A5568;
                     padding: 6px 12px;
                     border-radius: 6px;
                     cursor: pointer;
                     transition: all 150ms;
                     font-size: 0.875rem;
                     font-weight: 500;
-                ">Read README.md</span>
+                " onmouseover="this.style.background='#FFFFFF'; this.style.borderColor='#CBD5E0'; this.style.boxShadow='0 2px 4px rgba(0,0,0,0.08)'" onmouseout="this.style.background='#F5F7FA'; this.style.borderColor='#E2E8F0'; this.style.boxShadow='none'">Read README.md</span>
                 <span style="
                     display: inline-block;
-                    background: #EFF6FF;
-                    border: 1px solid #DBEAFE;
-                    color: #1E40AF;
+                    background: #F5F7FA;
+                    border: 1px solid #E2E8F0;
+                    color: #4A5568;
                     padding: 6px 12px;
                     border-radius: 6px;
                     cursor: pointer;
                     transition: all 150ms;
                     font-size: 0.875rem;
                     font-weight: 500;
-                ">Search imports</span>
+                " onmouseover="this.style.background='#FFFFFF'; this.style.borderColor='#CBD5E0'; this.style.boxShadow='0 2px 4px rgba(0,0,0,0.08)'" onmouseout="this.style.background='#F5F7FA'; this.style.borderColor='#E2E8F0'; this.style.boxShadow='none'">Search imports</span>
                 <span style="
                     display: inline-block;
-                    background: #EFF6FF;
-                    border: 1px solid #DBEAFE;
-                    color: #1E40AF;
+                    background: #F5F7FA;
+                    border: 1px solid #E2E8F0;
+                    color: #4A5568;
                     padding: 6px 12px;
                     border-radius: 6px;
                     cursor: pointer;
                     transition: all 150ms;
                     font-size: 0.875rem;
                     font-weight: 500;
-                ">Fix TODOs</span>
+                " onmouseover="this.style.background='#FFFFFF'; this.style.borderColor='#CBD5E0'; this.style.boxShadow='0 2px 4px rgba(0,0,0,0.08)'" onmouseout="this.style.background='#F5F7FA'; this.style.borderColor='#E2E8F0'; this.style.boxShadow='none'">Fix TODOs</span>
                 <span style="
                     display: inline-block;
-                    background: #EFF6FF;
-                    border: 1px solid #DBEAFE;
-                    color: #1E40AF;
+                    background: #F5F7FA;
+                    border: 1px solid #E2E8F0;
+                    color: #4A5568;
                     padding: 6px 12px;
                     border-radius: 6px;
                     cursor: pointer;
                     transition: all 150ms;
                     font-size: 0.875rem;
                     font-weight: 500;
-                ">LSP diagnostics</span>
+                " onmouseover="this.style.background='#FFFFFF'; this.style.borderColor='#CBD5E0'; this.style.boxShadow='0 2px 4px rgba(0,0,0,0.08)'" onmouseout="this.style.background='#F5F7FA'; this.style.borderColor='#E2E8F0'; this.style.boxShadow='none'">LSP diagnostics</span>
             </div>
         </div>
         """

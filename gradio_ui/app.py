@@ -49,18 +49,43 @@ class QwenGradioUI:
             with gr.Row():
                 # Sidebar (Context & History)
                 with gr.Column(scale=1, elem_classes=["sidebar"]):
-                    gr.Markdown("### 📁 Files")
+                    gr.HTML("""
+                        <div style="
+                            display: flex;
+                            align-items: center;
+                            gap: 8px;
+                            margin-bottom: 12px;
+                            color: #4A5568;
+                            font-weight: 500;
+                        ">
+                            <span style="font-size: 1.25rem;">📁</span>
+                            <span>Project Files</span>
+                        </div>
+                    """)
                     file_browser = gr.File(
-                        label="Project Files",
+                        label="",
                         file_count="multiple",
-                        elem_classes=["glass-card"]
+                        show_label=False
                     )
                     
-                    gr.Markdown("### 🕒 History")
+                    gr.HTML("""
+                        <div style="
+                            display: flex;
+                            align-items: center;
+                            gap: 8px;
+                            margin-top: 24px;
+                            margin-bottom: 12px;
+                            color: #4A5568;
+                            font-weight: 500;
+                        ">
+                            <span style="font-size: 1.25rem;">🕒</span>
+                            <span>History</span>
+                        </div>
+                    """)
                     history = gr.Dataframe(
                         headers=["Time", "Command"],
                         interactive=False,
-                        elem_classes=["glass-card"]
+                        show_label=False
                     )
                 
                 # Main Content Area
