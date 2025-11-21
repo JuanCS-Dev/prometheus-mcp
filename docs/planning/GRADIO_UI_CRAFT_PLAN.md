@@ -127,53 +127,88 @@ elem_classes=["glass", "animated"]
 
 ## 🏗️ ARCHITECTURE
 
-### **MVP Pattern (Model-View-Presenter)**
+### **Streaming Architecture (Real-time Shell Visualization)**
 
 ```
-┌─────────────────────────────────────┐
-│           VIEW LAYER                │
-│  (Gradio Components + Custom UI)   │
-│  - Pure presentation                │
-│  - No business logic                │
-│  - Event handlers only              │
-└─────────────────────────────────────┘
-           ↓          ↑
-           Events     Updates
-           ↓          ↑
-┌─────────────────────────────────────┐
-│        PRESENTER LAYER              │
-│  - Orchestration                    │
-│  - State management                 │
-│  - Real-time updates                │
-│  - MCP coordination                 │
-└─────────────────────────────────────┘
-           ↓          ↑
-           Calls      Results
-           ↓          ↑
-┌─────────────────────────────────────┐
-│         MODEL LAYER                 │
-│  (qwen_dev_cli.shell)              │
-│  - LSP Client                       │
-│  - Refactoring Engine               │
-│  - Context Manager                  │
-│  - Indexer                          │
-└─────────────────────────────────────┘
+┌─────────────────────────────────────────────────┐
+│              GRADIO WEB UI                      │
+│  - Chat interface (gr.Chatbot)                  │
+│  - Code display (gr.Code)                       │
+│  - File browser (gr.FileExplorer)               │
+│  - Status panel (gr.StatusTracker)              │
+└─────────────────────────────────────────────────┘
+           ↓ HTTP/WebSocket ↑ SSE Stream
+┌─────────────────────────────────────────────────┐
+│          BRIDGE LAYER (FastAPI)                 │
+│  - /api/execute (POST) → async generator        │
+│  - /api/status (GET) → session state            │
+│  - /api/files (GET) → project context           │
+│  - WebSocket for real-time updates              │
+└─────────────────────────────────────────────────┘
+           ↓ Direct Import ↑ Callbacks
+┌─────────────────────────────────────────────────┐
+│         CLI CORE (qwen_dev_cli)                 │
+│  - Shell (execution engine)                     │
+│  - LSP Client (multi-language)                  │
+│  - Refactoring Engine                           │
+│  - Context Manager                              │
+│  - Indexer (semantic search)                    │
+└─────────────────────────────────────────────────┘
+           ↓ Tool Calls ↑ Results
+┌─────────────────────────────────────────────────┐
+│           TOOLS & MCP SERVERS                   │
+│  - File operations (read/write/edit)            │
+│  - Shell commands (bash/git)                    │
+│  - LSP operations (hover/definition)            │
+│  - Refactoring (rename/extract)                 │
+└─────────────────────────────────────────────────┘
 ```
 
-### **Real-time Streaming**
+### **Real-time Streaming Implementation**
 
 ```python
-# Server-Sent Events (SSE)
-async def stream_output():
-    async for chunk in llm.stream():
-        yield chunk  # Gradio handles SSE
+# Gradio streaming pattern with CLI integration
+async def execute_command(message: str):
+    """Stream command execution with real-time updates."""
+    
+    # Phase 1: Initialize
+    yield {
+        "status": "thinking",
+        "message": "🤔 Analyzing request...",
+        "progress": 0.1
+    }
+    
+    # Phase 2: Execute via CLI
+    async for event in shell.execute_streaming(message):
+        if event.type == "tool_call":
+            yield {
+                "status": "executing",
+                "message": f"🔧 {event.tool}: {event.args}",
+                "progress": event.progress,
+                "tool_output": event.output  # Real-time shell output
+            }
+        elif event.type == "thinking":
+            yield {
+                "status": "thinking",
+                "message": f"💭 {event.thought}",
+                "progress": event.progress
+            }
+        elif event.type == "result":
+            yield {
+                "status": "complete",
+                "message": "✓ Complete",
+                "result": event.data,
+                "progress": 1.0
+            }
 ```
 
-**Benefits:**
-- Live code suggestions
-- Progressive results
-- Streaming chat
-- Real-time status
+### **Benefits:**
+- ✅ **Real-time visualization** of shell commands executing
+- ✅ **Streaming output** (like watching terminal)
+- ✅ **Progress tracking** per tool call
+- ✅ **Context awareness** (files, LSP, indexer)
+- ✅ **Interruptible** (cancel mid-execution)
+- ✅ **Session persistence** (history, state)
 
 ---
 
@@ -554,45 +589,211 @@ def stream_code_analysis(file_path):
 
 ---
 
-## 🚀 IMPLEMENTATION ROADMAP
+## 🚀 IMPLEMENTATION ROADMAP (REVISED)
 
-### **Day 1-2: Foundation (16h)**
-- ✅ Gradio setup + theme
-- ✅ Glassmorphism base CSS
-- ✅ MVP architecture
-- ✅ Core components layout
+### **Day 1-2: Foundation + Streaming (16h)** - Nov 21-22
+**Status:** 🔄 IN PROGRESS
 
-### **Day 3-4: Animation (16h)**
-- ✅ Micro-interactions library
-- ✅ Transition system
-- ✅ Loading states
-- ✅ Success/error feedback
+**Phase 1: Architecture (6h)**
+- [ ] FastAPI bridge server (`gradio_ui/bridge.py`)
+  - `/api/execute` endpoint (POST, streaming)
+  - `/api/status` endpoint (GET, session state)
+  - `/api/files` endpoint (GET, project context)
+  - WebSocket for real-time updates
+- [ ] CLI integration layer (`gradio_ui/cli_adapter.py`)
+  - Direct import from `qwen_dev_cli.shell`
+  - Streaming callbacks for tool execution
+  - Session management (history, state)
+- [ ] Testing infrastructure
+  - FastAPI test client
+  - Async streaming tests
 
-### **Day 5-6: Integration (16h)**
-- ✅ Connect to CLI backend
-- ✅ Real-time streaming
-- ✅ MCP server discovery
-- ✅ Context management
+**Phase 2: Gradio UI (6h)**
+- [ ] Base layout (Gradio 5 Blocks)
+  - Chat interface (`gr.Chatbot`)
+  - Command input (`gr.Textbox` with submit)
+  - Code display (`gr.Code` with syntax highlighting)
+  - File browser (`gr.FileExplorer`)
+  - Status panel (`gr.StatusTracker`)
+- [ ] Theme setup
+  - Gradio `Glass` theme base
+  - Custom CSS override (neutral palette)
+  - Typography injection (Inter font)
+- [ ] Basic streaming
+  - Connect to FastAPI `/api/execute`
+  - Display streamed events in chat
+  - Progress indicators
 
-### **Day 7: Polish (8h)**
-- ✅ Fine-tune animations
-- ✅ Performance optimization
-- ✅ Accessibility (WCAG)
-- ✅ Mobile responsiveness
+**Phase 3: Real-time Shell Visualization (4h)**
+- [ ] Tool execution display
+  - Show command being executed
+  - Stream stdout/stderr in real-time
+  - Syntax highlight output
+- [ ] Progress tracking
+  - Per-tool progress bars
+  - Overall session progress
+  - Time elapsed / estimated
+- [ ] Interruption handling
+  - Cancel button
+  - Graceful shutdown
+  - Error recovery
 
-### **Day 8: Testing (8h)**
-- ✅ User testing
-- ✅ Bug fixes
-- ✅ Performance profiling
-- ✅ Cross-browser testing
+**Deliverables:**
+- ✅ Streaming architecture working
+- ✅ Real-time shell visualization
+- ✅ Clean, minimal UI (no blue, no Bootstrap)
+- ✅ 10+ streaming tests passing
 
-### **Day 9: Deploy (8h)**
-- ✅ Documentation
-- ✅ Hugging Face Spaces
+---
+
+### **Day 3-4: Emotional Design (16h)** - Nov 23-24
+**Status:** 📝 PLANNED
+
+**Phase 1: Glassmorphism (6h)**
+- [ ] Custom CSS (`gradio_ui/assets/glass.css`)
+  - Frosted glass cards
+  - Backdrop blur (16px)
+  - Subtle shadows
+  - 1px borders (rgba)
+- [ ] Neutral palette
+  - Remove all blues
+  - Grays + subtle green accent
+  - Dark mode native
+  - Light mode optional
+- [ ] Typography
+  - Inter font loading
+  - Font scales (heading, body, code)
+  - Line heights optimized
+
+**Phase 2: Micro-animations (6h)**
+- [ ] Hover states
+  - Button scale (1.02)
+  - Card lift + shadow
+  - Link underline slide
+- [ ] Loading states
+  - Pulse animation
+  - Shimmer effect
+  - Spinner (smooth rotate)
+- [ ] Success/Error feedback
+  - Checkmark bounce
+  - Shake animation
+  - Glow on focus
+
+**Phase 3: Component Polish (4h)**
+- [ ] Chat bubbles
+  - User vs Assistant styling
+  - Timestamps
+  - Copy button
+- [ ] Code display
+  - Line numbers
+  - Syntax highlighting
+  - Copy/Download actions
+- [ ] File browser
+  - Tree view with icons
+  - Hover previews
+  - Context menu
+
+**Deliverables:**
+- ✅ Apple-level polish
+- ✅ 60fps animations
+- ✅ Emotional micro-moments
+- ✅ Zero blue color
+
+---
+
+### **Day 5-6: Integration (16h)** - Nov 25-26
+**Status:** 📝 PLANNED
+
+**Phase 1: CLI Feature Parity (8h)**
+- [ ] LSP integration
+  - Hover tooltips
+  - Go-to-definition
+  - Find references
+- [ ] Refactoring UI
+  - Rename symbol dialog
+  - Extract function wizard
+  - Preview changes
+- [ ] Context panel
+  - Active files list
+  - Token usage (real-time)
+  - Cost estimation
+- [ ] History replay
+  - Session timeline
+  - Replay commands
+  - Undo/Redo
+
+**Phase 2: Performance (4h)**
+- [ ] Optimize rendering
+  - Virtual scrolling
+  - Lazy loading
+  - Memoization
+- [ ] Network optimization
+  - Debounce inputs
+  - Batch requests
+  - Cache responses
+- [ ] Memory profiling
+  - Fix leaks
+  - Efficient state management
+
+**Phase 3: Accessibility (4h)**
+- [ ] WCAG AA compliance
+  - Color contrast (4.5:1)
+  - Focus indicators
+  - ARIA labels
+- [ ] Keyboard navigation
+  - Tab order
+  - Shortcuts (Cmd+K, Cmd+Enter)
+  - Focus trapping
+- [ ] Screen reader
+  - Semantic HTML
+  - Live regions
+  - Alt texts
+
+**Deliverables:**
+- ✅ 100% CLI feature parity
+- ✅ <2s load time
+- ✅ Accessibility grade A
+
+---
+
+### **Day 7-8: Testing & Deploy (16h)** - Nov 27-28
+**Status:** 📝 PLANNED
+
+**Phase 1: Testing (8h)**
+- [ ] User testing (5 users)
+- [ ] Bug fixes
+- [ ] Performance profiling
+- [ ] Cross-browser testing
+
+**Phase 2: Documentation (4h)**
+- [ ] User guide
+- [ ] API docs
+- [ ] Video demo (3 min)
+- [ ] Examples gallery
+
+**Phase 3: Deployment (4h)**
+- [ ] Hugging Face Spaces
+- [ ] Docker container
+- [ ] Environment setup
+- [ ] Security audit
+
+**Deliverables:**
+- ✅ Public demo live
+- ✅ Comprehensive docs
 - ✅ Video demo
-- ✅ Final touches
+- ✅ Hackathon ready
 
-**Total:** 72h over 9 days
+---
+
+### **Day 9: Buffer & Final Polish (8h)** - Nov 29-30
+**Status:** 📝 BUFFER
+
+- [ ] Feedback incorporation
+- [ ] Last-minute fixes
+- [ ] Presentation prep
+- [ ] Final QA
+
+**Total:** 72h over 9 days (Nov 21-30)
 
 ---
 

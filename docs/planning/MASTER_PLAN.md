@@ -644,25 +644,139 @@ Memory Usage: 120MB (Target: <150MB) ✅
 
 ---
 
-## 📊 WEEK 4 PLAN: FINAL POLISH & RELEASE (Nov 23-24)
+## 📊 WEEK 4-5 PLAN: GRADIO WEB UI (Nov 21-30)
 
-**Goal:** 72% → 80% parity (+8 points) → **PRODUCTION READY**
+**Goal:** 102/110 → 110/110 (+8 points) → **HACKATHON READY**
 
-### **Focus Areas:**
-1. **Dogfooding** (Use qwen-dev-cli to develop itself)
-2. **UX Polish** (Fix pain points discovered during dogfooding)
-3. **Documentation** (User guide, API docs, examples)
-4. **Release Preparation** (CHANGELOG, version bump, packaging)
+### **Day 4-5: Gradio Foundation (16h)**
+**Objective:** Build emotional, minimalist UI with Gradio 5
 
-**Target:** 80% parity = Grade B (Production Ready)
+**Tasks:**
+1. **Architecture Setup** (4h)
+   - FastAPI bridge layer
+   - Streaming architecture
+   - CLI integration via direct import
+   - Session management
+
+2. **Core Components** (6h)
+   - Chat interface (gr.Chatbot)
+   - Code display (gr.Code with syntax highlighting)
+   - File browser (gr.FileExplorer)
+   - Status tracker (real-time)
+
+3. **Glassmorphism Theme** (4h)
+   - Custom CSS (no Bootstrap, no ugly blues)
+   - Neutral palette (grays + subtle accents)
+   - Typography (Inter/SF Pro)
+   - Micro-animations (60fps)
+
+4. **Testing** (2h)
+   - Basic functionality
+   - Streaming validation
+   - Mobile responsiveness
+
+**Deliverables:**
+- Working web UI at `localhost:7860`
+- Real-time command streaming
+- Clean, Apple-like design
+- Session persistence
+
+**Parity Impact:** +4 points (102/110 → 106/110, 96%)
 
 ---
 
-**Last Updated:** 2025-11-21 11:08 UTC by Boris Cherny  
+### **Day 6-7: Integration & Polish (16h)**
+**Objective:** Connect all CLI features + emotional design
+
+**Tasks:**
+1. **Feature Integration** (8h)
+   - LSP visualization (hover, definitions)
+   - Refactoring UI (rename, extract)
+   - Context panel (active files, tokens)
+   - History replay
+
+2. **Emotional Design** (4h)
+   - Micro-interactions (hover, click, success)
+   - Loading states (pulse, shimmer)
+   - Error feedback (shake, glow)
+   - Success confirmations (checkmark bounce)
+
+3. **Performance** (2h)
+   - 60fps animations
+   - <2s load time
+   - Optimized rendering
+
+4. **Accessibility** (2h)
+   - WCAG AA compliance
+   - Keyboard navigation
+   - Screen reader support
+
+**Deliverables:**
+- Full CLI feature parity in web UI
+- Emotional, delightful interactions
+- Performance targets met
+- Accessibility grade A
+
+**Parity Impact:** +2 points (106/110 → 108/110, 98%)
+
+---
+
+### **Day 8-9: Deploy & Documentation (16h)**
+**Objective:** Release-ready with video demo
+
+**Tasks:**
+1. **Documentation** (6h)
+   - User guide (getting started)
+   - API documentation
+   - Video demo (3 min)
+   - Examples gallery
+
+2. **Deployment** (4h)
+   - Hugging Face Spaces
+   - Docker container
+   - Environment setup
+   - Security hardening
+
+3. **Final Polish** (4h)
+   - User testing feedback
+   - Bug fixes
+   - Performance profiling
+   - Final touches
+
+4. **Hackathon Prep** (2h)
+   - Presentation slides
+   - Demo script
+   - README polish
+   - Video editing
+
+**Deliverables:**
+- Public demo on Hugging Face
+- Comprehensive documentation
+- 3-min video demo
+- Hackathon-ready presentation
+
+**Parity Impact:** +2 points (108/110 → 110/110, 100%)
+
+---
+
+**Target:** 110/110 parity = Grade A+ (Hackathon Winner 🏆)
+
+**Timeline:**
+- Nov 21-22: Foundation + Theme (Day 4-5)
+- Nov 23-24: Integration + Polish (Day 6-7)
+- Nov 25-26: Deploy + Documentation (Day 8-9)
+- Nov 27-30: Buffer (testing, feedback, final touches)
+
+**Reference Plan:** [GRADIO_UI_CRAFT_PLAN.md](GRADIO_UI_CRAFT_PLAN.md)
+
+---
+
+**Last Updated:** 2025-11-21 13:19 UTC by Boris Cherny  
 **Status:** ✅ WEEK 4 DAY 3 COMPLETE - 93% parity achieved  
-**Current:** Week 4 Day 4 - Dogfooding + Polish Sprint  
-**Next Action:** Dogfooding + Performance + Documentation  
-**Next Review:** Week 4 Day 6 EOD (2025-11-26 18:00 UTC)
+**Current:** Week 4 Day 4-5 - Gradio UI Foundation (RESTART)  
+**Next Action:** Build streaming web UI with emotional design  
+**Deadline:** 9 days (Nov 30, 2025)  
+**Next Review:** Week 4 Day 6 EOD (2025-11-23 18:00 UTC)
 
 **Reports:**
 - [WEEK1_COMPLETE.md](../../WEEK1_COMPLETE.md)
