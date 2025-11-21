@@ -1,167 +1,151 @@
-#!/usr/bin/env python3
-"""
-QWEN-DEV-CLI Gradio UI - Emotional Design
-Main application entry point.
+"""Minimal Gradio UI for QWEN-DEV-CLI."""
 
-Philosophy: Craft over Code. Art over Engineering.
-"""
+import asyncio
 import gradio as gr
-from pathlib import Path
-from typing import Optional
-
-# Import our custom theme
-from themes.glass_theme import create_glass_theme
-from components.hero import create_hero_section
-from components.command_input import create_command_interface
-from components.output_display import create_output_display
-from components.status_bar import create_status_bar
-
-# Import backend integration
-from backend.cli_bridge import CLIBridge
+from typing import List, Dict, Tuple
+from .cli_adapter import CLIAdapter
 
 
-class QwenGradioUI:
-    """Main Gradio UI application with emotional design."""
+# Global adapter instance
+adapter = CLIAdapter()
+
+
+async def chat_handler(
+    message: str,
+    history: List[Dict[str, str]]
+) -> Tuple[List[Dict[str, str]], str]:
+    """
+    Handle chat messages with streaming.
     
-    def __init__(self):
-        """Initialize UI with CLI backend."""
-        self.cli = CLIBridge()
-        self.theme = create_glass_theme()
+    Args:
+        message: User input
+        history: Chat history [{"role": "user/assistant", "content": "..."}, ...]
+    
+    Returns:
+        (updated_history, empty_string)
+    """
+    if not message.strip():
+        return history, ""
+    
+    # Add user message to history
+    history = history + [{"role": "user", "content": message}]
+    
+    # Stream response
+    assistant_response = ""
+    async for event in adapter.execute_streaming(message):
+        if event["type"] == "thinking":
+            assistant_response = f"🤔 {event['content']}"
+        elif event["type"] == "result":
+            assistant_response = event['content']
+        elif event["type"] == "error":
+            assistant_response = f"❌ {event['content']}"
+    
+    # Add assistant response
+    history = history + [{"role": "assistant", "content": assistant_response}]
+    
+    return history, ""
+
+
+def get_status() -> str:
+    """Get current session status."""
+    state = adapter.get_session_state()
+    
+    status_parts = [
+        f"📁 {state['cwd']}",
+        f"🎫 Tokens: {state['tokens_used']:,}",
+        f"🔧 Commands: {state['commands_executed']}"
+    ]
+    
+    return " | ".join(status_parts)
+
+
+def create_ui() -> gr.Blocks:
+    """Create Gradio interface."""
+    
+    with gr.Blocks(
+        title="QWEN-DEV-CLI",
+        theme=gr.themes.Soft(
+            primary_hue="slate",
+            secondary_hue="gray",
+            neutral_hue="slate",
+        )
+    ) as demo:
+        # Header
+        gr.Markdown("# 🤖 QWEN-DEV-CLI")
+        gr.Markdown("*AI-powered development assistant*")
         
-    def build(self) -> gr.Blocks:
-        """Build the complete UI with glassmorphism."""
+        # Main chat interface
+        chatbot = gr.Chatbot(
+            label="Conversation",
+            height=500,
+            show_copy_button=True,
+            type="messages"
+        )
         
-        # Load custom CSS
-        css_file = Path(__file__).parent / "styles" / "main.css"
-        custom_css = css_file.read_text() if css_file.exists() else ""
-        
-        with gr.Blocks(
-            theme=self.theme,
-            title="🚀 QWEN-DEV-CLI",
-            css=custom_css,
-            head=self._get_custom_head()
-        ) as demo:
-            
-            # Hero Section (Emotional Entry)
-            create_hero_section()
-            
-            # Main Layout
-            with gr.Row():
-                # Sidebar (Context & History)
-                with gr.Column(scale=1, elem_classes=["sidebar"]):
-                    gr.HTML("""
-                        <div style="
-                            display: flex;
-                            align-items: center;
-                            gap: 8px;
-                            margin-bottom: 12px;
-                            color: #4A5568;
-                            font-weight: 500;
-                        ">
-                            <span style="font-size: 1.25rem;">📁</span>
-                            <span>Project Files</span>
-                        </div>
-                    """)
-                    file_browser = gr.File(
-                        label="",
-                        file_count="multiple",
-                        show_label=False
-                    )
-                    
-                    gr.HTML("""
-                        <div style="
-                            display: flex;
-                            align-items: center;
-                            gap: 8px;
-                            margin-top: 24px;
-                            margin-bottom: 12px;
-                            color: #4A5568;
-                            font-weight: 500;
-                        ">
-                            <span style="font-size: 1.25rem;">🕒</span>
-                            <span>History</span>
-                        </div>
-                    """)
-                    history = gr.Dataframe(
-                        headers=["Time", "Command"],
-                        interactive=False,
-                        show_label=False
-                    )
-                
-                # Main Content Area
-                with gr.Column(scale=3, elem_classes=["main-content"]):
-                    # Command Interface
-                    command_input, suggestions = create_command_interface()
-                    
-                    # Output Display
-                    output_display = create_output_display()
-                    
-            # Status Bar (Bottom)
-            create_status_bar()
-            
-            # Event handlers
-            self._setup_event_handlers(
-                command_input=command_input,
-                output_display=output_display,
-                history=history
+        # Input area
+        with gr.Row():
+            msg = gr.Textbox(
+                placeholder="What would you like to do?",
+                show_label=False,
+                scale=9
             )
-            
-        return demo
-    
-    def _get_custom_head(self) -> str:
-        """Inject custom meta tags and fonts."""
-        return """
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <link rel="preconnect" href="https://fonts.googleapis.com">
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-        """
-    
-    def _setup_event_handlers(
-        self,
-        command_input: gr.Textbox,
-        output_display: gr.Textbox,
-        history: gr.Dataframe
-    ):
-        """Wire up interactive behavior."""
+            submit = gr.Button("Send", scale=1, variant="primary")
         
-        def process_command(command: str):
-            """Process user command via CLI backend."""
-            if not command.strip():
-                return "", "❌ Empty command"
-            
-            # Execute via CLI bridge (streaming)
-            output_chunks = []
-            for chunk in self.cli.execute_command(command):
-                output_chunks.append(chunk)
-            
-            result = "\n".join(output_chunks)
-            return "", result
+        # Status bar
+        status = gr.Textbox(
+            label="Status",
+            value=get_status(),
+            interactive=False
+        )
         
-        # Submit on Enter or button click
-        command_input.submit(
-            fn=process_command,
-            inputs=[command_input],
-            outputs=[command_input, output_display],
+        # Examples
+        gr.Examples(
+            examples=[
+                "List files in current directory",
+                "Create a Python script that prints hello world",
+                "Show git status",
+                "Find all TODO comments in .py files"
+            ],
+            inputs=msg
+        )
+        
+        # Event handlers
+        def submit_handler(message, history):
+            """Sync wrapper for async chat handler."""
+            return asyncio.run(chat_handler(message, history))
+        
+        submit.click(
+            fn=submit_handler,
+            inputs=[msg, chatbot],
+            outputs=[chatbot, msg]
+        ).then(
+            fn=get_status,
+            inputs=None,
+            outputs=status
+        )
+        
+        msg.submit(
+            fn=submit_handler,
+            inputs=[msg, chatbot],
+            outputs=[chatbot, msg]
+        ).then(
+            fn=get_status,
+            inputs=None,
+            outputs=status
         )
     
-
-    def launch(self, **kwargs):
-        """Launch the Gradio app."""
-        demo = self.build()
-        demo.launch(**kwargs)
+    return demo
 
 
-def main():
-    """Entry point for Gradio UI."""
-    app = QwenGradioUI()
-    app.launch(
+def launch():
+    """Launch the Gradio app."""
+    demo = create_ui()
+    demo.launch(
         server_name="0.0.0.0",
         server_port=7860,
-        share=False,
-        show_error=True
+        share=False
     )
 
 
 if __name__ == "__main__":
-    main()
+    launch()
