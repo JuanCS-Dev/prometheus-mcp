@@ -1,0 +1,272 @@
+/* ============================================
+   QWEN-DEV-CLI Modern Professional UI (2025)
+   Inspired by: Claude Code, Cursor IDE
+   ============================================ */
+
+/* ===== GLOBAL RESET ===== */
+* {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', system-ui, sans-serif !important;
+}
+
+:root {
+    --text-primary: #1F2937;
+    --text-secondary: #6B7280;
+    --text-muted: #9CA3AF;
+    
+    --bg-primary: #FAFAFA;
+    --bg-secondary: #FFFFFF;
+    --bg-hover: #F9FAFB;
+    
+    --border: #E5E7EB;
+    --border-hover: #D1D5DB;
+    
+    --accent: #1F2937;
+    --accent-hover: #111827;
+    
+    --shadow: 0 1px 2px 0 rgba(0,0,0,0.05);
+    --shadow-md: 0 2px 4px 0 rgba(0,0,0,0.08);
+    --shadow-lg: 0 4px 8px 0 rgba(0,0,0,0.12);
+}
+
+/* ===== LAYOUT ===== */
+.gradio-container {
+    background: var(--bg-primary) !important;
+    max-width: 100% !important;
+    padding: 0 !important;
+}
+
+/* Remove all default Gradio padding/margins */
+.contain,
+.gr-box,
+.gr-form,
+.gr-panel {
+    border: none !important;
+    box-shadow: none !important;
+    background: transparent !important;
+}
+
+/* ===== SIDEBAR ===== */
+.sidebar {
+    background: var(--bg-secondary) !important;
+    border-right: 1px solid var(--border) !important;
+    padding: 20px !important;
+    height: 100vh !important;
+    overflow-y: auto !important;
+}
+
+.sidebar::-webkit-scrollbar {
+    width: 4px;
+}
+
+.sidebar::-webkit-scrollbar-thumb {
+    background: var(--border);
+    border-radius: 4px;
+}
+
+/* ===== MAIN CONTENT ===== */
+.main-content {
+    padding: 24px !important;
+    background: var(--bg-primary) !important;
+}
+
+/* ===== CARDS ===== */
+.card {
+    background: var(--bg-secondary) !important;
+    border: 1px solid var(--border) !important;
+    border-radius: 6px !important;
+    padding: 16px !important;
+    box-shadow: var(--shadow) !important;
+    transition: all 180ms ease !important;
+}
+
+.card:hover {
+    border-color: var(--border-hover) !important;
+    box-shadow: var(--shadow-md) !important;
+}
+
+/* ===== TYPOGRAPHY ===== */
+h1, h2, h3, h4, h5, h6 {
+    color: var(--text-primary) !important;
+    font-weight: 600 !important;
+    letter-spacing: -0.02em !important;
+}
+
+p, span, label {
+    color: var(--text-secondary) !important;
+    font-size: 14px !important;
+    line-height: 1.5 !important;
+}
+
+/* Section labels */
+.section-label {
+    color: var(--text-muted) !important;
+    font-size: 11px !important;
+    font-weight: 600 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.08em !important;
+    margin-bottom: 8px !important;
+}
+
+/* ===== INPUTS ===== */
+.gr-textbox,
+.gr-textarea,
+input,
+textarea {
+    background: var(--bg-secondary) !important;
+    border: 1px solid var(--border) !important;
+    border-radius: 4px !important;
+    color: var(--text-primary) !important;
+    font-size: 14px !important;
+    padding: 10px 12px !important;
+    transition: all 150ms ease !important;
+}
+
+.gr-textbox:focus,
+.gr-textarea:focus,
+input:focus,
+textarea:focus {
+    border-color: var(--accent) !important;
+    outline: none !important;
+    box-shadow: 0 0 0 3px rgba(31, 41, 55, 0.1) !important;
+}
+
+/* ===== BUTTONS ===== */
+.gr-button {
+    background: var(--accent) !important;
+    border: none !important;
+    border-radius: 4px !important;
+    color: #FFFFFF !important;
+    font-size: 14px !important;
+    font-weight: 500 !important;
+    padding: 10px 16px !important;
+    cursor: pointer !important;
+    transition: all 150ms ease !important;
+}
+
+.gr-button:hover {
+    background: var(--accent-hover) !important;
+    transform: translateY(-1px) !important;
+    box-shadow: var(--shadow-md) !important;
+}
+
+.gr-button-secondary {
+    background: var(--bg-hover) !important;
+    color: var(--text-primary) !important;
+}
+
+.gr-button-secondary:hover {
+    background: #F3F4F6 !important;
+}
+
+/* ===== TABLES ===== */
+.gr-dataframe,
+table {
+    background: var(--bg-secondary) !important;
+    border: 1px solid var(--border) !important;
+    border-radius: 6px !important;
+    overflow: hidden !important;
+}
+
+.gr-dataframe thead,
+table thead {
+    background: var(--bg-hover) !important;
+    border-bottom: 1px solid var(--border) !important;
+}
+
+.gr-dataframe th,
+table th {
+    color: var(--text-muted) !important;
+    font-size: 11px !important;
+    font-weight: 600 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.05em !important;
+    padding: 12px 16px !important;
+    text-align: left !important;
+}
+
+.gr-dataframe td,
+table td {
+    color: var(--text-primary) !important;
+    font-size: 13px !important;
+    padding: 12px 16px !important;
+    border-top: 1px solid var(--border) !important;
+}
+
+.gr-dataframe tr:hover,
+table tr:hover {
+    background: var(--bg-hover) !important;
+}
+
+/* ===== FILE UPLOAD ===== */
+.gr-file {
+    background: var(--bg-secondary) !important;
+    border: 1px dashed var(--border) !important;
+    border-radius: 6px !important;
+    padding: 24px !important;
+    text-align: center !important;
+    transition: all 200ms ease !important;
+}
+
+.gr-file:hover {
+    border-color: var(--accent) !important;
+    background: var(--bg-hover) !important;
+}
+
+/* ===== CHAT MESSAGES ===== */
+.message {
+    background: var(--bg-secondary) !important;
+    border: 1px solid var(--border) !important;
+    border-radius: 6px !important;
+    padding: 12px 16px !important;
+    margin-bottom: 8px !important;
+}
+
+.message.user {
+    background: var(--bg-hover) !important;
+}
+
+/* ===== SCROLLBAR ===== */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--bg-primary);
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--border);
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--border-hover);
+}
+
+/* ===== LOADING STATES ===== */
+.loading {
+    opacity: 0.6 !important;
+    pointer-events: none !important;
+}
+
+/* ===== ANIMATIONS ===== */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(4px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.fade-in {
+    animation: fadeIn 200ms ease;
+}
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 768px) {
+    .sidebar {
+        display: none;
+    }
+    
+    .main-content {
+        padding: 16px !important;
+    }
+}

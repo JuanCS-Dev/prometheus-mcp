@@ -816,6 +816,41 @@ def stream_code_analysis(file_path):
 
 ---
 
+## ✅ PROGRESS LOG (LAST UPDATE: 2025-11-21 18:40 UTC)
+
+- **Day 1-2 · Phase 2 (Base Layout)** – _In Progress_
+  - [x] Chat interface (`gr.Chatbot`, light theme, Inter typography)
+  - [x] Command input (`gr.Textbox` + Run/Reset actions with streaming coroutine)
+  - [x] Live output panel (markdown shell stream + progress pill + metrics JSON)
+  - [x] Status panel (badges, timeline, progress bar, token metrics, FastAPI-aware)
+  - [x] File browser (`gr.FileExplorer`, rooted at repo, interactive selection)
+  - [x] Code display (`gr.Code` + markdown header fed by FileExplorer selection)
+  - [x] Status tracker integration with FastAPI bridge (env-driven, falls back to shell)
+  - [x] Token/cost telemetry (live when backend provides `/api/status`)
+
+- **Visual Theme**
+  - [x] Custom CSS (`gradio_ui/static/css/custom.css`) with glass cards, pills, progress
+  - [x] Light palette (Cursor/Claude inspiration) + component-specific polish
+  - [x] Micro-animations applied (hero bounce, card hover, status pulse, shimmer progress)
+
+- **Streaming Architecture**
+  - [x] `CLIStreamBridge` fallback streaming (real shell via `ShellBridge` when available)
+  - [x] Incremental updates per chunk (chat + shell markdown + badges + metrics)
+  - [x] FastAPI `/api/execute` hook (httpx async client, SSE/JSON parsing)
+  - [ ] Tool-level progress bars (Phase 3 target)
+
+### 🧪 Testing Notes (Manual · Nov 21)
+- ✅ Gradio app launches locally via `python gradio_ui/app.py`
+- ✅ Streaming coroutine updates timeline/progress with mocked `ShellBridge`
+- ✅ FileExplorer selection previews files ≤200 KB; guards against binary/out-of-root
+- ✅ Clear session resets chat, shell stream, metrics, timeline, and progress bar
+- ✅ FastAPI bridge tested locally via mocked `/api/execute` + `/api/status` (set `QWEN_DEV_API_BASE`)
+- ✅ Micro-interactions verified (hover transitions, hero bounce, timeline slide-up)
+- ⚠️ Pending: verification against real CLI streaming + FastAPI bridge
+- ⚠️ Pending: mobile layout QA + accessibility scan
+
+---
+
 ## 🎯 SUCCESS METRICS
 
 ### **Emotional Impact**

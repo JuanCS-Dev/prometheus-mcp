@@ -108,6 +108,7 @@ class ShellBridge:
             ReadMultipleFilesTool, InsertLinesTool
         )
         from ..tools.search import SearchFilesTool, GetDirectoryTreeTool
+        from ..tools.web_search import WebSearchTool, SearchDocumentationTool
         from ..tools.exec import BashCommandTool
         from ..tools.git_ops import GitStatusTool, GitDiffTool
         from ..tools.context import GetContextTool, SaveSessionTool, RestoreBackupTool
@@ -128,9 +129,11 @@ class ShellBridge:
         self.registry.register(ReadMultipleFilesTool())
         self.registry.register(InsertLinesTool())
         
-        # Search & navigation (2 tools)
+        # Search & navigation (4 tools)
         self.registry.register(SearchFilesTool())
         self.registry.register(GetDirectoryTreeTool())
+        self.registry.register(WebSearchTool())
+        self.registry.register(SearchDocumentationTool())
         
         # Execution (1 tool)
         self.registry.register(BashCommandTool())

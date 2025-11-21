@@ -1,0 +1,387 @@
+/* 
+╔═══════════════════════════════════════════════════════════╗
+║  QWEN-DEV-CLI - Apple-Level Design System                ║
+║  Craft: Precision, Consistency, Elegance                 ║
+╚═══════════════════════════════════════════════════════════╝
+*/
+
+:root {
+    /* Apple-inspired palette */
+    --bg-primary: #F5F5F7;
+    --bg-secondary: #FFFFFF;
+    --bg-tertiary: #FAFAFA;
+    
+    --text-primary: #1D1D1F;
+    --text-secondary: #6E6E73;
+    --text-tertiary: #86868B;
+    
+    --border-light: #D2D2D7;
+    --border-medium: #C7C7CC;
+    
+    --accent-blue: #007AFF;
+    --accent-blue-hover: #0051D5;
+    
+    /* Shadows */
+    --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    --shadow-md: 0 2px 8px 0 rgba(0, 0, 0, 0.08);
+    --shadow-lg: 0 4px 16px 0 rgba(0, 0, 0, 0.12);
+    
+    /* Border radius */
+    --radius-sm: 6px;
+    --radius-md: 10px;
+    --radius-lg: 12px;
+}
+
+/* ===== GLOBAL RESET ===== */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body,
+.gradio-container,
+#root,
+.app {
+    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Inter', sans-serif !important;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    background: var(--bg-primary) !important;
+    color: var(--text-primary) !important;
+    line-height: 1.5 !important;
+}
+
+/* ===== APPLE-LEVEL CARDS ===== */
+.block,
+.gr-block,
+.gr-box,
+.gr-form,
+.gr-panel,
+.gr-file,
+.gr-dataframe,
+.gr-input-container {
+    background: var(--bg-secondary) !important;
+    border: 0.5px solid var(--border-light) !important;
+    border-radius: var(--radius-md) !important;
+    box-shadow: var(--shadow-sm) !important;
+    transition: all 200ms cubic-bezier(0.25, 0.1, 0.25, 1) !important;
+    padding: 16px !important;
+}
+
+.block:hover,
+.gr-file:hover {
+    box-shadow: var(--shadow-md) !important;
+    border-color: var(--border-medium) !important;
+    transform: translateY(-1px) !important;
+}
+
+/* Dataframe specific - NO hover transform */
+.gr-dataframe {
+    padding: 0 !important;
+}
+
+.gr-dataframe:hover {
+    box-shadow: var(--shadow-md) !important;
+    border-color: var(--border-medium) !important;
+    transform: none !important;
+}
+
+/* ===== MINIMAL ANIMATIONS ===== */
+@keyframes pulse {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.5;
+    }
+}
+
+/* ===== LAYOUT REFINEMENTS ===== */
+.gr-row,
+.gr-column {
+    gap: 16px !important;
+}
+
+/* ===== FILE UPLOAD AREA ===== */
+.gr-file {
+    min-height: 120px !important;
+}
+
+.gr-file-content {
+    background: transparent !important;
+    color: var(--text-primary) !important;
+}
+
+.gr-file-drop-area,
+.gr-file-upload {
+    background: var(--bg-tertiary) !important;
+    border: 1.5px dashed var(--border-light) !important;
+    border-radius: var(--radius-md) !important;
+    padding: 24px !important;
+    text-align: center !important;
+    transition: all 200ms ease !important;
+}
+
+.gr-file-drop-area:hover {
+    border-color: var(--accent-blue) !important;
+    background: rgba(0, 122, 255, 0.03) !important;
+}
+
+.gr-file-drop-area span,
+.gr-file-upload span {
+    color: var(--text-secondary) !important;
+    font-size: 14px !important;
+}
+
+/* ===== LINKS ===== */
+a,
+.gr-link {
+    color: var(--accent-blue) !important;
+    text-decoration: none !important;
+    transition: all 150ms ease !important;
+}
+
+a:hover,
+.gr-link:hover {
+    color: var(--accent-blue-hover) !important;
+    text-decoration: underline !important;
+}
+
+/* ===== LAYOUT ===== */
+.sidebar {
+    padding: 20px;
+    background: rgba(255, 255, 255, 0.02);
+    border-right: 1px solid rgba(255, 255, 255, 0.1);
+    min-height: 600px;
+}
+
+.main-content {
+    padding: 20px;
+}
+
+/* ===== APPLE INPUT STYLES ===== */
+.gr-textbox,
+textarea,
+input[type="text"],
+.gr-input {
+    background: var(--bg-secondary) !important;
+    border: 0.5px solid var(--border-light) !important;
+    border-radius: var(--radius-md) !important;
+    font-size: 15px !important;
+    padding: 10px 14px !important;
+    transition: all 200ms ease !important;
+    color: var(--text-primary) !important;
+    font-weight: 400 !important;
+}
+
+.gr-textbox:focus,
+textarea:focus,
+input[type="text"]:focus,
+.gr-input:focus {
+    border-color: var(--accent-blue) !important;
+    box-shadow: 0 0 0 4px rgba(0, 122, 255, 0.1) !important;
+    outline: none !important;
+    background: #FFFFFF !important;
+}
+
+.gr-textbox::placeholder,
+textarea::placeholder,
+input::placeholder {
+    color: var(--text-tertiary) !important;
+    font-weight: 400 !important;
+}
+
+
+
+/* ===== OUTPUT DISPLAY ===== */
+.gr-textbox[readonly],
+pre,
+code {
+    background: #F5F7FA !important;
+    border: 1px solid #E2E8F0 !important;
+    border-radius: 8px !important;
+    font-family: 'JetBrains Mono', 'Fira Code', monospace !important;
+    font-size: 0.875rem !important;
+    color: #1A202C !important;
+}
+
+/* ===== APPLE TABLE STYLING ===== */
+table {
+    background: transparent !important;
+    border-collapse: collapse !important;
+    width: 100% !important;
+}
+
+thead {
+    background: var(--bg-tertiary) !important;
+    border-bottom: 0.5px solid var(--border-light) !important;
+}
+
+th {
+    background: transparent !important;
+    padding: 10px 12px !important;
+    text-align: left !important;
+    font-weight: 600 !important;
+    font-size: 13px !important;
+    color: var(--text-secondary) !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.5px !important;
+}
+
+tbody tr {
+    background: transparent !important;
+    border-bottom: 0.5px solid var(--border-light) !important;
+    transition: background 150ms ease !important;
+}
+
+tbody tr:hover {
+    background: var(--bg-tertiary) !important;
+}
+
+tbody tr:last-child {
+    border-bottom: none !important;
+}
+
+td {
+    padding: 12px !important;
+    font-size: 14px !important;
+    color: var(--text-primary) !important;
+    background: transparent !important;
+}
+
+/* Dataframe wrapper */
+.gr-dataframe-content {
+    background: transparent !important;
+    padding: 0 !important;
+}
+
+/* ===== STATUS BAR ===== */
+.status-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    color: #4A5568;
+    font-size: 0.875rem;
+}
+
+.status-indicator {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    animation: pulse 2s ease-in-out infinite;
+}
+
+.status-indicator.connected {
+    background: #10B981;
+}
+
+.status-indicator.disconnected {
+    background: #EF4444;
+}
+
+/* ===== APPLE BUTTONS ===== */
+button,
+.gr-button,
+.gr-button-primary {
+    background: var(--accent-blue) !important;
+    color: #FFFFFF !important;
+    border: none !important;
+    border-radius: var(--radius-md) !important;
+    padding: 8px 16px !important;
+    font-size: 14px !important;
+    font-weight: 500 !important;
+    transition: all 150ms ease !important;
+    cursor: pointer !important;
+    box-shadow: var(--shadow-sm) !important;
+}
+
+button:hover,
+.gr-button:hover {
+    background: var(--accent-blue-hover) !important;
+    box-shadow: var(--shadow-md) !important;
+    transform: translateY(-1px) !important;
+}
+
+button:active,
+.gr-button:active {
+    transform: translateY(0) !important;
+    box-shadow: var(--shadow-sm) !important;
+}
+
+/* Secondary button */
+.gr-button-secondary {
+    background: var(--bg-tertiary) !important;
+    color: var(--text-primary) !important;
+    border: 0.5px solid var(--border-light) !important;
+}
+
+.gr-button-secondary:hover {
+    background: #EBEBEB !important;
+    border-color: var(--border-medium) !important;
+}
+
+/* Copy button fix */
+.copy-button,
+button[title*="Copy"],
+button[aria-label*="Copy"] {
+    background: transparent !important;
+    border: 0.5px solid var(--border-light) !important;
+    color: var(--text-secondary) !important;
+    padding: 6px 10px !important;
+    font-size: 13px !important;
+}
+
+.copy-button:hover {
+    background: var(--bg-tertiary) !important;
+    border-color: var(--border-medium) !important;
+    color: var(--text-primary) !important;
+}
+
+/* ===== LOADING STATES ===== */
+.loading-spinner {
+    width: 20px;
+    height: 20px;
+    border: 3px solid rgba(59, 130, 246, 0.3);
+    border-top-color: #3b82f6;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 768px) {
+    .hero-title {
+        font-size: 2rem;
+    }
+    
+    .sidebar {
+        display: none;
+    }
+    
+    .status-bar {
+        flex-direction: column;
+        gap: 8px;
+    }
+}
+
+/* ===== SCROLLBAR ===== */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.3);
+}

@@ -1,34 +1,52 @@
 #!/usr/bin/env python3
 """
-Qwen Dev CLI - Minimal Clean Gradio UI
+Qwen Dev CLI - Championship Gradio UI
 
-Clean, minimal interface using only native Gradio components.
+Vercel/Linear-inspired minimal clean design with real-time streaming.
 Built for the MCP Hackathon with 27+ production tools.
 """
 
 from __future__ import annotations
 
 import os
-import shutil
 import time
 import uuid
 from pathlib import Path
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional
 
 import gradio as gr
 import pandas as pd
 
 from .cli_bridge import CLIStreamBridge
+from .heroic_theme import create_heroic_theme
 
 PROJECT_ROOT = Path.cwd()
+CSS_PATH = Path(__file__).parent / "static" / "custom.css"
+
+# Load CSS content as string
+with open(CSS_PATH, 'r') as f:
+    CUSTOM_CSS = f.read()
 
 # Initialize CLI bridge
 _bridge = CLIStreamBridge()
 
-# --- HELPER FUNCTIONS ---
+# --- DATA & HELPERS ---
+
+COMMAND_EXAMPLES = [
+    ["Read README.md and summarize setup"],
+    ["Scan tests/ for flaky tests"],
+    ["List qwen_dev_cli/tools"],
+    ["Show git status & risky files"],
+    ["Search for TODOs in repo"],
+]
+
+def _format_shell_output(text: str) -> str:
+    """Format shell output for display in the code block."""
+    if not text:
+        return "Ready for commands..."
+    return text
 
 def _blank_metrics() -> Dict[str, Any]:
-    """Create blank metrics dict."""
     return {
         "chunks": 0,
         "chars": 0,
@@ -39,6 +57,7 @@ def _blank_metrics() -> Dict[str, Any]:
 def _get_mcp_tools_df() -> pd.DataFrame:
     """Get real MCP tools from ToolRegistry as DataFrame."""
     try:
+        # Import tool classes
         from qwen_dev_cli.tools.base import ToolRegistry
         from qwen_dev_cli.tools.file_ops import (
             ReadFileTool, WriteFileTool, EditFileTool,
@@ -57,58 +76,74 @@ def _get_mcp_tools_df() -> pd.DataFrame:
             CpTool, MvTool, TouchTool, CatTool
         )
         
-        # Build data list
-        data = []
+        # Instantiate registry and register all tools
+        registry = ToolRegistry()
         
-        # File Operations
-        for tool in [
+        # File Operations (10 tools)
+        file_ops = [
             ReadFileTool(), WriteFileTool(), EditFileTool(),
             ListDirectoryTool(), DeleteFileTool(), MoveFileTool(),
             CopyFileTool(), CreateDirectoryTool(), ReadMultipleFilesTool(),
             InsertLinesTool()
-        ]:
+        ]
+        
+        # Search & Navigation (2 tools)
+        search_tools = [SearchFilesTool(), GetDirectoryTreeTool()]
+        
+        # Execution (1 tool)
+        exec_tools = [BashCommandTool()]
+        
+        # Git Operations (2 tools)
+        git_tools = [GitStatusTool(), GitDiffTool()]
+        
+        # Context Management (3 tools)
+        context_tools = [GetContextTool(), SaveSessionTool(), RestoreBackupTool()]
+        
+        # Terminal Commands (9 tools)
+        terminal_tools = [
+            CdTool(), LsTool(), PwdTool(), MkdirTool(), RmTool(),
+            CpTool(), MvTool(), TouchTool(), CatTool()
+        ]
+        
+        # Build data list
+        data = []
+        
+        for tool in file_ops:
             data.append({
                 "Category": "File Operations",
                 "Tool": tool.name,
                 "Description": tool.description[:60] + "..." if len(tool.description) > 60 else tool.description
             })
         
-        # Search & Navigation
-        for tool in [SearchFilesTool(), GetDirectoryTreeTool()]:
+        for tool in search_tools:
             data.append({
                 "Category": "Search & Navigation",
                 "Tool": tool.name,
                 "Description": tool.description[:60] + "..." if len(tool.description) > 60 else tool.description
             })
         
-        # Execution
-        data.append({
-            "Category": "Execution",
-            "Tool": BashCommandTool().name,
-            "Description": BashCommandTool().description[:60] + "..." if len(BashCommandTool().description) > 60 else BashCommandTool().description
-        })
+        for tool in exec_tools:
+            data.append({
+                "Category": "Execution",
+                "Tool": tool.name,
+                "Description": tool.description[:60] + "..." if len(tool.description) > 60 else tool.description
+            })
         
-        # Git Operations
-        for tool in [GitStatusTool(), GitDiffTool()]:
+        for tool in git_tools:
             data.append({
                 "Category": "Git Operations",
                 "Tool": tool.name,
                 "Description": tool.description[:60] + "..." if len(tool.description) > 60 else tool.description
             })
         
-        # Context Management
-        for tool in [GetContextTool(), SaveSessionTool(), RestoreBackupTool()]:
+        for tool in context_tools:
             data.append({
                 "Category": "Context Management",
                 "Tool": tool.name,
                 "Description": tool.description[:60] + "..." if len(tool.description) > 60 else tool.description
             })
         
-        # Terminal Commands
-        for tool in [
-            CdTool(), LsTool(), PwdTool(), MkdirTool(), RmTool(),
-            CpTool(), MvTool(), TouchTool(), CatTool()
-        ]:
+        for tool in terminal_tools:
             data.append({
                 "Category": "Terminal Commands",
                 "Tool": tool.name,
@@ -120,60 +155,12 @@ def _get_mcp_tools_df() -> pd.DataFrame:
     except Exception as e:
         # Fallback to minimal data if imports fail
         print(f"Warning: Could not load real tools: {e}")
-        return pd.DataFrame([
+        data = [
             {"Category": "File Operations", "Tool": "read_file", "Description": "Read file contents"},
             {"Category": "File Operations", "Tool": "write_file", "Description": "Write content to file"},
             {"Category": "Terminal", "Tool": "bash", "Description": "Execute shell commands"},
-        ])
-
-# --- FILE UPLOAD HANDLER ---
-
-def handle_file_upload(files):
-    """Process uploaded files, copy to workspace, and return status message."""
-    if not files:
-        return "No files uploaded"
-    
-    # Create uploads directory in workspace if it doesn't exist
-    uploads_dir = PROJECT_ROOT / "uploads"
-    uploads_dir.mkdir(exist_ok=True)
-    
-    uploaded_info = []
-    copied_count = 0
-    
-    for file_path in files:
-        if file_path:
-            source_path = Path(file_path)
-            if source_path.exists():
-                size = source_path.stat().st_size
-                size_str = f"{size / 1024:.1f} KB" if size < 1024 * 1024 else f"{size / (1024 * 1024):.1f} MB"
-                
-                # Copy file to workspace uploads directory
-                try:
-                    dest_path = uploads_dir / source_path.name
-                    
-                    # Handle duplicate names
-                    counter = 1
-                    while dest_path.exists():
-                        stem = source_path.stem
-                        suffix = source_path.suffix
-                        dest_path = uploads_dir / f"{stem}_{counter}{suffix}"
-                        counter += 1
-                    
-                    # Copy file
-                    shutil.copy2(source_path, dest_path)
-                    
-                    relative_path = dest_path.relative_to(PROJECT_ROOT)
-                    uploaded_info.append(f"✓ **{source_path.name}** ({size_str}) → `{relative_path}`")
-                    copied_count += 1
-                except Exception as e:
-                    uploaded_info.append(f"✗ **{source_path.name}** - Error: {str(e)}")
-    
-    if uploaded_info:
-        status_msg = f"**✅ Uploaded {copied_count}/{len([f for f in files if f])} file(s) to workspace:**\n\n" + "\n".join(uploaded_info)
-        if copied_count > 0:
-            status_msg += f"\n\n📁 Files saved to: `uploads/` directory"
-        return status_msg
-    return "No files uploaded"
+        ]
+        return pd.DataFrame(data)
 
 # --- CORE LOGIC ---
 
@@ -182,9 +169,9 @@ async def stream_conversation(
     history: List[Dict[str, Any]],
     session_id: str,
 ):
-    """Stream output from CLI backend."""
+    """Stream output from CLI backend with visual states."""
     if not message.strip():
-        yield history, "", session_id, _blank_metrics()
+        yield history, "", session_id, _blank_metrics(), gr.update(visible=True)
         return
 
     # Initialize session
@@ -194,24 +181,25 @@ async def stream_conversation(
     history = history or []
     history.append({"role": "user", "content": message})
     
-    # Add thinking state
-    history.append({"role": "assistant", "content": "⏳ Analyzing request..."})
+    # PHASE 1: Thinking state with pulse animation
+    history.append({"role": "assistant", "content": '<div class="thinking">⏳ Analyzing request...</div>'})
     terminal_output = "# Starting execution...\n"
     
-    yield history, terminal_output, session_value, _blank_metrics()
+    yield history, terminal_output, session_value, _blank_metrics(), gr.update(visible=False)
 
     start = time.monotonic()
     live_text = ""
     chunk_count = 0
+    tool_log = []
     
     try:
-        # Stream execution
+        # PHASE 2: Streaming execution
         async for chunk in _bridge.stream_command(message, session_value):
             chunk_text = chunk or ""
             chunk_count += 1
             live_text += chunk_text
             
-            # Build terminal output
+            # Build terminal output with tool execution log
             terminal_lines = [
                 f"# Execution Log (Session: {session_value[:8]})",
                 f"# Time: {round(time.monotonic() - start, 2)}s | Chunks: {chunk_count}",
@@ -229,23 +217,23 @@ async def stream_conversation(
                 "backend": _bridge.backend_label,
             }
             
-            # Update chat with streaming cursor
+            # PHASE 3: Streaming with typing cursor
             history[-1]["content"] = live_text + " ▌"
             
-            yield history, terminal_output, session_value, metrics
+            yield history, terminal_output, session_value, metrics, gr.update(visible=False)
             
     except Exception as e:
-        # Error state
+        # PHASE 4: Error state
         error_msg = f"❌ **Error**: {str(e)}"
         history[-1]["content"] = error_msg
         terminal_output += f"\n\n❌ ERROR: {str(e)}"
-        yield history, terminal_output, session_value, _blank_metrics()
+        yield history, terminal_output, session_value, _blank_metrics(), gr.update(visible=False)
         return
 
-    # Complete state - remove cursor
-    history[-1]["content"] = live_text
+    # PHASE 5: Complete state with success indicator
+    history[-1]["content"] = live_text  # Remove cursor
     
-    # Final terminal output
+    # Add success indicator to terminal
     terminal_lines = [
         f"# Execution Log (Session: {session_value[:8]})",
         f"# Time: {round(time.monotonic() - start, 2)}s | Chunks: {chunk_count}",
@@ -253,7 +241,7 @@ async def stream_conversation(
         "## Output Stream:",
         live_text if live_text else "(no output)",
         "",
-        "✓ Execution complete",
+        '<div class="success-check">✓ Execution complete</div>',
     ]
     terminal_output = "\n".join(terminal_lines)
     
@@ -264,183 +252,134 @@ async def stream_conversation(
         "backend": _bridge.backend_label,
     }
     
-    yield history, terminal_output, session_value, final_metrics
+    yield history, terminal_output, session_value, final_metrics, gr.update(visible=False)
 
-# --- MINIMAL CSS (only essential adjustments) ---
 
-MINIMAL_CSS = """
-/* Minimal CSS for contrast and spacing only */
+def clear_session():
+    return [], "", None, _blank_metrics(), gr.update(visible=True)
 
-/* Ensure terminal text is readable in both themes */
-.gr-code, .cm-editor {
-    font-family: 'Monaco', 'Menlo', 'Consolas', monospace;
-    font-size: 13px;
-    line-height: 1.5;
-}
-
-/* Chat message spacing */
-.chat-message {
-    padding: 12px 16px;
-    margin: 8px 0;
-    border-radius: 8px;
-}
-
-/* Dark mode adjustments (Gradio Soft theme handles most of this) */
-@media (prefers-color-scheme: dark) {
-    .gr-code {
-        background: #1a1a1a !important;
-        color: #e5e5e5 !important;
-    }
-}
-
-/* Light mode adjustments */
-@media (prefers-color-scheme: light) {
-    .gr-code {
-        background: #f5f5f5 !important;
-        color: #1a1a1a !important;
-    }
-}
-"""
 
 # --- UI CONSTRUCTION ---
 
 def create_ui() -> gr.Blocks:
-    """Build minimal clean UI using only native Gradio components."""
+    """Build the Championship UI - Vercel/Linear inspired."""
     
-    # Import heroic theme (Gradio 6 with glassmorphism)
-    from .heroic_theme import create_heroic_theme, get_glassmorphism_css
-    
-    theme = create_heroic_theme()
-    
-    # Combine minimal CSS with glassmorphism CSS
-    combined_css = MINIMAL_CSS + "\n\n" + get_glassmorphism_css()
+    # Create theme and inject CSS
+    heroic_theme = create_heroic_theme()
 
     with gr.Blocks(
         title="Qwen Dev CLI · 27 MCP Tools · Constitutional AI",
-        theme=theme,
-        theme_mode="auto",  # Gradio 6: Auto dark/light mode toggle!
-        css=combined_css,
+        theme=heroic_theme,
+        css=CUSTOM_CSS  # Inject CSS as string
     ) as demo:
         
         # State Management
         session_state = gr.State(value=None)
         
-        # Header
-        gr.Markdown(
-            "### **Qwen Dev CLI** · 27 MCP Tools · Constitutional AI-Powered Development",
-            elem_id="header"
-        )
+        # === HEADER: Compact single-line ===
+        with gr.Row(elem_id="header-row"):
+            gr.Markdown(
+                "**Qwen Dev CLI** · 27 MCP Tools · Constitutional AI-Powered Development",
+                elem_id="header-title"
+            )
         
-        # Main Layout: 3-Pane
+        # === MAIN LAYOUT: 3-PANE ===
         with gr.Row(equal_height=False):
             
-            # Left: Files + Telemetry
+            # === LEFT: COMPACT SIDEBAR (250px) ===
             with gr.Column(scale=1, min_width=250, variant="panel"):
-                gr.Markdown("**FILES**")
+                gr.Markdown("**FILES**", elem_id="sidebar-title")
                 
-                # File Upload - User can upload files/folders from their computer
-                file_upload = gr.File(
-                    label="Upload Files or Folder",
-                    file_count="multiple",
-                    file_types=None,  # Accept all file types
-                    height=100,
-                )
-                
-                # Upload status
-                upload_status = gr.Markdown(
-                    value="Ready to upload files...",
-                    visible=True,
-                    elem_id="upload-status"
-                )
-                
-                # File Explorer - Shows workspace files (will refresh after upload)
+                # File Explorer - Compact (250px height max)
                 file_explorer = gr.FileExplorer(
                     glob="**/*",
                     root_dir=str(PROJECT_ROOT),
-                    height=150,
+                    height=250,
                     label="Workspace",
-                    file_count="multiple",
+                    elem_id="file-explorer"
                 )
                 
-                # Telemetry
+                # Metrics - Compact JSON
                 metrics_display = gr.JSON(
                     value=_blank_metrics(),
                     label="Telemetry",
+                    elem_id="metrics-panel"
                 )
 
-            # Center: Chat + Input
+            # === CENTER: CHAT + INPUT ===
             with gr.Column(scale=3, min_width=500):
                 
-                # Chat
+                # HERO STATE - Minimal text-only
+                with gr.Group(visible=True, elem_id="hero-welcome") as hero_group:
+                    gr.Markdown(
+                        "# Start coding with AI\n\n"
+                        "Ask me to read files, run tests, refactor code, or fix bugs.",
+                        elem_id="hero-header"
+                    )
+                    gr.Markdown("**Quick Start:**", elem_id="hero-quickstart-label")
+                    with gr.Row():
+                        ex_btn_1 = gr.Button(COMMAND_EXAMPLES[0][0], size="sm", variant="secondary", elem_classes=["example-pill"])
+                        ex_btn_2 = gr.Button(COMMAND_EXAMPLES[1][0], size="sm", variant="secondary", elem_classes=["example-pill"])
+                        ex_btn_3 = gr.Button(COMMAND_EXAMPLES[2][0], size="sm", variant="secondary", elem_classes=["example-pill"])
+                
+                # CHAT - Compact (400px)
                 chatbot = gr.Chatbot(
                     label="Dev Session",
                     type="messages",
                     height=400,
                     show_copy_button=True,
-                    render_markdown=True,
                     avatar_images=(None, None),
+                    render_markdown=True,
+                    elem_id="main-chatbot"
                 )
                 
-                # Input Bar
+                # INPUT BAR - Clean & Minimal
                 with gr.Row():
                     msg_input = gr.Textbox(
                         show_label=False,
                         placeholder="Instruct the agent (e.g., 'Run tests and fix errors')...",
                         container=False,
-                        scale=9,
+                        scale=5,
+                        elem_id="command-input"
                     )
-                    run_btn = gr.Button(
-                        "Run", 
-                        variant="primary", 
-                        scale=1,
-                        min_width=80,
-                    )
+                    run_btn = gr.Button("Run", variant="primary", scale=0, min_width=80)
 
-            # Right: Terminal + Tools
+            # === RIGHT: TERMINAL + TOOLS ===
             with gr.Column(scale=2, min_width=300, variant="panel"):
-                with gr.Tabs():
-                    with gr.Tab("Terminal"):
-                        # Terminal output
+                with gr.Tabs(elem_id="right-tabs"):
+                    with gr.Tab("Terminal", elem_id="terminal-tab"):
+                        # Shell output - Compact (15 lines)
                         shell_output = gr.Code(
                             language="shell",
                             label="Live Output",
                             interactive=False,
                             lines=15,
+                            elem_id="shell-output"
                         )
                     
-                    with gr.Tab("MCP Tools"):
-                        # MCP Tools table
+                    with gr.Tab("MCP Tools", elem_id="mcp-tab"):
+                        # Real tools from registry
                         mcp_df = gr.Dataframe(
                             value=_get_mcp_tools_df(),
                             headers=["Category", "Tool", "Description"],
                             interactive=False,
-                            wrap=True,
+                            elem_id="mcp-tools-table"
                         )
         
-        # Footer
-        gr.Markdown(
-            f"Backend: {_bridge.backend_label} · Tokens: 0 · Cost: $0.00",
-            elem_id="footer"
-        )
+        # === FOOTER: Status strip ===
+        with gr.Row(elem_id="footer-row"):
+            status_text = gr.Markdown(
+                f"Backend: {_bridge.backend_label} · Tokens: 0 · Cost: $0.00",
+                elem_id="footer-status"
+            )
 
-        # Event Handlers
-        
-        # File upload handler - copies files to workspace and updates status
-        file_upload.upload(
-            fn=handle_file_upload,
-            inputs=[file_upload],
-            outputs=[upload_status]
-        ).then(
-            # Refresh file explorer after upload
-            fn=lambda: gr.update(),
-            outputs=[file_explorer]
-        )
+        # === EVENT HANDLERS ===
         
         # Submit message
         msg_input.submit(
             fn=stream_conversation,
             inputs=[msg_input, chatbot, session_state],
-            outputs=[chatbot, shell_output, session_state, metrics_display]
+            outputs=[chatbot, shell_output, session_state, metrics_display, hero_group]
         ).then(
             fn=lambda: "", outputs=[msg_input]
         )
@@ -449,25 +388,36 @@ def create_ui() -> gr.Blocks:
         run_btn.click(
             fn=stream_conversation,
             inputs=[msg_input, chatbot, session_state],
-            outputs=[chatbot, shell_output, session_state, metrics_display]
+            outputs=[chatbot, shell_output, session_state, metrics_display, hero_group]
         ).then(
             fn=lambda: "", outputs=[msg_input]
         )
+        
+        # Example buttons - populate input
+        def set_example(text):
+            return text
+        
+        ex_btn_1.click(fn=lambda: COMMAND_EXAMPLES[0][0], outputs=[msg_input])
+        ex_btn_2.click(fn=lambda: COMMAND_EXAMPLES[1][0], outputs=[msg_input])
+        ex_btn_3.click(fn=lambda: COMMAND_EXAMPLES[2][0], outputs=[msg_input])
 
     return demo
 
-# --- LAUNCHER ---
 
+# --- LAUNCHER (Gradio 6.x Style) ---
 if __name__ == "__main__":
     port = int(os.getenv("GRADIO_SERVER_PORT", "7861"))
     
+    # Create the app
     demo = create_ui()
     
-    print(f"🚀 Launching Qwen Dev CLI UI on port {port}")
+    print(f"🚀 Launching Heroic UI on port {port}")
     
+    # Launch with app-level settings
     demo.launch(
         server_name="0.0.0.0",
         server_port=port,
         share=False,
         show_error=True,
+        ssr_mode=False # Disable SSR for now to avoid Node.js dependency issues
     )
