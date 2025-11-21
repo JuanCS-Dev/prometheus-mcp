@@ -9,7 +9,7 @@ from qwen_dev_cli.tools.file_mgmt import (
     ReadMultipleFilesTool, InsertLinesTool
 )
 from qwen_dev_cli.tools.search import SearchFilesTool, GetDirectoryTreeTool
-from qwen_dev_cli.tools.exec import BashCommandTool
+from qwen_dev_cli.tools.exec_hardened import BashCommandTool
 from qwen_dev_cli.tools.git_ops import GitStatusTool, GitDiffTool
 from qwen_dev_cli.tools.context import GetContextTool, SaveSessionTool, RestoreBackupTool
 from qwen_dev_cli.tools.terminal import (

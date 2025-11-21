@@ -52,7 +52,7 @@ from .tools.file_mgmt import (
     ReadMultipleFilesTool, InsertLinesTool
 )
 from .tools.search import SearchFilesTool, GetDirectoryTreeTool
-from .tools.exec import BashCommandTool
+from .tools.exec_hardened import BashCommandTool
 from .tools.git_ops import GitStatusTool, GitDiffTool
 from .tools.context import GetContextTool, SaveSessionTool, RestoreBackupTool
 from .tools.terminal import (
@@ -2209,7 +2209,7 @@ Output ONLY the command, no explanation, no markdown."""
     
     async def _execute_command(self, command: str) -> dict:
         """Execute shell command and return result."""
-        from .tools.exec import BashCommandTool
+        from .tools.exec_hardened import BashCommandTool
         
         bash = BashCommandTool()
         result = await bash.execute(command=command)

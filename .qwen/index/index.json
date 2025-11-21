@@ -5949,7 +5949,7 @@
     },
     "qwen_dev_cli/shell.py": {
       "path": "qwen_dev_cli/shell.py",
-      "hash": "99bb45f936cbf6c3",
+      "hash": "668bd490fe3faf38",
       "symbols": [
         {
           "name": "SessionContext",
@@ -6135,7 +6135,7 @@
         "tools.file_ops",
         "tools.file_mgmt",
         "tools.search",
-        "tools.exec",
+        "tools.exec_hardened",
         "tools.git_ops",
         "tools.context",
         "tools.terminal",
@@ -6172,14 +6172,14 @@
         "rich.text",
         "re",
         "re",
-        "tools.exec",
+        "tools.exec_hardened",
         "prompts",
         "dataclasses",
         "logging",
         "rich.syntax",
         "time"
       ],
-      "last_modified": 1763723963.7453697
+      "last_modified": 1763760379.9618025
     },
     "qwen_dev_cli/cli_mcp.py": {
       "path": "qwen_dev_cli/cli_mcp.py",
@@ -8070,7 +8070,7 @@
     },
     "qwen_dev_cli/tools/registry_helper.py": {
       "path": "qwen_dev_cli/tools/registry_helper.py",
-      "hash": "f2fde492267e207f",
+      "hash": "5aa5f18aba44c2c2",
       "symbols": [
         {
           "name": "get_default_registry",
@@ -8087,12 +8087,12 @@
         "qwen_dev_cli.tools.file_ops",
         "qwen_dev_cli.tools.file_mgmt",
         "qwen_dev_cli.tools.search",
-        "qwen_dev_cli.tools.exec",
+        "qwen_dev_cli.tools.exec_hardened",
         "qwen_dev_cli.tools.git_ops",
         "qwen_dev_cli.tools.context",
         "qwen_dev_cli.tools.terminal"
       ],
-      "last_modified": 1763472492.7395058
+      "last_modified": 1763760379.9598432
     },
     "qwen_dev_cli/tools/search.py": {
       "path": "qwen_dev_cli/tools/search.py",
@@ -12841,7 +12841,7 @@
     },
     "qwen_dev_cli/integration/shell_bridge.py": {
       "path": "qwen_dev_cli/integration/shell_bridge.py",
-      "hash": "638116cebde2fd14",
+      "hash": "40bfa38863348f80",
       "symbols": [
         {
           "name": "ExecutionResult",
@@ -12927,12 +12927,12 @@
         "tools.search",
         "tools.web_search",
         "tools.web_access",
-        "tools.exec",
+        "tools.exec_hardened",
         "tools.git_ops",
         "tools.context",
         "tools.terminal"
       ],
-      "last_modified": 1763753755.4868584
+      "last_modified": 1763759298.2870529
     },
     "qwen_dev_cli/integration/safety.py": {
       "path": "qwen_dev_cli/integration/safety.py",
@@ -31501,7 +31501,7 @@
     },
     "qwen_dev_cli/core/single_shot.py": {
       "path": "qwen_dev_cli/core/single_shot.py",
-      "hash": "73eebe3b03e40a7e",
+      "hash": "2efc07b9a0e056ce",
       "symbols": [
         {
           "name": "SingleShotExecutor",
@@ -31587,10 +31587,10 @@
         "tools.base",
         "tools.file_ops",
         "tools.search",
-        "tools.exec",
+        "tools.exec_hardened",
         "tools.git_ops"
       ],
-      "last_modified": 1763595538.9634097
+      "last_modified": 1763760379.9608457
     },
     "qwen_dev_cli/core/types.py": {
       "path": "qwen_dev_cli/core/types.py",
@@ -32587,6 +32587,584 @@
         "google.generativeai"
       ],
       "last_modified": 1763679989.772139
+    },
+    "tests/tools/test_exec_hardened.py": {
+      "path": "tests/tools/test_exec_hardened.py",
+      "hash": "28f05dddfefabb29",
+      "symbols": [
+        {
+          "name": "TestCommandValidator",
+          "type": "class",
+          "file_path": "tests/tools/test_exec_hardened.py",
+          "line_number": 22,
+          "docstring": "Test command validation - the first line of defense.",
+          "signature": null,
+          "parent": null
+        },
+        {
+          "name": "TestBashCommandToolHardened",
+          "type": "class",
+          "file_path": "tests/tools/test_exec_hardened.py",
+          "line_number": 108,
+          "docstring": "Test hardened bash execution.",
+          "signature": null,
+          "parent": null
+        },
+        {
+          "name": "TestResourceLimits",
+          "type": "class",
+          "file_path": "tests/tools/test_exec_hardened.py",
+          "line_number": 256,
+          "docstring": "Test resource limit enforcement.",
+          "signature": null,
+          "parent": null
+        },
+        {
+          "name": "TestSecurityFeatures",
+          "type": "class",
+          "file_path": "tests/tools/test_exec_hardened.py",
+          "line_number": 288,
+          "docstring": "Test security-specific features.",
+          "signature": null,
+          "parent": null
+        },
+        {
+          "name": "TestBackwardCompatibility",
+          "type": "class",
+          "file_path": "tests/tools/test_exec_hardened.py",
+          "line_number": 330,
+          "docstring": "Test that alias works for backward compatibility.",
+          "signature": null,
+          "parent": null
+        },
+        {
+          "name": "test_empty_command",
+          "type": "method",
+          "file_path": "tests/tools/test_exec_hardened.py",
+          "line_number": 25,
+          "docstring": "Empty commands are invalid.",
+          "signature": "test_empty_command(self)",
+          "parent": "TestCommandValidator"
+        },
+        {
+          "name": "test_whitespace_command",
+          "type": "method",
+          "file_path": "tests/tools/test_exec_hardened.py",
+          "line_number": 31,
+          "docstring": "Whitespace-only commands are invalid.",
+          "signature": "test_whitespace_command(self)",
+          "parent": "TestCommandValidator"
+        },
+        {
+          "name": "test_rm_rf_root_blocked",
+          "type": "method",
+          "file_path": "tests/tools/test_exec_hardened.py",
+          "line_number": 36,
+          "docstring": "rm -rf / is ALWAYS blocked.",
+          "signature": "test_rm_rf_root_blocked(self)",
+          "parent": "TestCommandValidator"
+        },
+        {
+          "name": "test_chmod_777_blocked",
+          "type": "method",
+          "file_path": "tests/tools/test_exec_hardened.py",
+          "line_number": 49,
+          "docstring": "chmod -R 777 is blocked.",
+          "signature": "test_chmod_777_blocked(self)",
+          "parent": "TestCommandValidator"
+        },
+        {
+          "name": "test_fork_bomb_blocked",
+          "type": "method",
+          "file_path": "tests/tools/test_exec_hardened.py",
+          "line_number": 55,
+          "docstring": "Fork bomb is blocked.",
+          "signature": "test_fork_bomb_blocked(self)",
+          "parent": "TestCommandValidator"
+        },
+        {
+          "name": "test_remote_code_execution_blocked",
+          "type": "method",
+          "file_path": "tests/tools/test_exec_hardened.py",
+          "line_number": 61,
+          "docstring": "curl | sh patterns are blocked.",
+          "signature": "test_remote_code_execution_blocked(self)",
+          "parent": "TestCommandValidator"
+        },
+        {
+          "name": "test_eval_injection_blocked",
+          "type": "method",
+          "file_path": "tests/tools/test_exec_hardened.py",
+          "line_number": 72,
+          "docstring": "eval with command substitution is blocked.",
+          "signature": "test_eval_injection_blocked(self)",
+          "parent": "TestCommandValidator"
+        },
+        {
+          "name": "test_excessive_piping_blocked",
+          "type": "method",
+          "file_path": "tests/tools/test_exec_hardened.py",
+          "line_number": 78,
+          "docstring": "Too many pipes is suspicious.",
+          "signature": "test_excessive_piping_blocked(self)",
+          "parent": "TestCommandValidator"
+        },
+        {
+          "name": "test_command_too_long_blocked",
+          "type": "method",
+          "file_path": "tests/tools/test_exec_hardened.py",
+          "line_number": 85,
+          "docstring": "Absurdly long commands are blocked.",
+          "signature": "test_command_too_long_blocked(self)",
+          "parent": "TestCommandValidator"
+        },
+        {
+          "name": "test_valid_commands_pass",
+          "type": "method",
+          "file_path": "tests/tools/test_exec_hardened.py",
+          "line_number": 92,
+          "docstring": "Legitimate commands pass validation.",
+          "signature": "test_valid_commands_pass(self)",
+          "parent": "TestCommandValidator"
+        }
+      ],
+      "imports": [
+        "pytest",
+        "asyncio",
+        "os",
+        "tempfile",
+        "pathlib",
+        "qwen_dev_cli.tools.exec_hardened",
+        "qwen_dev_cli.tools.exec_hardened"
+      ],
+      "last_modified": 1763759113.4371815
+    },
+    "tests/tools/test_exec_scientific.py": {
+      "path": "tests/tools/test_exec_scientific.py",
+      "hash": "2251743823c438f6",
+      "symbols": [
+        {
+          "name": "TestCommandValidationScientific",
+          "type": "class",
+          "file_path": "tests/tools/test_exec_scientific.py",
+          "line_number": 36,
+          "docstring": "Scientific validation of command input.",
+          "signature": null,
+          "parent": null
+        },
+        {
+          "name": "TestBasicExecutionScientific",
+          "type": "class",
+          "file_path": "tests/tools/test_exec_scientific.py",
+          "line_number": 241,
+          "docstring": "Scientific testing of basic command execution.",
+          "signature": null,
+          "parent": null
+        },
+        {
+          "name": "TestCwdAndPathScientific",
+          "type": "class",
+          "file_path": "tests/tools/test_exec_scientific.py",
+          "line_number": 404,
+          "docstring": "Scientific testing of working directory handling.",
+          "signature": null,
+          "parent": null
+        },
+        {
+          "name": "TestTimeoutAndLimitsScientific",
+          "type": "class",
+          "file_path": "tests/tools/test_exec_scientific.py",
+          "line_number": 516,
+          "docstring": "Scientific testing of timeouts and resource limits.",
+          "signature": null,
+          "parent": null
+        },
+        {
+          "name": "TestEnvironmentVariablesScientific",
+          "type": "class",
+          "file_path": "tests/tools/test_exec_scientific.py",
+          "line_number": 650,
+          "docstring": "Scientific testing of environment variable handling.",
+          "signature": null,
+          "parent": null
+        },
+        {
+          "name": "TestMetadataAndLoggingScientific",
+          "type": "class",
+          "file_path": "tests/tools/test_exec_scientific.py",
+          "line_number": 757,
+          "docstring": "Scientific testing of metadata and logging.",
+          "signature": null,
+          "parent": null
+        },
+        {
+          "name": "test_empty_string",
+          "type": "method",
+          "file_path": "tests/tools/test_exec_scientific.py",
+          "line_number": 41,
+          "docstring": "Empty string is invalid.",
+          "signature": "test_empty_string(self)",
+          "parent": "TestCommandValidationScientific"
+        },
+        {
+          "name": "test_single_space",
+          "type": "method",
+          "file_path": "tests/tools/test_exec_scientific.py",
+          "line_number": 47,
+          "docstring": "Single space is invalid.",
+          "signature": "test_single_space(self)",
+          "parent": "TestCommandValidationScientific"
+        },
+        {
+          "name": "test_multiple_spaces",
+          "type": "method",
+          "file_path": "tests/tools/test_exec_scientific.py",
+          "line_number": 52,
+          "docstring": "Multiple spaces are invalid.",
+          "signature": "test_multiple_spaces(self)",
+          "parent": "TestCommandValidationScientific"
+        },
+        {
+          "name": "test_tabs_and_newlines",
+          "type": "method",
+          "file_path": "tests/tools/test_exec_scientific.py",
+          "line_number": 57,
+          "docstring": "Tabs and newlines are invalid.",
+          "signature": "test_tabs_and_newlines(self)",
+          "parent": "TestCommandValidationScientific"
+        },
+        {
+          "name": "test_mixed_whitespace",
+          "type": "method",
+          "file_path": "tests/tools/test_exec_scientific.py",
+          "line_number": 62,
+          "docstring": "Mixed whitespace is invalid.",
+          "signature": "test_mixed_whitespace(self)",
+          "parent": "TestCommandValidationScientific"
+        },
+        {
+          "name": "test_single_character_command",
+          "type": "method",
+          "file_path": "tests/tools/test_exec_scientific.py",
+          "line_number": 69,
+          "docstring": "Single character commands work.",
+          "signature": "test_single_character_command(self)",
+          "parent": "TestCommandValidationScientific"
+        },
+        {
+          "name": "test_exactly_4096_chars",
+          "type": "method",
+          "file_path": "tests/tools/test_exec_scientific.py",
+          "line_number": 74,
+          "docstring": "4096 chars (boundary) should pass.",
+          "signature": "test_exactly_4096_chars(self)",
+          "parent": "TestCommandValidationScientific"
+        },
+        {
+          "name": "test_4097_chars_blocked",
+          "type": "method",
+          "file_path": "tests/tools/test_exec_scientific.py",
+          "line_number": 80,
+          "docstring": "4097 chars (over boundary) should fail.",
+          "signature": "test_4097_chars_blocked(self)",
+          "parent": "TestCommandValidationScientific"
+        },
+        {
+          "name": "test_very_long_command_blocked",
+          "type": "method",
+          "file_path": "tests/tools/test_exec_scientific.py",
+          "line_number": 87,
+          "docstring": "Extremely long commands blocked.",
+          "signature": "test_very_long_command_blocked(self)",
+          "parent": "TestCommandValidationScientific"
+        },
+        {
+          "name": "test_rm_rf_root_exact",
+          "type": "method",
+          "file_path": "tests/tools/test_exec_scientific.py",
+          "line_number": 95,
+          "docstring": "Exact rm -rf / is blocked.",
+          "signature": "test_rm_rf_root_exact(self)",
+          "parent": "TestCommandValidationScientific"
+        },
+        {
+          "name": "test_rm_rf_root_with_sudo",
+          "type": "method",
+          "file_path": "tests/tools/test_exec_scientific.py",
+          "line_number": 101,
+          "docstring": "rm -rf / with sudo is blocked.",
+          "signature": "test_rm_rf_root_with_sudo(self)",
+          "parent": "TestCommandValidationScientific"
+        },
+        {
+          "name": "test_rm_rf_home",
+          "type": "method",
+          "file_path": "tests/tools/test_exec_scientific.py",
+          "line_number": 106,
+          "docstring": "rm -rf ~ is blocked.",
+          "signature": "test_rm_rf_home(self)",
+          "parent": "TestCommandValidationScientific"
+        },
+        {
+          "name": "test_chmod_777_root",
+          "type": "method",
+          "file_path": "tests/tools/test_exec_scientific.py",
+          "line_number": 111,
+          "docstring": "chmod 777 / is blocked.",
+          "signature": "test_chmod_777_root(self)",
+          "parent": "TestCommandValidationScientific"
+        },
+        {
+          "name": "test_chmod_recursive_777",
+          "type": "method",
+          "file_path": "tests/tools/test_exec_scientific.py",
+          "line_number": 116,
+          "docstring": "chmod -R 777 is blocked.",
+          "signature": "test_chmod_recursive_777(self)",
+          "parent": "TestCommandValidationScientific"
+        },
+        {
+          "name": "test_fork_bomb_exact",
+          "type": "method",
+          "file_path": "tests/tools/test_exec_scientific.py",
+          "line_number": 121,
+          "docstring": "Fork bomb is blocked.",
+          "signature": "test_fork_bomb_exact(self)",
+          "parent": "TestCommandValidationScientific"
+        },
+        {
+          "name": "test_mkfs_blocked",
+          "type": "method",
+          "file_path": "tests/tools/test_exec_scientific.py",
+          "line_number": 126,
+          "docstring": "mkfs is blocked.",
+          "signature": "test_mkfs_blocked(self)",
+          "parent": "TestCommandValidationScientific"
+        },
+        {
+          "name": "test_rm_rf_with_path",
+          "type": "method",
+          "file_path": "tests/tools/test_exec_scientific.py",
+          "line_number": 133,
+          "docstring": "rm -rf with any path starting with / is blocked.",
+          "signature": "test_rm_rf_with_path(self)",
+          "parent": "TestCommandValidationScientific"
+        },
+        {
+          "name": "test_dd_to_disk",
+          "type": "method",
+          "file_path": "tests/tools/test_exec_scientific.py",
+          "line_number": 145,
+          "docstring": "dd to /dev/zero is blocked.",
+          "signature": "test_dd_to_disk(self)",
+          "parent": "TestCommandValidationScientific"
+        },
+        {
+          "name": "test_eval_with_curl",
+          "type": "method",
+          "file_path": "tests/tools/test_exec_scientific.py",
+          "line_number": 150,
+          "docstring": "eval with curl is blocked.",
+          "signature": "test_eval_with_curl(self)",
+          "parent": "TestCommandValidationScientific"
+        },
+        {
+          "name": "test_wget_pipe_sh",
+          "type": "method",
+          "file_path": "tests/tools/test_exec_scientific.py",
+          "line_number": 155,
+          "docstring": "wget | sh is blocked.",
+          "signature": "test_wget_pipe_sh(self)",
+          "parent": "TestCommandValidationScientific"
+        },
+        {
+          "name": "test_curl_pipe_bash",
+          "type": "method",
+          "file_path": "tests/tools/test_exec_scientific.py",
+          "line_number": 160,
+          "docstring": "curl | bash is blocked.",
+          "signature": "test_curl_pipe_bash(self)",
+          "parent": "TestCommandValidationScientific"
+        },
+        {
+          "name": "test_sudo_any_command",
+          "type": "method",
+          "file_path": "tests/tools/test_exec_scientific.py",
+          "line_number": 165,
+          "docstring": "sudo with any command is blocked.",
+          "signature": "test_sudo_any_command(self)",
+          "parent": "TestCommandValidationScientific"
+        },
+        {
+          "name": "test_su_blocked",
+          "type": "method",
+          "file_path": "tests/tools/test_exec_scientific.py",
+          "line_number": 176,
+          "docstring": "su command is blocked.",
+          "signature": "test_su_blocked(self)",
+          "parent": "TestCommandValidationScientific"
+        },
+        {
+          "name": "test_zero_pipes",
+          "type": "method",
+          "file_path": "tests/tools/test_exec_scientific.py",
+          "line_number": 183,
+          "docstring": "Commands with zero pipes work.",
+          "signature": "test_zero_pipes(self)",
+          "parent": "TestCommandValidationScientific"
+        },
+        {
+          "name": "test_one_pipe",
+          "type": "method",
+          "file_path": "tests/tools/test_exec_scientific.py",
+          "line_number": 188,
+          "docstring": "Commands with 1 pipe work.",
+          "signature": "test_one_pipe(self)",
+          "parent": "TestCommandValidationScientific"
+        },
+        {
+          "name": "test_ten_pipes_allowed",
+          "type": "method",
+          "file_path": "tests/tools/test_exec_scientific.py",
+          "line_number": 193,
+          "docstring": "10 pipes (boundary) is allowed.",
+          "signature": "test_ten_pipes_allowed(self)",
+          "parent": "TestCommandValidationScientific"
+        },
+        {
+          "name": "test_eleven_pipes_blocked",
+          "type": "method",
+          "file_path": "tests/tools/test_exec_scientific.py",
+          "line_number": 199,
+          "docstring": "11 pipes (over boundary) is blocked.",
+          "signature": "test_eleven_pipes_blocked(self)",
+          "parent": "TestCommandValidationScientific"
+        },
+        {
+          "name": "test_excessive_pipes_blocked",
+          "type": "method",
+          "file_path": "tests/tools/test_exec_scientific.py",
+          "line_number": 206,
+          "docstring": "Excessive pipes (20+) are blocked.",
+          "signature": "test_excessive_pipes_blocked(self)",
+          "parent": "TestCommandValidationScientific"
+        },
+        {
+          "name": "test_valid_simple_commands",
+          "type": "method",
+          "file_path": "tests/tools/test_exec_scientific.py",
+          "line_number": 214,
+          "docstring": "Common valid commands pass.",
+          "signature": "test_valid_simple_commands(self)",
+          "parent": "TestCommandValidationScientific"
+        }
+      ],
+      "imports": [
+        "pytest",
+        "asyncio",
+        "os",
+        "tempfile",
+        "time",
+        "signal",
+        "pathlib",
+        "unittest.mock",
+        "qwen_dev_cli.tools.exec_hardened"
+      ],
+      "last_modified": 1763759838.3404405
+    },
+    "qwen_dev_cli/tools/exec_hardened.py": {
+      "path": "qwen_dev_cli/tools/exec_hardened.py",
+      "hash": "56a855c1f4395229",
+      "symbols": [
+        {
+          "name": "ExecutionLimits",
+          "type": "class",
+          "file_path": "qwen_dev_cli/tools/exec_hardened.py",
+          "line_number": 33,
+          "docstring": "Resource limits for command execution.\n\nThese are not suggestions. These are HARD LIMITS.\nIf you hit them, your process dies. No negotiation.",
+          "signature": null,
+          "parent": null
+        },
+        {
+          "name": "CommandValidator",
+          "type": "class",
+          "file_path": "qwen_dev_cli/tools/exec_hardened.py",
+          "line_number": 46,
+          "docstring": "Validates bash commands before execution.\n\nPhilosophy: Whitelist good, blacklist bad is for amateurs.\nWe do BOTH. Defense in depth or go home.",
+          "signature": null,
+          "parent": null
+        },
+        {
+          "name": "BashCommandToolHardened",
+          "type": "class",
+          "file_path": "qwen_dev_cli/tools/exec_hardened.py",
+          "line_number": 161,
+          "docstring": "Hardened bash command execution.\n\nThis is not your grandmother's subprocess.run().\nThis is PRODUCTION-GRADE command execution with:\n- Input validation (whitelist + blacklist)\n- Resource limits (CPU, memory, time, output size)\n- Security sandboxing (no sudo, no root)\n- Comprehensive logging\n- Graceful degradation\n\nIf this breaks, your command was probably malicious anyway.",
+          "signature": null,
+          "parent": null
+        },
+        {
+          "name": "validate",
+          "type": "method",
+          "file_path": "qwen_dev_cli/tools/exec_hardened.py",
+          "line_number": 95,
+          "docstring": "Validate command is safe to execute.\n\nReturns:\n    (is_valid, error_message)",
+          "signature": "validate(cls, command)",
+          "parent": "CommandValidator"
+        },
+        {
+          "name": "sanitize_path",
+          "type": "method",
+          "file_path": "qwen_dev_cli/tools/exec_hardened.py",
+          "line_number": 138,
+          "docstring": "Sanitize a file path.\n\nResolve symlinks, check for traversal, validate exists.",
+          "signature": "sanitize_path(cls, path)",
+          "parent": "CommandValidator"
+        },
+        {
+          "name": "__init__",
+          "type": "method",
+          "file_path": "qwen_dev_cli/tools/exec_hardened.py",
+          "line_number": 175,
+          "docstring": null,
+          "signature": "__init__(self, limits)",
+          "parent": "BashCommandToolHardened"
+        },
+        {
+          "name": "get_validators",
+          "type": "method",
+          "file_path": "qwen_dev_cli/tools/exec_hardened.py",
+          "line_number": 208,
+          "docstring": "Validate parameters.",
+          "signature": "get_validators(self)",
+          "parent": "BashCommandToolHardened"
+        },
+        {
+          "name": "_setup_resource_limits",
+          "type": "method",
+          "file_path": "qwen_dev_cli/tools/exec_hardened.py",
+          "line_number": 212,
+          "docstring": "Set resource limits for child process.\n\nThis runs in the child process BEFORE exec.\nIf it fails, the child dies. Good.",
+          "signature": "_setup_resource_limits(self)",
+          "parent": "BashCommandToolHardened"
+        }
+      ],
+      "imports": [
+        "subprocess",
+        "asyncio",
+        "os",
+        "re",
+        "logging",
+        "resource",
+        "signal",
+        "pathlib",
+        "typing",
+        "dataclasses",
+        "base",
+        "validated",
+        "core.validation"
+      ],
+      "last_modified": 1763759483.6810675
     }
   }
 }

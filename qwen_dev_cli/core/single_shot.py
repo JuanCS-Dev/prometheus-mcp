@@ -18,7 +18,7 @@ from ..tools.file_ops import (
     ListDirectoryTool
 )
 from ..tools.search import SearchFilesTool
-from ..tools.exec import BashCommandTool
+from ..tools.exec_hardened import BashCommandTool
 from ..tools.git_ops import GitStatusTool, GitDiffTool
 
 
