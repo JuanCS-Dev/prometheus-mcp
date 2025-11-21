@@ -230,6 +230,10 @@ class InteractiveShell:
             indexer=self.indexer
         )
         
+        # Context Optimizer (Week 4 Day 1 Phase 2 - Auto-Optimization)
+        from .core.context_optimizer import ContextOptimizer
+        self.context_optimizer = ContextOptimizer(max_tokens=100_000)
+        
         # Legacy session (fallback)
         self.session = PromptSession(
             history=FileHistory(str(history_file)),
@@ -951,13 +955,40 @@ Response: I don't have a tool to check the current time, but I can help you with
             return False, None
         
         elif cmd == "/context":
+            # Show context stats
+            stats = self.context_optimizer.get_stats()
             context_text = f"""
 CWD: {self.context.cwd}
 Modified files: {len(self.context.modified_files)}
 Read files: {len(self.context.read_files)}
 Tool calls: {len(self.context.tool_calls)}
+
+Context Optimizer:
+  Items: {stats['total_items']}
+  Tokens: {stats['total_tokens']:,} / {stats['max_tokens']:,}
+  Usage: {stats['usage_percent']:.1f}%
+  Optimizations: {stats['optimizations_performed']}
 """
             self.console.print(Panel(context_text, title="Session Context", border_style="blue"))
+            
+            # Show recommendations
+            recs = self.context_optimizer.get_recommendations()
+            if recs:
+                self.console.print("\n[yellow]Recommendations:[/yellow]")
+                for rec in recs:
+                    self.console.print(f"  ⚠️  {rec}")
+            
+            return False, None
+        
+        elif cmd == "/context optimize":
+            # Manual optimization
+            self.console.print("[cyan]🔧 Optimizing context...[/cyan]")
+            metrics = self.context_optimizer.auto_optimize(target_usage=0.7)
+            
+            self.console.print(f"[green]✓ Optimization complete in {metrics.duration_ms:.1f}ms[/green]")
+            self.console.print(f"  Items: {metrics.items_before} → {metrics.items_after} ({metrics.items_removed} removed)")
+            self.console.print(f"  Tokens: {metrics.tokens_before:,} → {metrics.tokens_after:,} ({metrics.tokens_freed:,} freed)")
+            
             return False, None
         
         elif cmd == "/clear":
