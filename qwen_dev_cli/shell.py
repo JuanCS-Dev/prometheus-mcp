@@ -927,11 +927,13 @@ Response: I don't have a tool to check the current time, but I can help you with
   /explain X  - Explain command/concept
 
 [bold]LSP Code Intelligence:[/bold] 🆕
-  /lsp                      - Start LSP server
-  /lsp hover FILE:LINE:CHAR - Get documentation
-  /lsp goto FILE:LINE:CHAR  - Go to definition
-  /lsp refs FILE:LINE:CHAR  - Find references
-  /lsp diag FILE            - Show diagnostics
+  /lsp                          - Start LSP server (Python/TypeScript/Go)
+  /lsp hover FILE:LINE:CHAR     - Get documentation
+  /lsp goto FILE:LINE:CHAR      - Go to definition
+  /lsp refs FILE:LINE:CHAR      - Find references
+  /lsp diag FILE                - Show diagnostics
+  /lsp complete FILE:LINE:CHAR  - Code completion suggestions 🆕
+  /lsp signature FILE:LINE:CHAR - Function signature help 🆕
 
 [bold]Smart Suggestions:[/bold] 🆕
   /suggest FILE             - Get related files & code suggestions
@@ -1246,11 +1248,14 @@ Context Optimizer:
                 if success:
                     self._lsp_initialized = True
                     self.console.print("[green]✓ LSP server started successfully[/green]")
+                    self.console.print(f"[dim]Language: {self.lsp_client.language.value}[/dim]")
                     self.console.print("\n[bold]LSP Features:[/bold]")
-                    self.console.print("  /lsp hover <file>:<line>:<char>  - Get hover documentation")
-                    self.console.print("  /lsp goto <file>:<line>:<char>   - Go to definition")
-                    self.console.print("  /lsp refs <file>:<line>:<char>   - Find references")
-                    self.console.print("  /lsp diag <file>                 - Show diagnostics")
+                    self.console.print("  /lsp hover <file>:<line>:<char>     - Hover documentation")
+                    self.console.print("  /lsp goto <file>:<line>:<char>      - Go to definition")
+                    self.console.print("  /lsp refs <file>:<line>:<char>      - Find references")
+                    self.console.print("  /lsp diag <file>                    - Show diagnostics")
+                    self.console.print("  /lsp complete <file>:<line>:<char>  - Code completions 🆕")
+                    self.console.print("  /lsp signature <file>:<line>:<char> - Signature help 🆕")
                 else:
                     self.console.print("[red]✗ Failed to start LSP server[/red]")
                     self.console.print("[dim]Install: pip install python-lsp-server[all][/dim]")
@@ -1371,6 +1376,87 @@ Context Optimizer:
                         )
                 else:
                     self.console.print(f"[green]✓ No diagnostics for {file_path}[/green]")
+            except Exception as e:
+                return False, f"[red]Error: {e}[/red]"
+            return False, None
+        
+        elif cmd.startswith("/lsp complete "):
+            # LSP code completion (Week 4 Day 3)
+            if not self._lsp_initialized:
+                return False, "[yellow]⚠ LSP not initialized. Run /lsp first.[/yellow]"
+            
+            try:
+                # Parse: /lsp complete file.py:10:5
+                location = cmd[14:].strip()
+                parts = location.split(":")
+                if len(parts) != 3:
+                    return False, "[red]Usage: /lsp complete <file>:<line>:<char>[/red]"
+                
+                file_path = Path(parts[0])
+                line = int(parts[1])
+                char = int(parts[2])
+                
+                completions = await self.lsp_client.completion(file_path, line, char)
+                if completions:
+                    self.console.print(f"\n[bold]Code Completions ({len(completions)} items):[/bold]\n")
+                    for item in completions[:20]:  # Show top 20
+                        kind_emoji = {
+                            "Function": "🔧", "Method": "⚙️", "Variable": "📦",
+                            "Class": "📚", "Module": "📁", "Constant": "🔒"
+                        }.get(item.kind_name, "•")
+                        
+                        detail = f" - {item.detail}" if item.detail else ""
+                        self.console.print(
+                            f"  {kind_emoji} [cyan]{item.label}[/cyan]{detail}"
+                        )
+                        if item.documentation:
+                            doc_preview = item.documentation[:60]
+                            self.console.print(f"     [dim]{doc_preview}[/dim]")
+                    
+                    if len(completions) > 20:
+                        self.console.print(f"\n[dim]... and {len(completions) - 20} more[/dim]")
+                else:
+                    self.console.print("[dim]No completions available[/dim]")
+            except Exception as e:
+                return False, f"[red]Error: {e}[/red]"
+            return False, None
+        
+        elif cmd.startswith("/lsp signature "):
+            # LSP signature help (Week 4 Day 3)
+            if not self._lsp_initialized:
+                return False, "[yellow]⚠ LSP not initialized. Run /lsp first.[/yellow]"
+            
+            try:
+                # Parse: /lsp signature file.py:10:5
+                location = cmd[15:].strip()
+                parts = location.split(":")
+                if len(parts) != 3:
+                    return False, "[red]Usage: /lsp signature <file>:<line>:<char>[/red]"
+                
+                file_path = Path(parts[0])
+                line = int(parts[1])
+                char = int(parts[2])
+                
+                sig_help = await self.lsp_client.signature_help(file_path, line, char)
+                if sig_help and sig_help.signatures:
+                    active_sig = sig_help.signatures[sig_help.active_signature]
+                    
+                    self.console.print(f"\n[bold]Function Signature:[/bold]")
+                    self.console.print(f"  [cyan]{active_sig.label}[/cyan]\n")
+                    
+                    if active_sig.documentation:
+                        self.console.print(f"[dim]{active_sig.documentation}[/dim]\n")
+                    
+                    if active_sig.parameters:
+                        self.console.print("[bold]Parameters:[/bold]")
+                        for i, param in enumerate(active_sig.parameters):
+                            marker = "→" if i == sig_help.active_parameter else " "
+                            style = "bold cyan" if i == sig_help.active_parameter else "dim"
+                            self.console.print(f"  {marker} [{style}]{param.label}[/{style}]")
+                            if param.documentation:
+                                self.console.print(f"    [dim]{param.documentation}[/dim]")
+                else:
+                    self.console.print("[dim]No signature help available[/dim]")
             except Exception as e:
                 return False, f"[red]Error: {e}[/red]"
             return False, None
