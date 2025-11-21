@@ -19,7 +19,9 @@ from typing import Any, Dict, List, Optional, Set, Tuple
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta
 from pathlib import Path
+from enum import Enum
 import re
+import time
 from collections import defaultdict, deque
 
 from rich.console import Console
@@ -28,6 +30,43 @@ from rich.panel import Panel
 from rich.text import Text
 from rich.progress import Progress, BarColumn, TextColumn, TaskID
 from rich.live import Live
+
+
+# Week 4 Day 1 Consolidation: ContentType from ContextOptimizer
+class ContentType(Enum):
+    """Type of content in context."""
+    FILE_CONTENT = "file_content"
+    TOOL_RESULT = "tool_result"
+    CONVERSATION = "conversation"
+    CODE_SNIPPET = "code_snippet"
+    ERROR_MESSAGE = "error_message"
+
+
+# Week 4 Day 1 Consolidation: ContextItem from ContextOptimizer
+@dataclass
+class ContextItem:
+    """Item in the context window with LRU tracking."""
+    id: str
+    content: str
+    content_type: ContentType
+    token_count: int
+    timestamp: float
+    access_count: int = 0
+    last_accessed: float = field(default_factory=time.time)
+    relevance_score: float = 1.0
+    pinned: bool = False
+
+
+@dataclass
+class OptimizationMetrics:
+    """Metrics from optimization operation."""
+    items_before: int
+    items_after: int
+    tokens_before: int
+    tokens_after: int
+    items_removed: int
+    tokens_freed: int
+    duration_ms: float
 
 
 @dataclass
@@ -156,6 +195,15 @@ class ContextAwarenessEngine:
             total_tokens=0,
             max_tokens=max_context_tokens
         )
+        
+        # Week 4 Day 1: Enhanced with ContextOptimizer features
+        self.items: Dict[str, ContextItem] = {}  # LRU tracking
+        self.optimizations_performed = 0
+        self.total_tokens_freed = 0
+        
+        # Thresholds (from ContextOptimizer)
+        self.warning_threshold = 0.8
+        self.critical_threshold = 0.9
         
         # Relevance tracking
         self.access_history: Dict[str, List[datetime]] = defaultdict(list)
@@ -661,3 +709,61 @@ if __name__ == "__main__":
     console.print("\n🤖 Suggested Files:")
     for suggestion in suggestions:
         console.print(f"  • {suggestion.path} (score: {suggestion.score:.2f})")
+
+    # ========================================================================
+    # WEEK 4 DAY 1 CONSOLIDATION: Methods from ContextOptimizer
+    # ========================================================================
+    
+    def add_item(self, item_id: str, content: str, content_type, token_count: int, pinned: bool = False) -> bool:
+        """Add item with LRU tracking."""
+        if self.window.total_tokens + token_count > self.max_context_tokens:
+            if not pinned:
+                self.auto_optimize(tokens_needed=token_count)
+        if self.window.total_tokens + token_count > self.max_context_tokens:
+            return False
+        if item_id in self.items:
+            old_item = self.items[item_id]
+            self.window.total_tokens -= old_item.token_count
+        item = ContextItem(id=item_id, content=content, content_type=content_type, token_count=token_count, timestamp=time.time(), pinned=pinned)
+        self.items[item_id] = item
+        self.window.total_tokens += token_count
+        return True
+    
+    def auto_optimize(self, tokens_needed: int = 0, target_usage: float = 0.7):
+        """Auto-optimize using LRU."""
+        start = time.time()
+        items_before = len(self.items)
+        tokens_before = self.window.total_tokens
+        target_tokens = int(self.max_context_tokens * target_usage) - tokens_needed
+        scored = [(self.calculate_item_relevance(item), item) for item in self.items.values() if not item.pinned]
+        scored.sort(key=lambda x: x[0])
+        removed, freed = [], 0
+        for _, item in scored:
+            if self.window.total_tokens <= target_tokens: break
+            removed.append(item.id)
+            freed += item.token_count
+            self.window.total_tokens -= item.token_count
+        for rid in removed: self.items.pop(rid, None)
+        self.optimizations_performed += 1
+        self.total_tokens_freed += freed
+        return OptimizationMetrics(items_before, len(self.items), tokens_before, self.window.total_tokens, len(removed), freed, (time.time() - start) * 1000)
+    
+    def calculate_item_relevance(self, item) -> float:
+        """Calculate relevance for LRU."""
+        if item.pinned: return 1.0
+        age = time.time() - item.last_accessed
+        recency = 1.0 / (1.0 + age / 300)
+        frequency = min(1.0, (item.access_count + 1) / 10)
+        return 0.7 * recency + 0.3 * frequency
+    
+    def get_optimization_stats(self) -> dict:
+        """Get stats."""
+        return {'total_items': len(self.items), 'total_tokens': self.window.total_tokens, 'max_tokens': self.max_context_tokens, 'usage_percent': self.window.utilization * 100, 'pinned_items': sum(1 for i in self.items.values() if i.pinned), 'optimizations_performed': self.optimizations_performed, 'total_tokens_freed': self.total_tokens_freed}
+    
+    def get_optimization_recommendations(self) -> list:
+        """Get recommendations."""
+        recs = []
+        usage = self.window.utilization * 100
+        if usage >= 90: recs.append("CRITICAL: Context >90% full")
+        elif usage >= 80: recs.append("WARNING: Context >80% full")
+        return recs

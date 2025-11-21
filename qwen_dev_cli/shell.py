@@ -230,9 +230,9 @@ class InteractiveShell:
             indexer=self.indexer
         )
         
-        # Context Optimizer (Week 4 Day 1 Phase 2 - Auto-Optimization)
-        from .core.context_optimizer import ContextOptimizer
-        self.context_optimizer = ContextOptimizer(max_tokens=100_000)
+        # Week 4 Day 1: Consolidated context manager (wraps ContextAwarenessEngine)
+        from .core.context_manager_consolidated import ConsolidatedContextManager
+        self.context_manager = ConsolidatedContextManager(max_tokens=100_000)
         
         # Legacy session (fallback)
         self.session = PromptSession(
@@ -901,7 +901,8 @@ Response: I don't have a tool to check the current time, but I can help you with
   /help       - Show this help
   /exit       - Exit shell
   /tools      - List available tools
-  /context    - Show session context
+  /context           - Show session context
+  /context optimize  - Manually optimize context 🆕
   /clear      - Clear screen
   /metrics    - Show constitutional metrics
   /cache      - Show cache statistics
@@ -955,8 +956,8 @@ Response: I don't have a tool to check the current time, but I can help you with
             return False, None
         
         elif cmd == "/context":
-            # Show context stats
-            stats = self.context_optimizer.get_stats()
+            # Show context stats (consolidated via wrapper)
+            stats = self.context_manager.get_optimization_stats()
             context_text = f"""
 CWD: {self.context.cwd}
 Modified files: {len(self.context.modified_files)}
@@ -971,8 +972,8 @@ Context Optimizer:
 """
             self.console.print(Panel(context_text, title="Session Context", border_style="blue"))
             
-            # Show recommendations
-            recs = self.context_optimizer.get_recommendations()
+            # Show recommendations (consolidated via wrapper)
+            recs = self.context_manager.get_optimization_recommendations()
             if recs:
                 self.console.print("\n[yellow]Recommendations:[/yellow]")
                 for rec in recs:
@@ -981,9 +982,9 @@ Context Optimizer:
             return False, None
         
         elif cmd == "/context optimize":
-            # Manual optimization
+            # Manual optimization (consolidated via wrapper)
             self.console.print("[cyan]🔧 Optimizing context...[/cyan]")
-            metrics = self.context_optimizer.auto_optimize(target_usage=0.7)
+            metrics = self.context_manager.auto_optimize(target_usage=0.7)
             
             self.console.print(f"[green]✓ Optimization complete in {metrics.duration_ms:.1f}ms[/green]")
             self.console.print(f"  Items: {metrics.items_before} → {metrics.items_after} ({metrics.items_removed} removed)")
