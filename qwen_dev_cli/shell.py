@@ -223,6 +223,12 @@ class InteractiveShell:
         self.lsp_client = LSPClient(root_path=Path.cwd())
         self._lsp_initialized = False
         
+        # Semantic Indexer (MUST be initialized before ContextSuggestionEngine)
+        self.indexer = SemanticIndexer(root_path=os.getcwd())
+        self.indexer.load_cache()  # Load from cache if available
+        self._indexer_initialized = False
+        self._auto_index_task = None  # Week 3 Day 1: Background indexing task
+        
         # Context Suggestions (Week 4 Day 1 - Smart Recommendations)
         from .intelligence.context_suggestions import ContextSuggestionEngine
         self.suggestion_engine = ContextSuggestionEngine(
@@ -259,11 +265,7 @@ class InteractiveShell:
         self.file_watcher.add_callback(self._on_file_changed)
         self.file_watcher.start()
         
-        # Phase 5: Semantic indexer (Cursor-style intelligence)
-        self.indexer = SemanticIndexer(root_path=os.getcwd())
-        self.indexer.load_cache()  # Load from cache if available
-        self._indexer_initialized = False
-        self._auto_index_task = None  # Week 3 Day 1: Background indexing task
+        # Note: Semantic indexer moved earlier (before ContextSuggestionEngine)
     
     def _register_tools(self):
         """Register all available tools."""
