@@ -38,6 +38,11 @@ class SearchFilesTool(ValidatedTool):
                 "type": "integer",
                 "description": "Maximum number of results",
                 "required": False
+            },
+            "semantic": {
+                "type": "boolean",
+                "description": "Use semantic search (code symbols) instead of text search",
+                "required": False
             }
         }
     def get_validators(self):
@@ -45,9 +50,20 @@ class SearchFilesTool(ValidatedTool):
         return {}
 
     
-    async def _execute_validated(self, pattern: str, path: str = ".", file_pattern: Optional[str] = None, max_results: int = 50) -> ToolResult:
-        """Search for pattern in files."""
+    async def _execute_validated(self, pattern: str, path: str = ".", file_pattern: Optional[str] = None, 
+                                 max_results: int = 50, semantic: bool = False, indexer=None) -> ToolResult:
+        """
+        Search for pattern in files.
+        
+        Week 3 Day 1: Added semantic search mode using indexer.
+        When semantic=True, searches code symbols instead of text.
+        """
         try:
+            # Week 3 Day 1: Semantic search mode
+            if semantic and indexer:
+                return await self._semantic_search(pattern, indexer, max_results)
+            
+            # Original text-based search
             # Try ripgrep first
             cmd = ["rg", "--line-number", "--with-filename", "--no-heading"]
             
@@ -128,6 +144,63 @@ class SearchFilesTool(ValidatedTool):
             
         except Exception as e:
             return ToolResult(success=False, error=str(e))
+    
+    async def _semantic_search(self, query: str, indexer, max_results: int) -> ToolResult:
+        """
+        Week 3 Day 1: Semantic search using indexer.
+        
+        Searches code symbols (classes, functions, methods) instead of text.
+        Much faster and more accurate for code navigation.
+        
+        Args:
+            query: Symbol name to search for
+            indexer: SemanticIndexer instance
+            max_results: Maximum number of results
+        
+        Returns:
+            ToolResult with symbol matches
+        """
+        try:
+            # Use indexer's search_symbols method
+            symbols = indexer.search_symbols(query, limit=max_results)
+            
+            if not symbols:
+                return ToolResult(
+                    success=True,
+                    data=[],
+                    metadata={
+                        "pattern": query,
+                        "count": 0,
+                        "tool": "semantic_indexer"
+                    }
+                )
+            
+            # Convert Symbol objects to dict format
+            results = []
+            for symbol in symbols:
+                results.append({
+                    "file": symbol.file_path,
+                    "line": symbol.line_number,
+                    "name": symbol.name,
+                    "type": symbol.type,
+                    "signature": symbol.signature or "",
+                    "docstring": (symbol.docstring or "")[:100]  # First 100 chars
+                })
+            
+            return ToolResult(
+                success=True,
+                data=results,
+                metadata={
+                    "pattern": query,
+                    "count": len(results),
+                    "tool": "semantic_indexer"
+                }
+            )
+        
+        except Exception as e:
+            # Fall back to text search on error
+            logger.warning(f"Semantic search failed: {e}, falling back to text search")
+            return await self._execute_validated(query, semantic=False)
 
 
 class GetDirectoryTreeTool(ValidatedTool):

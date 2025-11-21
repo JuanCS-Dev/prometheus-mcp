@@ -241,6 +241,7 @@ class InteractiveShell:
         self.indexer = SemanticIndexer(root_path=os.getcwd())
         self.indexer.load_cache()  # Load from cache if available
         self._indexer_initialized = False
+        self._auto_index_task = None  # Week 3 Day 1: Background indexing task
     
     def _register_tools(self):
         """Register all available tools."""
@@ -698,6 +699,11 @@ Response: I don't have a tool to check the current time, but I can help you with
             if tool_name in ['write_file', 'edit_file']:
                 args['console'] = self.console
                 args['preview'] = getattr(self.context, 'preview_enabled', True)
+            
+            # Week 3 Day 1: Pass indexer to search_files for semantic search
+            if tool_name == 'search_files' and self._indexer_initialized:
+                args['semantic'] = args.get('semantic', True)  # Enable semantic by default
+                args['indexer'] = self.indexer
             
             # Execute tool with Phase 3.1: Error recovery loop
             result = await self._execute_with_recovery(
@@ -1285,6 +1291,44 @@ Tool calls: {len(self.context.tool_calls)}
         
         return None
     
+    async def _auto_index_background(self):
+        """
+        Week 3 Day 1: Background indexing task.
+        
+        Automatically indexes codebase on startup without blocking.
+        Shows progress indicator and updates cache incrementally.
+        """
+        try:
+            # Wait a bit for shell to start
+            await asyncio.sleep(2.0)
+            
+            # Check if we need to index (cache stale or missing)
+            if self._indexer_initialized:
+                return  # Already indexed
+            
+            start_time = asyncio.get_event_loop().time()
+            
+            # Index codebase (non-blocking for cached files)
+            count = await asyncio.to_thread(self.indexer.index_codebase, force=False)
+            
+            elapsed = asyncio.get_event_loop().time() - start_time
+            
+            # Get stats
+            stats = self.indexer.get_stats()
+            
+            self._indexer_initialized = True
+            
+            # Show completion message
+            self.console.print(
+                f"\n[green]✓ Indexed {count} files in {elapsed:.1f}s[/green] "
+                f"[dim]({stats['total_symbols']} symbols)[/dim]\n"
+            )
+        
+        except Exception as e:
+            # Don't crash on indexing errors
+            import logging
+            logging.error(f"Background indexing failed: {e}")
+    
     async def run(self):
         """Interactive REPL with Cursor+Claude+Gemini best practices."""
         self._show_welcome()
@@ -1302,6 +1346,9 @@ Tool calls: {len(self.context.tool_calls)}
                 await asyncio.sleep(1.0)
         
         watcher_task = asyncio.create_task(file_watcher_loop())
+        
+        # Week 3 Day 1: Start background indexing task
+        self._auto_index_task = asyncio.create_task(self._auto_index_background())
         
         try:
             while True:
