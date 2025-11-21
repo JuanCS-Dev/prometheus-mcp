@@ -8,6 +8,7 @@ Built for the MCP Hackathon with 27+ production tools.
 
 from __future__ import annotations
 
+import asyncio
 import os
 import random
 import shutil
@@ -227,7 +228,22 @@ async def stream_conversation(
     history: List[Dict[str, Any]],
     session_id: str,
 ):
-    """Stream output from CLI backend with live monitoring."""
+    """
+    Stream LLM output with live monitoring (async I/O handler).
+    
+    Following Gradio 6 + Uvicorn async best practices:
+    - Uses async/await for network I/O (LLM streaming)
+    - Yields frequently to keep event loop responsive
+    - No blocking operations in async context
+    
+    Args:
+        message: User input text
+        history: Chat history as list of role/content dicts
+        session_id: Persistent session identifier
+        
+    Yields:
+        Tuple of (history, logs_html, session_id, gauge1, chart, gauge2)
+    """
     if not message.strip():
         metrics = _monitor.get_metrics()
         yield (
@@ -266,7 +282,7 @@ async def stream_conversation(
     chunk_count = 0
     
     try:
-        # Stream execution
+        # Stream execution (async I/O bound - network call to LLM)
         async for chunk in _bridge.stream_command(message, session_value):
             chunk_text = chunk or ""
             chunk_count += 1
@@ -289,6 +305,10 @@ async def stream_conversation(
                 render_bar_chart(metrics["safety_data"], "SAFETY INDEX"),
                 render_dual_gauge(99, "MODEL", 100, "ENV")
             )
+            
+            # CRITICAL: Yield to event loop (Gradio 6 async best practice)
+            # Prevents blocking Uvicorn when stream is very fast
+            await asyncio.sleep(0)
             
     except Exception as e:
         # Error state
@@ -332,28 +352,36 @@ def _load_cyber_css() -> str:
 
 # --- UI CONSTRUCTION ---
 
-def create_ui() -> gr.Blocks:
-    """Build cyberpunk-themed UI with live monitoring."""
-    
-    # Load cyberpunk CSS and inject Tailwind
-    cyber_css = _load_cyber_css()
-    # Inject Tailwind via CSS import
-    tailwind_inject = """
-    @import url('https://cdn.tailwindcss.com');
+def create_ui() -> tuple[gr.Blocks, str, str]:
     """
-    combined_css = tailwind_inject + "\n" + cyber_css
+    Build cyberpunk-themed UI with live monitoring.
+    
+    Returns:
+        Tuple of (demo, theme, css) for Gradio 6 launch() signature
+        
+    Architecture notes:
+        - Tailwind CDN injected via head parameter (Shadow DOM penetration)
+        - Custom CSS loaded from cyber_theme.css for glassmorphism effects
+        - Uses async generators for streaming (Uvicorn-compatible)
+    """
+    
+    # Load cyberpunk CSS
+    cyber_css = _load_cyber_css()
+    
+    # Tailwind CDN injection via gr.HTML (Gradio 6.0.0 compatible)
+    tailwind_head = render_tailwind_header()
 
-    # Gradio 6: theme and css go in launch(), not Blocks()
+    # Gradio 6.0.0: head parameter not supported, inject via HTML component
     with gr.Blocks(
         title="GEMINI-CLI-2 · THE BOSS · NEW STANDARD",
         fill_height=True,
     ) as demo:
         
+        # Inject Tailwind CDN at top of UI
+        gr.HTML(tailwind_head, visible=False)
+        
         # State Management
         session_state = gr.State(value=None)
-        
-        # Inject Tailwind script (workaround for Gradio 6)
-        gr.HTML(render_tailwind_header())
         
         # HEADER (Cyberpunk Style)
         with gr.Row(elem_classes="mb-2 items-center border-b border-gray-800 pb-2"):
@@ -491,8 +519,9 @@ def create_ui() -> gr.Blocks:
             outputs=[gauge_html, chart_html, status_html, log_display]
         )
 
-    # Gradio 6: Return theme and css for launch()
-    return demo, None, combined_css
+    # Gradio 6: Return tuple (demo, theme, css) for launch()
+    # Theme is None (using custom CSS), css contains glassmorphism overrides
+    return demo, None, cyber_css
 
 # --- LAUNCHER ---
 
@@ -505,6 +534,9 @@ if __name__ == "__main__":
     print(f"🚀 Launching GEMINI-CLI-2 Cyberpunk UI on port {port}")
     print(f"🎨 Theme: Cyberpunk Glassmorphism")
     print(f"🔧 Backend: {_bridge.backend_label}")
+    
+    # CRITICAL: Enable queue before launch (required for gr.Timer and streaming)
+    demo.queue(max_size=10)
     
     # Gradio 6: theme and css go in launch()
     demo.launch(
