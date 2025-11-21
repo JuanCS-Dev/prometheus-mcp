@@ -26,7 +26,7 @@
 
 ### **2. No Hardcoded Secrets**
 ```bash
-✅ No AIzaSy* keys in source code
+✅ No Gemini API keys in source code
 ✅ No hardcoded API keys found
 ✅ No hardcoded tokens found
 ✅ No hardcoded passwords found
@@ -57,9 +57,9 @@ self.model_name = os.getenv("GEMINI_MODEL", "gemini-pro")  # ✅ SAFE
 ### **2. Comprehensive Scan**
 ```bash
 # Searched entire codebase for:
-- Hardcoded API keys (AIzaSy*)
+- Hardcoded Gemini API keys
 - Generic secrets (api_key/secret/token/password with values)
-- HuggingFace tokens (hf_*)
+- HuggingFace tokens
 - All environment variable usages
 
 Result: CLEAN ✅
@@ -118,8 +118,8 @@ if git diff --cached --name-only | grep -q "\.env$"; then
     exit 1
 fi
 
-# Check for API keys in staged files
-if git diff --cached | grep -qE "(AIzaSy|hf_[a-zA-Z0-9]{20,})"; then
+# Check for API keys in staged files  
+if git diff --cached | grep -qE "[SECRET_PATTERN]"; then
     echo "❌ ERROR: Potential API key detected in staged changes!"
     echo "Please remove hardcoded secrets before committing."
     exit 1
@@ -137,9 +137,9 @@ apt-get install git-secrets  # Linux
 
 # Setup
 git secrets --install
-git secrets --register-aws  # Detects AWS keys
-git secrets --add 'AIzaSy[A-Za-z0-9_-]{33}'  # Gemini keys
-git secrets --add 'hf_[a-zA-Z0-9]{20,}'      # HuggingFace tokens
+git secrets --register-aws     # Detects AWS keys
+git secrets --add '[GEMINI_KEY_PATTERN]'  # Gemini keys
+git secrets --add '[HF_TOKEN_PATTERN]'    # HuggingFace tokens
 ```
 
 ---
@@ -193,7 +193,7 @@ git secrets --add 'hf_[a-zA-Z0-9]{20,}'      # HuggingFace tokens
 **The old key MUST be revoked in Google Cloud Console:**
 
 1. Go to: https://console.cloud.google.com/apis/credentials
-2. Find API key: `[The one that was exposed - starts with AIzaSy...]`
+2. Find API key: `[The one that was exposed]`
 3. Click "Delete" or "Disable"
 4. Confirm action
 

@@ -223,6 +223,13 @@ class InteractiveShell:
         self.lsp_client = LSPClient(root_path=Path.cwd())
         self._lsp_initialized = False
         
+        # Context Suggestions (Week 4 Day 1 - Smart Recommendations)
+        from .intelligence.context_suggestions import ContextSuggestionEngine
+        self.suggestion_engine = ContextSuggestionEngine(
+            project_root=Path.cwd(),
+            indexer=self.indexer
+        )
+        
         # Legacy session (fallback)
         self.session = PromptSession(
             history=FileHistory(str(history_file)),
@@ -917,6 +924,9 @@ Response: I don't have a tool to check the current time, but I can help you with
   /lsp refs FILE:LINE:CHAR  - Find references
   /lsp diag FILE            - Show diagnostics
 
+[bold]Smart Suggestions:[/bold] 🆕
+  /suggest FILE             - Get related files & code suggestions
+
 [bold]Natural Language Commands:[/bold]
   Just type what you want to do, e.g.:
   - "read api.py"
@@ -1286,6 +1296,63 @@ Tool calls: {len(self.context.tool_calls)}
                     self.console.print(f"[green]✓ No diagnostics for {file_path}[/green]")
             except Exception as e:
                 return False, f"[red]Error: {e}[/red]"
+            return False, None
+        
+        elif cmd.startswith("/suggest "):
+            # Context-Aware Suggestions (Week 4 Day 1)
+            file_arg = cmd[9:].strip()
+            
+            try:
+                file_path = Path(file_arg)
+                if not file_path.exists():
+                    return False, f"[red]File not found: {file_path}[/red]"
+                
+                # Get file recommendations
+                recommendations = self.suggestion_engine.suggest_related_files(file_path, max_suggestions=5)
+                
+                if recommendations:
+                    self.console.print(f"\n[bold]💡 Related files for {file_path.name}:[/bold]\n")
+                    
+                    for rec in recommendations:
+                        rel_path = rec.file_path.relative_to(Path.cwd()) if rec.file_path.is_relative_to(Path.cwd()) else rec.file_path
+                        score_bar = "█" * int(rec.relevance_score * 10)
+                        
+                        type_emoji = {
+                            'import': '📦',
+                            'test': '🧪',
+                            'dependency': '🔗',
+                            'similar': '📄'
+                        }.get(rec.relationship_type, '📌')
+                        
+                        self.console.print(
+                            f"  {type_emoji} [cyan]{rel_path}[/cyan]\n"
+                            f"     {rec.reason}\n"
+                            f"     Relevance: [{score_bar:<10}] {rec.relevance_score:.0%}"
+                        )
+                else:
+                    self.console.print(f"[dim]No related files found for {file_path.name}[/dim]")
+                
+                # Get code suggestions
+                code_suggestions = self.suggestion_engine.suggest_edits(file_path)
+                
+                if code_suggestions:
+                    self.console.print(f"\n[bold]🔧 Code suggestions:[/bold]\n")
+                    
+                    for sug in code_suggestions[:5]:  # Top 5
+                        impact_colors = {
+                            'high': 'red',
+                            'medium': 'yellow',
+                            'low': 'blue'
+                        }
+                        color = impact_colors.get(sug.impact, 'white')
+                        
+                        self.console.print(
+                            f"  Line {sug.line_number}: [{color}]{sug.impact.upper()}[/{color}] {sug.suggestion}"
+                        )
+                
+            except Exception as e:
+                return False, f"[red]Error: {e}[/red]"
+            
             return False, None
         
         else:
