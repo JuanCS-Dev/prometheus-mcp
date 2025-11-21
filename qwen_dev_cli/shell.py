@@ -94,6 +94,9 @@ from .tui.components.dashboard import Dashboard, Operation, OperationStatus
 # Phase 7: Token Tracking (Boris Cherny Foundation)
 from .core.token_tracker import TokenTracker
 
+# Phase 8: LSP Integration (Week 3 Day 3)
+from .intelligence.lsp_client import LSPClient
+
 
 class SessionContext:
     """Persistent context across shell session."""
@@ -215,6 +218,10 @@ class InteractiveShell:
         
         # Dashboard (Integration Sprint Week 1: Day 3 - Task 1.6)
         self.dashboard = Dashboard(console=self.console, max_history=5)
+        
+        # LSP Client (Week 3 Day 3 - Code Intelligence)
+        self.lsp_client = LSPClient(root_path=Path.cwd())
+        self._lsp_initialized = False
         
         # Legacy session (fallback)
         self.session = PromptSession(
@@ -903,6 +910,13 @@ Response: I don't have a tool to check the current time, but I can help you with
   /find NAME  - Search symbols by name
   /explain X  - Explain command/concept
 
+[bold]LSP Code Intelligence:[/bold] 🆕
+  /lsp                      - Start LSP server
+  /lsp hover FILE:LINE:CHAR - Get documentation
+  /lsp goto FILE:LINE:CHAR  - Go to definition
+  /lsp refs FILE:LINE:CHAR  - Find references
+  /lsp diag FILE            - Show diagnostics
+
 [bold]Natural Language Commands:[/bold]
   Just type what you want to do, e.g.:
   - "read api.py"
@@ -1135,6 +1149,143 @@ Tool calls: {len(self.context.tool_calls)}
             else:
                 self.console.print("\n[dim]No token usage history yet. Start a conversation to track tokens.[/dim]")
             
+            return False, None
+        
+        elif cmd == "/lsp":
+            # LSP Integration (Week 3 Day 3) - Start LSP server
+            if not self._lsp_initialized:
+                self.console.print("[cyan]🔧 Starting LSP server...[/cyan]")
+                success = await self.lsp_client.start()
+                if success:
+                    self._lsp_initialized = True
+                    self.console.print("[green]✓ LSP server started successfully[/green]")
+                    self.console.print("\n[bold]LSP Features:[/bold]")
+                    self.console.print("  /lsp hover <file>:<line>:<char>  - Get hover documentation")
+                    self.console.print("  /lsp goto <file>:<line>:<char>   - Go to definition")
+                    self.console.print("  /lsp refs <file>:<line>:<char>   - Find references")
+                    self.console.print("  /lsp diag <file>                 - Show diagnostics")
+                else:
+                    self.console.print("[red]✗ Failed to start LSP server[/red]")
+                    self.console.print("[dim]Install: pip install python-lsp-server[all][/dim]")
+            else:
+                self.console.print("[yellow]⚠ LSP server already running[/yellow]")
+            return False, None
+        
+        elif cmd.startswith("/lsp hover "):
+            # LSP hover info
+            if not self._lsp_initialized:
+                return False, "[yellow]⚠ LSP not initialized. Run /lsp first.[/yellow]"
+            
+            try:
+                # Parse: /lsp hover file.py:10:5
+                location = cmd[11:].strip()
+                parts = location.split(":")
+                if len(parts) != 3:
+                    return False, "[red]Usage: /lsp hover <file>:<line>:<char>[/red]"
+                
+                file_path = Path(parts[0])
+                line = int(parts[1])
+                char = int(parts[2])
+                
+                hover_info = await self.lsp_client.hover(file_path, line, char)
+                if hover_info:
+                    self.console.print(Panel(
+                        hover_info.contents,
+                        title=f"Hover: {file_path}:{line}:{char}",
+                        border_style="cyan"
+                    ))
+                else:
+                    self.console.print("[dim]No hover information available[/dim]")
+            except Exception as e:
+                return False, f"[red]Error: {e}[/red]"
+            return False, None
+        
+        elif cmd.startswith("/lsp goto "):
+            # LSP go-to-definition
+            if not self._lsp_initialized:
+                return False, "[yellow]⚠ LSP not initialized. Run /lsp first.[/yellow]"
+            
+            try:
+                location = cmd[10:].strip()
+                parts = location.split(":")
+                if len(parts) != 3:
+                    return False, "[red]Usage: /lsp goto <file>:<line>:<char>[/red]"
+                
+                file_path = Path(parts[0])
+                line = int(parts[1])
+                char = int(parts[2])
+                
+                definitions = await self.lsp_client.definition(file_path, line, char)
+                if definitions:
+                    self.console.print(f"\n[bold]Found {len(definitions)} definition(s):[/bold]\n")
+                    for loc in definitions:
+                        file = Path(loc.uri.replace("file://", ""))
+                        self.console.print(
+                            f"  [cyan]{file}:{loc.range.start.line}:{loc.range.start.character}[/cyan]"
+                        )
+                else:
+                    self.console.print("[dim]No definition found[/dim]")
+            except Exception as e:
+                return False, f"[red]Error: {e}[/red]"
+            return False, None
+        
+        elif cmd.startswith("/lsp refs "):
+            # LSP find references
+            if not self._lsp_initialized:
+                return False, "[yellow]⚠ LSP not initialized. Run /lsp first.[/yellow]"
+            
+            try:
+                location = cmd[10:].strip()
+                parts = location.split(":")
+                if len(parts) != 3:
+                    return False, "[red]Usage: /lsp refs <file>:<line>:<char>[/red]"
+                
+                file_path = Path(parts[0])
+                line = int(parts[1])
+                char = int(parts[2])
+                
+                references = await self.lsp_client.references(file_path, line, char)
+                if references:
+                    self.console.print(f"\n[bold]Found {len(references)} reference(s):[/bold]\n")
+                    for loc in references:
+                        file = Path(loc.uri.replace("file://", ""))
+                        self.console.print(
+                            f"  [cyan]{file}:{loc.range.start.line}:{loc.range.start.character}[/cyan]"
+                        )
+                else:
+                    self.console.print("[dim]No references found[/dim]")
+            except Exception as e:
+                return False, f"[red]Error: {e}[/red]"
+            return False, None
+        
+        elif cmd.startswith("/lsp diag "):
+            # LSP diagnostics
+            if not self._lsp_initialized:
+                return False, "[yellow]⚠ LSP not initialized. Run /lsp first.[/yellow]"
+            
+            try:
+                file_path = Path(cmd[10:].strip())
+                diagnostics = await self.lsp_client.diagnostics(file_path)
+                
+                if diagnostics:
+                    self.console.print(f"\n[bold]Diagnostics for {file_path}:[/bold]\n")
+                    for diag in diagnostics:
+                        severity_colors = {
+                            1: "red",      # Error
+                            2: "yellow",   # Warning
+                            3: "blue",     # Info
+                            4: "dim"       # Hint
+                        }
+                        color = severity_colors.get(diag.severity, "white")
+                        
+                        self.console.print(
+                            f"  [{color}]{diag.severity_name}[/{color}] "
+                            f"Line {diag.range.start.line + 1}: {diag.message}"
+                        )
+                else:
+                    self.console.print(f"[green]✓ No diagnostics for {file_path}[/green]")
+            except Exception as e:
+                return False, f"[red]Error: {e}[/red]"
             return False, None
         
         else:
@@ -1497,6 +1648,14 @@ Tool calls: {len(self.context.tool_calls)}
             # Cleanup
             self.file_watcher.stop()
             watcher_task.cancel()
+            
+            # Stop LSP server if running
+            if self._lsp_initialized:
+                try:
+                    await self.lsp_client.stop()
+                    logger.info("LSP server stopped")
+                except Exception as e:
+                    logger.warning(f"Failed to stop LSP server: {e}")
             try:
                 await watcher_task
             except asyncio.CancelledError:

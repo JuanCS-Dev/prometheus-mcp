@@ -1,0 +1,18 @@
+{
+  "session_id": "259cff8d",
+  "cwd": "/media/juan/DATA/projects/GEMINI-CLI-2/qwen-dev-cli",
+  "history": [
+    "ls",
+    "cat main.py"
+  ],
+  "conversation": [],
+  "context": {},
+  "files_read": [
+    "main.py"
+  ],
+  "files_modified": [],
+  "tool_calls_count": 2,
+  "created_at": "2025-11-21T06:45:46.563572",
+  "last_activity": "2025-11-21T06:45:46.563574",
+  "metadata": {}
+}
