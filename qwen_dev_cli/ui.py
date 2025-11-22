@@ -1,10 +1,10 @@
-"""Gradio web UI for qwen-dev-cli - SPECTACULAR EDITION.
+"""Gradio 6 Web UI for qwen-dev-cli - SPECTACULAR CHAMPION EDITION.
 
 Features:
+- Gradio 6 compatible (theme and css in launch())
 - Cyberpunk glassmorphism theme
-- DevSquad multi-agent visualization
-- Smooth animations and transitions
-- Premium UX with real-time feedback
+- DevSquad multi-agent visualization  
+- Real-time workflow tracking
 - Mobile-responsive design
 """
 
@@ -28,256 +28,14 @@ except ImportError:
 
 
 def create_ui() -> gr.Blocks:
-    """Create SPECTACULAR Gradio UI with cyberpunk theme.
+    """Create SPECTACULAR Gradio 6 UI.
     
     Returns:
-        Gradio Blocks interface
+        Gradio Blocks interface (theme and css applied in launch())
     """
     
-    # 🎨 SPECTACULAR CYBERPUNK CSS
-    spectacular_css = """
-    /* Cyberpunk Glassmorphism Theme */
-    :root {
-        --primary-glow: #00ff88;
-        --secondary-glow: #0088ff;
-        --accent-glow: #ff0088;
-        --glass-bg: rgba(15, 15, 35, 0.7);
-        --glass-border: rgba(255, 255, 255, 0.1);
-    }
-    
-    /* Main container with gradient background */
-    .gradio-container {
-        background: linear-gradient(135deg, #0a0a1f 0%, #1a0a2e 50%, #0f0a1f 100%) !important;
-        background-attachment: fixed !important;
-    }
-    
-    /* Glassmorphism cards */
-    .gr-box, .gr-panel, .gr-form {
-        background: var(--glass-bg) !important;
-        backdrop-filter: blur(10px) !important;
-        border: 1px solid var(--glass-border) !important;
-        border-radius: 16px !important;
-        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3) !important;
-    }
-    
-    /* Glowing headers */
-    h1, h2, h3 {
-        background: linear-gradient(90deg, var(--primary-glow), var(--secondary-glow));
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        background-clip: text;
-        font-weight: 800 !important;
-        text-shadow: 0 0 20px rgba(0, 255, 136, 0.3);
-    }
-    
-    /* Chat messages with glow effect */
-    .message {
-        background: var(--glass-bg) !important;
-        border-left: 3px solid var(--primary-glow) !important;
-        border-radius: 12px !important;
-        padding: 12px !important;
-        margin: 8px 0 !important;
-        box-shadow: 0 4px 16px rgba(0, 255, 136, 0.1) !important;
-        transition: all 0.3s ease !important;
-    }
-    
-    .message:hover {
-        transform: translateX(4px) !important;
-        box-shadow: 0 6px 24px rgba(0, 255, 136, 0.2) !important;
-    }
-    
-    /* Buttons with neon glow */
-    .gr-button {
-        background: linear-gradient(135deg, var(--primary-glow), var(--secondary-glow)) !important;
-        border: none !important;
-        border-radius: 12px !important;
-        color: #0a0a1f !important;
-        font-weight: 700 !important;
-        text-transform: uppercase !important;
-        letter-spacing: 1px !important;
-        box-shadow: 0 4px 16px rgba(0, 255, 136, 0.3) !important;
-        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
-        min-height: 48px !important;
-    }
-    
-    .gr-button:hover {
-        transform: translateY(-2px) scale(1.02) !important;
-        box-shadow: 0 8px 32px rgba(0, 255, 136, 0.5) !important;
-    }
-    
-    .gr-button:active {
-        transform: translateY(0) scale(0.98) !important;
-    }
-    
-    /* Primary button extra glow */
-    .gr-button-primary {
-        box-shadow: 0 0 30px rgba(0, 255, 136, 0.6) !important;
-        animation: pulse-glow 2s ease-in-out infinite !important;
-    }
-    
-    @keyframes pulse-glow {
-        0%, 100% { box-shadow: 0 0 20px rgba(0, 255, 136, 0.4); }
-        50% { box-shadow: 0 0 40px rgba(0, 255, 136, 0.8); }
-    }
-    
-    /* Input fields with glow */
-    .gr-textbox, .gr-dropdown {
-        background: rgba(15, 15, 35, 0.5) !important;
-        border: 2px solid var(--glass-border) !important;
-        border-radius: 12px !important;
-        color: #e0e0e0 !important;
-        transition: all 0.3s ease !important;
-    }
-    
-    .gr-textbox:focus, .gr-dropdown:focus {
-        border-color: var(--primary-glow) !important;
-        box-shadow: 0 0 20px rgba(0, 255, 136, 0.3) !important;
-    }
-    
-    /* Sliders with gradient track */
-    .gr-slider input[type="range"] {
-        background: linear-gradient(90deg, var(--primary-glow), var(--secondary-glow)) !important;
-        border-radius: 8px !important;
-    }
-    
-    /* Accordions with smooth animation */
-    .gr-accordion {
-        background: var(--glass-bg) !important;
-        border: 1px solid var(--glass-border) !important;
-        border-radius: 12px !important;
-        transition: all 0.3s ease !important;
-    }
-    
-    .gr-accordion:hover {
-        border-color: var(--primary-glow) !important;
-        box-shadow: 0 4px 20px rgba(0, 255, 136, 0.2) !important;
-    }
-    
-    /* File upload area */
-    .upload-area {
-        border: 2px dashed var(--primary-glow) !important;
-        background: rgba(0, 255, 136, 0.05) !important;
-        border-radius: 16px !important;
-        padding: 24px !important;
-        text-align: center !important;
-        transition: all 0.3s ease !important;
-    }
-    
-    .upload-area:hover {
-        background: rgba(0, 255, 136, 0.1) !important;
-        border-color: var(--secondary-glow) !important;
-    }
-    
-    /* DevSquad agent cards */
-    .agent-card {
-        background: var(--glass-bg) !important;
-        border: 1px solid var(--glass-border) !important;
-        border-radius: 12px !important;
-        padding: 16px !important;
-        margin: 8px 0 !important;
-        transition: all 0.3s ease !important;
-    }
-    
-    .agent-card:hover {
-        border-color: var(--primary-glow) !important;
-        transform: scale(1.02) !important;
-    }
-    
-    .agent-active {
-        border-color: var(--primary-glow) !important;
-        box-shadow: 0 0 20px rgba(0, 255, 136, 0.4) !important;
-        animation: pulse-border 1.5s ease-in-out infinite !important;
-    }
-    
-    @keyframes pulse-border {
-        0%, 100% { border-color: var(--primary-glow); }
-        50% { border-color: var(--secondary-glow); }
-    }
-    
-    /* Status indicators */
-    .status-indicator {
-        display: inline-block;
-        width: 12px;
-        height: 12px;
-        border-radius: 50%;
-        margin-right: 8px;
-        animation: pulse 2s ease-in-out infinite;
-    }
-    
-    .status-active {
-        background: var(--primary-glow);
-        box-shadow: 0 0 10px var(--primary-glow);
-    }
-    
-    .status-idle {
-        background: #666;
-    }
-    
-    @keyframes pulse {
-        0%, 100% { opacity: 1; }
-        50% { opacity: 0.5; }
-    }
-    
-    /* Scrollbar styling */
-    ::-webkit-scrollbar {
-        width: 12px;
-    }
-    
-    ::-webkit-scrollbar-track {
-        background: rgba(15, 15, 35, 0.5);
-        border-radius: 6px;
-    }
-    
-    ::-webkit-scrollbar-thumb {
-        background: linear-gradient(180deg, var(--primary-glow), var(--secondary-glow));
-        border-radius: 6px;
-    }
-    
-    ::-webkit-scrollbar-thumb:hover {
-        background: linear-gradient(180deg, var(--secondary-glow), var(--accent-glow));
-    }
-    
-    /* Mobile optimizations */
-    @media (max-width: 768px) {
-        .gr-button {
-            min-height: 44px !important;
-            font-size: 14px !important;
-        }
-        
-        .gr-textbox textarea, .gr-textbox input {
-            font-size: 16px !important;
-        }
-        
-        h1 { font-size: 24px !important; }
-        h2 { font-size: 20px !important; }
-    }
-    
-    /* Loading animation */
-    @keyframes loading-pulse {
-        0%, 100% { opacity: 0.4; }
-        50% { opacity: 1; }
-    }
-    
-    .loading {
-        animation: loading-pulse 1.5s ease-in-out infinite;
-    }
-    """
-    
-    # 🎨 Create UI with spectacular theme
     with gr.Blocks(
         title="🚀 QWEN-DEV-CLI - AI DevSquad",
-        theme=gr.themes.Base(
-            primary_hue="green",
-            secondary_hue="blue",
-            neutral_hue="slate",
-            font=["Inter", "system-ui", "sans-serif"],
-        ).set(
-            body_background_fill="*neutral_950",
-            body_text_color="*neutral_100",
-            button_primary_background_fill="*primary_500",
-            button_primary_text_color="*neutral_950",
-        ),
-        css=spectacular_css,
         analytics_enabled=False,
     ) as demo:
         
@@ -305,16 +63,13 @@ def create_ui() -> gr.Blocks:
                     height=600,
                     show_label=True,
                     container=True,
-                    type="messages",
-                    bubble_full_width=False,
-                    show_copy_button=True,
-                    avatar_images=(
-                        None,  # User avatar
-                        "https://em-content.zobj.net/thumbs/120/google/350/robot_1f916.png"  # AI avatar
-                    ),
+                    # Gradio 6: No 'type' parameter, messages format is default
+                    # Gradio 6: Use 'buttons' instead of 'show_copy_button'
+                    buttons=["copy"],
+                    elem_classes=["chat-container"],
                 )
                 
-                # Input area with send button
+                # Input area
                 with gr.Row():
                     msg_input = gr.Textbox(
                         placeholder="🎯 Ask DevSquad to architect, explore, plan, code, or review...",
@@ -339,10 +94,10 @@ def create_ui() -> gr.Blocks:
                     clear_btn = gr.Button("🗑️ Clear", size="sm", scale=1, variant="secondary")
                     retry_btn = gr.Button("♻️ Retry", size="sm", scale=1, variant="secondary")
                     if DEVSQUAD_AVAILABLE:
-                        squad_btn = gr.Button("🤖 DevSquad Mode", size="sm", scale=1, variant="primary")
+                        squad_btn = gr.Button("🤖 DevSquad", size="sm", scale=1, variant="primary")
                     examples_btn = gr.Button("💡 Examples", size="sm", scale=1, variant="secondary")
             
-            # Right: Controls & DevSquad Status (30%)
+            # Right: Controls & Status (30%)
             with gr.Column(scale=3, min_width=320):
                 
                 # 🤖 DevSquad Status (if available)
@@ -351,25 +106,25 @@ def create_ui() -> gr.Blocks:
                         squad_status = gr.Markdown("""
                         <div class="agent-card">
                             <h3>🏗️ Architect</h3>
-                            <span class="status-indicator status-idle"></span> Idle
+                            <span class="status-dot status-idle"></span> Idle
                         </div>
                         <div class="agent-card">
                             <h3>🔍 Explorer</h3>
-                            <span class="status-indicator status-idle"></span> Idle
+                            <span class="status-dot status-idle"></span> Idle
                         </div>
                         <div class="agent-card">
                             <h3>📋 Planner</h3>
-                            <span class="status-indicator status-idle"></span> Idle
+                            <span class="status-dot status-idle"></span> Idle
                         </div>
                         <div class="agent-card">
                             <h3>⚙️ Refactorer</h3>
-                            <span class="status-indicator status-idle"></span> Idle
+                            <span class="status-dot status-idle"></span> Idle
                         </div>
                         <div class="agent-card">
                             <h3>✅ Reviewer</h3>
-                            <span class="status-indicator status-idle"></span> Idle
+                            <span class="status-dot status-idle"></span> Idle
                         </div>
-                        """)
+                        """, elem_classes=["squad-status"])
                         
                         squad_mode = gr.Checkbox(
                             label="Enable DevSquad Orchestration",
@@ -383,7 +138,7 @@ def create_ui() -> gr.Blocks:
                         choices=llm_client.get_available_providers(),
                         value="auto",
                         label="🎯 LLM Provider",
-                        info="Smart routing (recommended: auto)",
+                        info="Smart routing (auto recommended)",
                         interactive=True
                     )
                     
@@ -416,7 +171,7 @@ def create_ui() -> gr.Blocks:
                     file_upload = gr.File(
                         label="Upload Code Files",
                         file_count="multiple",
-                        file_types=[".py", ".js", ".ts", ".jsx", ".tsx", ".java", ".cpp", ".c", ".go", ".rs", ".md", ".txt", ".json", ".yaml", ".yml", ".toml", ".sh"],
+                        file_types=[".py", ".js", ".ts", ".jsx", ".tsx", ".java", ".cpp", ".c", ".go", ".rs", ".md", ".txt", ".json", ".yaml", ".yml", ".toml"],
                         elem_classes=["upload-area"],
                         height=140
                     )
@@ -436,7 +191,7 @@ def create_ui() -> gr.Blocks:
                     mcp_enabled = gr.Checkbox(
                         label="Enable MCP Filesystem",
                         value=mcp_manager.enabled,
-                        info="Access local files via MCP"
+                        info="Access local files"
                     )
                     
                     mcp_status = gr.Textbox(
@@ -454,45 +209,44 @@ def create_ui() -> gr.Blocks:
                     - ⚡ TTFT: - ms
                     - ⏱️ Total: - s
                     - 🔥 Status: Ready
-                    """)
+                    """, elem_classes=["perf-metrics"])
                 
                 # 📊 Statistics
                 with gr.Accordion("📊 Statistics", open=False):
                     stats_display = gr.JSON(
                         label="Context Stats",
-                        value={"files": 0, "chars": 0, "tokens": 0, "agents_used": 0}
+                        value={"files": 0, "chars": 0, "tokens": 0}
                     )
         
         # State management
         chat_history = gr.State([])
         last_user_msg = gr.State("")
-        devsquad_mode = gr.State(False)
         
         # 💡 Examples
         examples_row = gr.Examples(
             examples=[
-                ["🏗️ Architect: Analyze if we can add JWT authentication to this FastAPI app"],
-                ["🔍 Explorer: Find all authentication-related files in the codebase"],
-                ["📋 Planner: Create a step-by-step plan to add user registration"],
-                ["⚙️ Refactorer: Implement the login endpoint with proper error handling"],
-                ["✅ Reviewer: Review this code for security vulnerabilities and best practices"],
-                ["🤖 DevSquad: Add complete authentication system with JWT tokens"],
+                ["🏗️ Architect: Analyze if we can add JWT authentication"],
+                ["🔍 Explorer: Find all authentication-related files"],
+                ["📋 Planner: Create plan to add user registration"],
+                ["⚙️ Refactorer: Implement login endpoint with error handling"],
+                ["✅ Reviewer: Review code for security vulnerabilities"],
+                ["🤖 DevSquad: Add complete authentication system with JWT"],
             ],
             inputs=msg_input,
-            label="💡 Example Prompts (Try DevSquad!)"
+            label="💡 Example Prompts"
         )
         
         # 🎯 Event Handlers
         
-        def respond_stream(message: str, history: List, temp: float, max_tok: int, stream: bool, provider: str, use_squad: bool) -> Generator:
-            """Handle chat response with optional DevSquad orchestration."""
+        def respond_stream(message: str, history: List, temp: float, max_tok: int, stream: bool, provider: str, use_squad: bool = False) -> Generator:
+            """Handle chat response with optional DevSquad."""
             import time
             
             if not message.strip():
                 yield history, None, None
                 return
             
-            # Add user message
+            # Add user message (Gradio 6 messages format)
             history.append({"role": "user", "content": message})
             history.append({"role": "assistant", "content": ""})
             
@@ -502,37 +256,36 @@ def create_ui() -> gr.Blocks:
             # DevSquad mode
             if use_squad and DEVSQUAD_AVAILABLE:
                 try:
-                    # Update status: Architect working
+                    # Update status
                     squad_html = """
                     <div class="agent-card agent-active">
                         <h3>🏗️ Architect</h3>
-                        <span class="status-indicator status-active"></span> Analyzing...
+                        <span class="status-dot status-active"></span> Analyzing...
                     </div>
                     <div class="agent-card">
                         <h3>🔍 Explorer</h3>
-                        <span class="status-indicator status-idle"></span> Waiting
+                        <span class="status-dot status-idle"></span> Waiting
                     </div>
                     <div class="agent-card">
                         <h3>📋 Planner</h3>
-                        <span class="status-indicator status-idle"></span> Waiting
+                        <span class="status-dot status-idle"></span> Waiting
                     </div>
                     <div class="agent-card">
                         <h3>⚙️ Refactorer</h3>
-                        <span class="status-indicator status-idle"></span> Waiting
+                        <span class="status-dot status-idle"></span> Waiting
                     </div>
                     <div class="agent-card">
                         <h3>✅ Reviewer</h3>
-                        <span class="status-indicator status-idle"></span> Waiting
+                        <span class="status-dot status-idle"></span> Waiting
                     </div>
                     """
                     yield history, squad_html, None
                     
-                    # Initialize DevSquad
+                    # Execute DevSquad
                     registry = get_default_registry()
                     mcp_client = MCPClient(registry)
                     squad = DevSquad(llm_client, mcp_client, require_human_approval=False)
                     
-                    # Execute workflow
                     async def run_squad():
                         return await squad.execute_workflow(message)
                     
@@ -541,7 +294,7 @@ def create_ui() -> gr.Blocks:
                     # Format response
                     response_text = f"**DevSquad Workflow Complete!**\n\n"
                     response_text += f"**Status:** {result.status.value}\n"
-                    response_text += f"**Phases Executed:** {len(result.phases)}\n\n"
+                    response_text += f"**Phases:** {len(result.phases)}\n\n"
                     
                     for phase in result.phases:
                         icon = "✅" if phase.success else "❌"
@@ -553,23 +306,23 @@ def create_ui() -> gr.Blocks:
                     squad_html = """
                     <div class="agent-card">
                         <h3>🏗️ Architect</h3>
-                        <span class="status-indicator status-active"></span> ✅ Complete
+                        <span class="status-dot status-active"></span> ✅ Complete
                     </div>
                     <div class="agent-card">
                         <h3>🔍 Explorer</h3>
-                        <span class="status-indicator status-active"></span> ✅ Complete
+                        <span class="status-dot status-active"></span> ✅ Complete
                     </div>
                     <div class="agent-card">
                         <h3>📋 Planner</h3>
-                        <span class="status-indicator status-active"></span> ✅ Complete
+                        <span class="status-dot status-active"></span> ✅ Complete
                     </div>
                     <div class="agent-card">
                         <h3>⚙️ Refactorer</h3>
-                        <span class="status-indicator status-active"></span> ✅ Complete
+                        <span class="status-dot status-active"></span> ✅ Complete
                     </div>
                     <div class="agent-card">
                         <h3>✅ Reviewer</h3>
-                        <span class="status-indicator status-active"></span> ✅ Complete
+                        <span class="status-dot status-active"></span> ✅ Complete
                     </div>
                     """
                     
@@ -589,7 +342,7 @@ def create_ui() -> gr.Blocks:
                     yield history, None, None
                     return
             
-            # Regular LLM mode (existing code)
+            # Regular LLM mode
             if stream:
                 async def stream_response():
                     nonlocal first_token_time
@@ -734,9 +487,133 @@ def create_ui() -> gr.Blocks:
 
 if __name__ == "__main__":
     demo = create_ui()
+    
+    # 🎨 Gradio 6: Theme and CSS go in launch(), not Blocks()
+    theme = gr.themes.Base(
+        primary_hue="green",
+        secondary_hue="blue",
+        neutral_hue="slate",
+        font=["Inter", "system-ui", "sans-serif"],
+    ).set(
+        body_background_fill="*neutral_950",
+        body_text_color="*neutral_100",
+        button_primary_background_fill="*primary_500",
+        button_primary_text_color="*neutral_950",
+    )
+    
+    # 🎨 Spectacular Cyberpunk CSS
+    spectacular_css = """
+    /* Cyberpunk Glassmorphism Theme */
+    :root {
+        --primary-glow: #00ff88;
+        --secondary-glow: #0088ff;
+        --accent-glow: #ff0088;
+        --glass-bg: rgba(15, 15, 35, 0.7);
+        --glass-border: rgba(255, 255, 255, 0.1);
+    }
+    
+    .gradio-container {
+        background: linear-gradient(135deg, #0a0a1f 0%, #1a0a2e 50%, #0f0a1f 100%) !important;
+        background-attachment: fixed !important;
+    }
+    
+    .gr-box, .gr-panel, .gr-form {
+        background: var(--glass-bg) !important;
+        backdrop-filter: blur(10px) !important;
+        border: 1px solid var(--glass-border) !important;
+        border-radius: 16px !important;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3) !important;
+    }
+    
+    h1, h2, h3 {
+        background: linear-gradient(90deg, var(--primary-glow), var(--secondary-glow));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        font-weight: 800 !important;
+    }
+    
+    .gr-button {
+        background: linear-gradient(135deg, var(--primary-glow), var(--secondary-glow)) !important;
+        border: none !important;
+        border-radius: 12px !important;
+        color: #0a0a1f !important;
+        font-weight: 700 !important;
+        min-height: 48px !important;
+        transition: all 0.3s ease !important;
+    }
+    
+    .gr-button:hover {
+        transform: translateY(-2px) scale(1.02) !important;
+        box-shadow: 0 8px 32px rgba(0, 255, 136, 0.5) !important;
+    }
+    
+    /* Agent cards */
+    .agent-card {
+        background: var(--glass-bg) !important;
+        border: 1px solid var(--glass-border) !important;
+        border-radius: 12px !important;
+        padding: 12px !important;
+        margin: 8px 0 !important;
+        transition: all 0.3s ease !important;
+    }
+    
+    .agent-card:hover {
+        border-color: var(--primary-glow) !important;
+        transform: scale(1.02) !important;
+    }
+    
+    .agent-active {
+        border-color: var(--primary-glow) !important;
+        box-shadow: 0 0 20px rgba(0, 255, 136, 0.4) !important;
+        animation: pulse-border 1.5s ease-in-out infinite !important;
+    }
+    
+    @keyframes pulse-border {
+        0%, 100% { border-color: var(--primary-glow); }
+        50% { border-color: var(--secondary-glow); }
+    }
+    
+    /* Status dots */
+    .status-dot {
+        display: inline-block;
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        margin-right: 8px;
+    }
+    
+    .status-active {
+        background: var(--primary-glow);
+        box-shadow: 0 0 10px var(--primary-glow);
+        animation: pulse 2s ease-in-out infinite;
+    }
+    
+    .status-idle {
+        background: #666;
+    }
+    
+    @keyframes pulse {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.5; }
+    }
+    
+    /* Mobile responsive */
+    @media (max-width: 768px) {
+        .gr-button {
+            min-height: 44px !important;
+            font-size: 14px !important;
+        }
+        
+        h1 { font-size: 32px !important; }
+    }
+    """
+    
     demo.launch(
         server_name="0.0.0.0",
         server_port=config.gradio_port,
         share=config.gradio_share,
         show_error=True,
+        theme=theme,
+        css=spectacular_css,
     )
