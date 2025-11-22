@@ -571,44 +571,6 @@ Suggest a correction strategy for the next attempt (be brief, 1-2 sentences)."""
             reasoning=f"Step {step_id} failed after {attempts} attempts",
             error=error,
             metadata={"attempts": attempts, "requires_human": True},
-        )
-
-    def execute(self, context: TaskContext) -> TaskResult:
-        """
-        Simplified execute method for tests (synchronous, no LLM required).
-        
-        Args:
-            context: TaskContext with task details
-            
-        Returns:
-            TaskResult with execution status
-        """
-        try:
-            # Mock refactoring analysis
-            analysis = {
-                "suggestions": [
-                    {
-                        "type": "extract_method",
-                        "location": "main.py:45-78",
-                        "severity": "MEDIUM",
-                        "description": "Extract long method"
-                    }
-                ],
-                "code_smells": ["long_method", "duplicate_code"],
-                "estimated_effort": "30 minutes"
-            }
-            
-            return TaskResult(
-                task_id=context.task_id,
-                status=TaskStatus.SUCCESS,
-                output=analysis,
-                metadata={"suggestions_count": 1}
-            )
-            
-        except Exception:
-            return TaskResult(
-                task_id=context.task_id,
-                status=TaskStatus.FAILED,
                 output={},
                 metadata={}
             )
