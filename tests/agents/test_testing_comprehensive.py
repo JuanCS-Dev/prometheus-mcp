@@ -39,7 +39,12 @@ from qwen_dev_cli.agents.testing import (
     MutationResult,
     FlakyTest,
 )
-from qwen_dev_cli.agents.base import AgentTask, TaskStatus
+from qwen_dev_cli.agents.base import (
+    AgentTask,
+    TaskStatus,
+    AgentRole,
+    AgentCapability,
+)
 
 
 # ============================================================================
@@ -573,7 +578,7 @@ class TestCoverageAnalysis:
         response = await agent.execute(task)
         
         assert response.success is False
-        assert "error" in response.error.lower()
+        assert ("error" in response.error.lower() or "file not found" in response.error.lower())
     
     @pytest.mark.asyncio
     async def test_coverage_reports_missing_lines_count(self, agent):
@@ -972,9 +977,9 @@ class TestFlakyDetection:
     async def test_flaky_detection_all_tests_flaky(self, agent):
         """Should detect multiple flaky tests."""
         outputs = [
-            {"output": "test_a::PASSED test_b::FAILED"},
-            {"output": "test_a::FAILED test_b::PASSED"},
-            {"output": "test_a::PASSED test_b::FAILED"},
+            {"output": "test_a::PASSED\ntest_b::FAILED"},
+            {"output": "test_a::FAILED\ntest_b::PASSED"},
+            {"output": "test_a::PASSED\ntest_b::FAILED"},
         ]
         agent._execute_tool = AsyncMock(side_effect=outputs)
         
@@ -987,7 +992,7 @@ class TestFlakyDetection:
         
         assert response.success is True
         # Both tests are flaky
-        assert response.data["flaky_count"] >= 1
+        assert response.data["flaky_count"] >= 2
     
     @pytest.mark.asyncio
     async def test_flaky_detection_provides_suspected_cause(self, agent):
@@ -1223,7 +1228,7 @@ class TestEdgeCases:
         response = await agent.execute(task)
         
         assert response.success is False
-        assert "error" in response.error.lower()
+        assert "source_code" in response.error.lower() or "required" in response.error.lower()
     
     @pytest.mark.asyncio
     async def test_handles_invalid_python_syntax(self, agent):

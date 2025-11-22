@@ -362,9 +362,10 @@ class TestingAgent(BaseAgent):
             # Cannot parse, return empty list
             return test_cases
         
-        # Extract functions
+        # Extract functions (including async)
         functions = [
-            node for node in ast.walk(tree) if isinstance(node, ast.FunctionDef)
+            node for node in ast.walk(tree) 
+            if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef))
         ]
         
         # Extract classes
@@ -698,6 +699,7 @@ class TestingAgent(BaseAgent):
                         "total_mutants": mutation_result.total_mutants,
                         "killed_mutants": mutation_result.killed_mutants,
                         "survived_mutants": mutation_result.survived_mutants,
+                        "timeout_mutants": mutation_result.timeout_mutants,
                         "mutation_score": mutation_result.mutation_score,
                     },
                     "quality_score": quality_score,
@@ -801,8 +803,9 @@ class TestingAgent(BaseAgent):
             # Parse test results (simplified)
             output = result.get("output", "")
             for line in output.split("\n"):
-                if "PASSED" in line or "FAILED" in line:
-                    test_name = line.split("::")[1].split()[0] if "::" in line else ""
+                if "::" in line and ("PASSED" in line or "FAILED" in line):
+                    # Extract test name before ::
+                    test_name = line.split("::")[0].strip()
                     if test_name:
                         if test_name not in test_results:
                             test_results[test_name] = []
