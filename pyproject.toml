@@ -32,6 +32,7 @@ dependencies = [
     "python-dotenv>=1.0.0",
     "huggingface-hub>=0.20.0",
     "mcp>=1.0.0",
+    "pyfiglet>=1.0.0",
 ]
 
 [project.optional-dependencies]
@@ -50,6 +51,7 @@ Issues = "https://github.com/JuanCS-Dev/qwen-dev-cli/issues"
 
 [project.scripts]
 qwen-dev = "qwen_dev_cli.__main__:main"
+neuroshell-code = "qwen_dev_cli.shell:main"
 
 [tool.black]
 line-length = 100
