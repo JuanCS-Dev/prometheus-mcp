@@ -311,7 +311,12 @@ async def stream_conversation(
             await asyncio.sleep(0)
             
     except Exception as e:
-        # Error state
+        # Error state with detailed logging
+        import traceback
+        error_details = traceback.format_exc()
+        print(f"❌ STREAM ERROR: {e}")
+        print(error_details)
+        
         error_msg = f"❌ **Error**: {str(e)}"
         history[-1]["content"] = error_msg
         _monitor.add_log("ERROR", str(e))
