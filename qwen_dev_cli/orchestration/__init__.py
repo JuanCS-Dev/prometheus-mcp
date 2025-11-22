@@ -21,8 +21,18 @@ from qwen_dev_cli.orchestration.memory import (
     MemoryManager,
     SharedContext,
 )
+from qwen_dev_cli.orchestration.squad import (
+    DevSquad,
+    WorkflowPhase,
+    WorkflowStatus,
+    WorkflowResult,
+)
 
 __all__ = [
     "MemoryManager",
     "SharedContext",
+    "DevSquad",
+    "WorkflowPhase",
+    "WorkflowStatus",
+    "WorkflowResult",
 ]
