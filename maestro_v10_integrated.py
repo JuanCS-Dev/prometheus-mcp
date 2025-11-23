@@ -1194,6 +1194,9 @@ class Shell:
                 await asyncio.sleep(0.5)
                 self.maestro_ui.stop()
 
+                # Extra delay to ensure Live thread fully stops
+                await asyncio.sleep(0.2)
+
                 # Create response panel based on result
                 if result.success:
                     # Check if result has stdout/stderr from executor

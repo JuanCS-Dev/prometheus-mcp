@@ -288,10 +288,15 @@ class MaestroShellUI:
         self.start_time = asyncio.get_event_loop().time()
 
     def stop(self):
-        """Stop the live display"""
+        """Stop the live display and ensure thread cleanup"""
         if self.live:
-            self.live.stop()
-            self.live = None
+            try:
+                self.live.stop()
+            except Exception as e:
+                # Ignore errors during stop (Live might already be stopped)
+                pass
+            finally:
+                self.live = None
 
     # ========================================================================
     # HIGH-LEVEL API FOR AGENTS
