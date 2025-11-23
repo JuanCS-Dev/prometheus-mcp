@@ -75,20 +75,51 @@ def __getattr__(name):
     
     if name == 'tool_registry':
         if _tool_registry is None:
-            # Create and initialize plugin synchronously
-            plugin = Plugin()
-            import asyncio
-            try:
-                loop = asyncio.get_event_loop()
-                if loop.is_running():
-                    # If in async context, can't run_until_complete
-                    raise RuntimeError("Cannot initialize in running loop")
-            except RuntimeError:
-                loop = asyncio.new_event_loop()
-                asyncio.set_event_loop(loop)
+            # Initialize synchronously (can't use async in __getattr__)
+            # We'll do the import directly without async
+            from qwen_dev_cli.tools.base import ToolRegistry
+            from qwen_dev_cli.tools.file_ops import (
+                ReadFileTool, WriteFileTool, EditFileTool,
+                ListDirectoryTool, DeleteFileTool
+            )
+            from qwen_dev_cli.tools.file_mgmt import (
+                MoveFileTool, CopyFileTool, CreateDirectoryTool,
+                ReadMultipleFilesTool, InsertLinesTool
+            )
+            from qwen_dev_cli.tools.search import SearchFilesTool, GetDirectoryTreeTool
+            from qwen_dev_cli.tools.exec_hardened import BashCommandTool
+            from qwen_dev_cli.tools.git_ops import GitStatusTool, GitDiffTool
+            from qwen_dev_cli.tools.context import GetContextTool, SaveSessionTool, RestoreBackupTool
+            from qwen_dev_cli.tools.terminal import (
+                CdTool, LsTool, PwdTool, MkdirTool, RmTool,
+                CpTool, MvTool, TouchTool, CatTool
+            )
             
-            loop.run_until_complete(plugin.initialize())
-            _tool_registry = plugin.registry
+            # Create registry and register all tools
+            _tool_registry = ToolRegistry()
+            
+            tools = [
+                # File reading
+                ReadFileTool(), ReadMultipleFilesTool(), ListDirectoryTool(),
+                # File writing
+                WriteFileTool(), EditFileTool(), InsertLinesTool(), DeleteFileTool(),
+                # File management
+                MoveFileTool(), CopyFileTool(), CreateDirectoryTool(),
+                # Search
+                SearchFilesTool(), GetDirectoryTreeTool(),
+                # Execution
+                BashCommandTool(),
+                # Git
+                GitStatusTool(), GitDiffTool(),
+                # Context
+                GetContextTool(), SaveSessionTool(), RestoreBackupTool(),
+                # Terminal
+                CdTool(), LsTool(), PwdTool(), MkdirTool(), RmTool(),
+                CpTool(), MvTool(), TouchTool(), CatTool()
+            ]
+            
+            for tool in tools:
+                _tool_registry.register(tool)
         
         return _tool_registry
     
