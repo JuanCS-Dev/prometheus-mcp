@@ -7,14 +7,7 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-# Import at module level for testability
-try:
-    import google.generativeai as genai
-    GENAI_AVAILABLE = True
-except ImportError:
-    genai = None
-    GENAI_AVAILABLE = False
-
+# REMOVED top-level import: import google.generativeai as genai
 
 class GeminiProvider:
     """Google Gemini API provider."""
@@ -27,16 +20,34 @@ class GeminiProvider:
         """
         self.api_key = api_key or os.getenv("GEMINI_API_KEY")
         self.model_name = os.getenv("GEMINI_MODEL", "gemini-pro")
-        self.client = None
+        self._client = None
+        self._genai = None
         
-        if self.api_key and GENAI_AVAILABLE:
+    def _ensure_genai(self):
+        """Lazy load genai SDK."""
+        if self._genai is None:
             try:
-                genai.configure(api_key=self.api_key)
-                self.client = genai.GenerativeModel(self.model_name)
-                logger.info(f"Gemini provider initialized with model: {self.model_name}")
-            except Exception as e:
-                logger.error(f"Failed to initialize Gemini: {e}")
-                self.client = None
+                import google.generativeai as genai
+                self._genai = genai
+                self._genai.configure(api_key=self.api_key)
+                logger.info("Lazy loaded google.generativeai")
+            except ImportError:
+                logger.error("google-generativeai not installed")
+                raise RuntimeError("google-generativeai not installed")
+
+    @property
+    def client(self):
+        """Lazy client initialization."""
+        if self._client is None:
+            if self.api_key:
+                self._ensure_genai()
+                try:
+                    self._client = self._genai.GenerativeModel(self.model_name)
+                    logger.info(f"Gemini provider initialized with model: {self.model_name}")
+                except Exception as e:
+                    logger.error(f"Failed to initialize Gemini: {e}")
+                    self._client = None
+        return self._client
     
     def is_available(self) -> bool:
         """Check if provider is available."""
@@ -134,6 +145,22 @@ class GeminiProvider:
             logger.error(f"Gemini streaming failed: {e}")
             raise
     
+    async def stream_chat(
+        self,
+        messages: List[Dict[str, str]],
+        max_tokens: int = 2048,
+        temperature: float = 0.7,
+        **kwargs
+    ) -> AsyncGenerator[str, None]:
+        """
+        Alias for stream_generate to maintain compatibility.
+        
+        Some parts of the codebase call stream_chat() instead of stream_generate().
+        This method delegates to stream_generate().
+        """
+        async for chunk in self.stream_generate(messages, max_tokens, temperature, **kwargs):
+            yield chunk
+    
     def _format_messages(self, messages: List[Dict[str, str]]) -> str:
         """Format messages for Gemini.
         
@@ -175,3 +202,4 @@ class GeminiProvider:
         """
         # Simple estimation: ~4 chars per token (common for most models)
         return len(text) // 4
+
