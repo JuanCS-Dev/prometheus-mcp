@@ -1,0 +1,40 @@
+Total startup time: 0.13s
+
+         2160042 function calls (2105777 primitive calls) in 3.133 seconds
+
+   Ordered by: cumulative time
+   List reduced from 10554 to 30 due to restriction <30>
+
+   ncalls  tottime  percall  cumtime  percall filename:lineno(function)
+  2194/10    0.012    0.000    3.046    0.305 <frozen importlib._bootstrap>:1165(_find_and_load)
+  2187/10    0.010    0.000    3.046    0.305 <frozen importlib._bootstrap>:1120(_find_and_load_unlocked)
+  2127/12    0.008    0.000    3.045    0.254 <frozen importlib._bootstrap>:666(_load_unlocked)
+  2059/12    0.005    0.000    3.044    0.254 <frozen importlib._bootstrap_external>:934(exec_module)
+  4690/21    0.003    0.000    3.029    0.144 <frozen importlib._bootstrap>:233(_call_with_frames_removed)
+  3542/12    0.145    0.000    3.019    0.252 {built-in method builtins.exec}
+        1    0.000    0.000    3.006    3.006 /media/juan/DATA/projects/GEMINI-CLI-2/qwen-dev-cli/qwen_dev_cli/shell.py:1(<module>)
+        1    0.000    0.000    2.131    2.131 /media/juan/DATA/projects/GEMINI-CLI-2/qwen-dev-cli/qwen_dev_cli/core/llm.py:1(<module>)
+        1    0.000    0.000    2.129    2.129 /media/juan/DATA/projects/GEMINI-CLI-2/qwen-dev-cli/qwen_dev_cli/core/llm.py:198(__init__)
+   355/68    0.001    0.000    2.125    0.031 {built-in method builtins.__import__}
+ 2059/383    0.003    0.000    2.067    0.005 <frozen importlib._bootstrap>:1207(_handle_fromlist)
+     2059    0.018    0.000    1.010    0.000 <frozen importlib._bootstrap_external>:1007(get_code)
+        1    0.000    0.000    0.970    0.970 /media/juan/DATA/projects/GEMINI-CLI-2/qwen-dev-cli/qwen_dev_cli/core/providers/nebius.py:17(__init__)
+        1    0.000    0.000    0.864    0.864 /home/juan/.pyenv/versions/3.11.13/lib/python3.11/site-packages/openai/__init__.py:1(<module>)
+5623/5386    0.062    0.000    0.817    0.000 {built-in method builtins.__build_class__}
+     2061    0.007    0.000    0.791    0.000 <frozen importlib._bootstrap_external>:1127(get_data)
+     2404    0.742    0.000    0.742    0.000 {method 'read' of '_io.BufferedReader' objects}
+        1    0.000    0.000    0.726    0.726 /media/juan/DATA/projects/GEMINI-CLI-2/qwen-dev-cli/qwen_dev_cli/core/providers/gemini.py:14(__init__)
+        1    0.000    0.000    0.725    0.725 /home/juan/.pyenv/versions/3.11.13/lib/python3.11/site-packages/google/generativeai/__init__.py:1(<module>)
+        1    0.000    0.000    0.712    0.712 /home/juan/.pyenv/versions/3.11.13/lib/python3.11/site-packages/google/generativeai/caching.py:1(<module>)
+        1    0.000    0.000    0.684    0.684 /home/juan/.pyenv/versions/3.11.13/lib/python3.11/site-packages/openai/types/__init__.py:1(<module>)
+        1    0.000    0.000    0.535    0.535 /home/juan/.pyenv/versions/3.11.13/lib/python3.11/site-packages/google/generativeai/protos.py:1(<module>)
+        1    0.000    0.000    0.534    0.534 /home/juan/.pyenv/versions/3.11.13/lib/python3.11/site-packages/google/ai/generativelanguage_v1beta/__init__.py:1(<module>)
+31598/28268    0.015    0.000    0.504    0.000 {built-in method builtins.hasattr}
+    14/10    0.000    0.000    0.496    0.050 /home/juan/.pyenv/versions/3.11.13/lib/python3.11/importlib/__init__.py:108(import_module)
+    16/10    0.000    0.000    0.496    0.050 <frozen importlib._bootstrap>:1192(_gcd_import)
+      5/2    0.000    0.000    0.429    0.215 /home/juan/.pyenv/versions/3.11.13/lib/python3.11/site-packages/huggingface_hub/__init__.py:1030(__getattr__)
+        1    0.000    0.000    0.426    0.426 /home/juan/.pyenv/versions/3.11.13/lib/python3.11/site-packages/huggingface_hub/inference/_client.py:1(<module>)
+      451    0.011    0.000    0.348    0.001 /home/juan/.pyenv/versions/3.11.13/lib/python3.11/site-packages/pydantic/_internal/_model_construction.py:80(__new__)
+        1    0.000    0.000    0.319    0.319 /home/juan/.pyenv/versions/3.11.13/lib/python3.11/site-packages/openai/types/batch.py:1(<module>)
+
+

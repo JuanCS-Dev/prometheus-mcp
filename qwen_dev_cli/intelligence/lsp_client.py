@@ -345,7 +345,7 @@ class LSPClient:
             root_path: Project root directory
             language: Target language (auto-detect if None)
         """
-        self.root_path = root_path.resolve()
+        self.root_path = Path(root_path).resolve()
         self.root_uri = f"file://{self.root_path}"
         self.language = language or Language.PYTHON
         

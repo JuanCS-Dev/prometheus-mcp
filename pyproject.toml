@@ -43,6 +43,9 @@ dev = [
     "mypy>=1.0.0",
     "ruff>=0.1.0",
 ]
+fast = [
+    "uvloop>=0.18.0",
+]
 
 [project.urls]
 Homepage = "https://github.com/JuanCS-Dev/qwen-dev-cli"
@@ -52,6 +55,8 @@ Issues = "https://github.com/JuanCS-Dev/qwen-dev-cli/issues"
 [project.scripts]
 qwen-dev = "qwen_dev_cli.__main__:main"
 neuroshell-code = "qwen_dev_cli.shell:main"
+neuroshell-fast = "qwen_dev_cli.shell_fast:main"
+neuroshell = "qwen_dev_cli.shell_fast:main"
 
 [tool.black]
 line-length = 100
@@ -75,3 +80,7 @@ python_files = ["test_*.py"]
 python_classes = ["Test*"]
 python_functions = ["test_*"]
 addopts = "-v --tb=short"
+
+[tool.setuptools.packages.find]
+include = ["qwen_dev_cli*"]
+namespaces = false

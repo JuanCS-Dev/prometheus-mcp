@@ -27,10 +27,11 @@ from datetime import datetime, timedelta
 from enum import Enum
 from collections import deque
 
-from huggingface_hub import InferenceClient
 from .config import config
 
 logger = logging.getLogger(__name__)
+
+# REMOVED top-level import: from huggingface_hub import InferenceClient
 
 
 class CircuitState(Enum):
@@ -220,44 +221,68 @@ class LLMClient:
         self.rate_limiter = RateLimiter() if enable_rate_limiting else None
         self.metrics = RequestMetrics() if enable_telemetry else None
         
-        # Provider clients
-        self.hf_client: Optional[InferenceClient] = None
-        if config.hf_token:
-            self.hf_client = InferenceClient(token=config.hf_token)
-        
-
-        self.nebius_client = None
-        nebius_key = os.getenv("NEBIUS_API_KEY")
-        if nebius_key:
-            try:
-                from .providers.nebius import NebiusProvider
-                self.nebius_client = NebiusProvider(api_key=nebius_key)
-                logger.info("Nebius provider initialized")
-            except Exception as e:
-                logger.warning(f"Nebius init failed: {e}")
-        
-        # Gemini provider
-        self.gemini_client = None
-        gemini_key = os.getenv("GEMINI_API_KEY")
-        if gemini_key:
-            try:
-                from .providers.gemini import GeminiProvider
-                self.gemini_client = GeminiProvider(api_key=gemini_key)
-                logger.info("Gemini provider initialized")
-            except Exception as e:
-                logger.warning(f"Gemini init failed: {e}")
-        
-        self.ollama_client = None
-        if config.ollama_enabled:
-            try:
-                import ollama
-                self.ollama_client = ollama
-            except ImportError:
-                logger.warning("Ollama not installed")
+        # Lazy providers
+        self._hf_client = None
+        self._nebius_client = None
+        self._gemini_client = None
+        self._ollama_client = None
         
         # Provider priority for failover (Gemini first - most powerful)
         self.provider_priority = ["gemini", "nebius", "hf", "ollama"]
         self.default_provider = "auto"
+
+    @property
+    def hf_client(self):
+        """Lazy load HuggingFace client."""
+        if self._hf_client is None and config.hf_token:
+            try:
+                from huggingface_hub import InferenceClient
+                self._hf_client = InferenceClient(token=config.hf_token)
+            except ImportError:
+                logger.warning("huggingface_hub not installed")
+        return self._hf_client
+
+    @property
+    def nebius_client(self):
+        """Lazy load Nebius provider."""
+        if self._nebius_client is None:
+            nebius_key = os.getenv("NEBIUS_API_KEY")
+            if nebius_key:
+                try:
+                    from .providers.nebius import NebiusProvider
+                    self._nebius_client = NebiusProvider(api_key=nebius_key)
+                    logger.info("Nebius provider initialized")
+                except Exception as e:
+                    logger.warning(f"Nebius init failed: {e}")
+        return self._nebius_client
+
+    @property
+    def gemini_client(self):
+        """Lazy load Gemini provider."""
+        if self._gemini_client is None:
+            gemini_key = os.getenv("GEMINI_API_KEY")
+            if gemini_key:
+                try:
+                    from .providers.gemini import GeminiProvider
+                    self._gemini_client = GeminiProvider(api_key=gemini_key)
+                    logger.info("Gemini provider initialized")
+                except Exception as e:
+                    logger.warning(f"Gemini init failed: {e}")
+        return self._gemini_client
+
+    @property
+    def ollama_client(self):
+        """Lazy load Ollama provider."""
+        if self._ollama_client is None:
+            ollama_url = os.getenv("OLLAMA_BASE_URL", "http://localhost:11434")
+            ollama_model = os.getenv("OLLAMA_MODEL", "qwen2.5-coder:latest")
+            try:
+                from .providers.ollama import OllamaProvider
+                self._ollama_client = OllamaProvider(base_url=ollama_url, model=ollama_model)
+                logger.info(f"Ollama provider initialized: {ollama_url} / {ollama_model}")
+            except Exception as e:
+                logger.warning(f"Ollama init failed: {e}")
+        return self._ollama_client
     
     def _calculate_backoff(self, attempt: int) -> float:
         """Calculate exponential backoff with jitter."""
@@ -273,6 +298,7 @@ class LLMClient:
         ]
         error_str = str(error).lower()
         return any(err in error_str for err in retryable_errors)
+
     
     async def stream_chat(
         self,
@@ -341,12 +367,15 @@ class LLMClient:
         """Get list of providers for failover."""
         available = []
         
+        # Check which providers are available
+        if self.ollama_client:
+            available.append("ollama")
+        if self.gemini_client:
+            available.append("gemini")
         if self.nebius_client:
             available.append("nebius")
         if self.hf_client:
             available.append("hf")
-        if self.ollama_client:
-            available.append("ollama")
         
         # Sort by success rate if telemetry enabled
         if self.metrics and self.metrics.provider_stats:
@@ -392,14 +421,18 @@ class LLMClient:
                 chunks_received = 0
                 
                 # Select provider stream method
-                if provider == "nebius":
-                    if not self.nebius_client:
-                        raise RuntimeError("Nebius not initialized")
-                    stream_gen = self._stream_nebius(messages, max_tokens, temperature)
-                elif provider == "ollama":
+                if provider == "ollama":
                     if not self.ollama_client:
                         raise RuntimeError("Ollama not initialized")
                     stream_gen = self._stream_ollama(messages, max_tokens, temperature)
+                elif provider == "gemini":
+                    if not self.gemini_client:
+                        raise RuntimeError("Gemini not initialized")
+                    stream_gen = self._stream_gemini(messages, max_tokens, temperature)
+                elif provider == "nebius":
+                    if not self.nebius_client:
+                        raise RuntimeError("Nebius not initialized")
+                    stream_gen = self._stream_nebius(messages, max_tokens, temperature)
                 else:  # hf
                     if not self.hf_client:
                         raise RuntimeError("HuggingFace not initialized")
@@ -492,6 +525,24 @@ class LLMClient:
             logger.error(f"HF Error: {str(e)}")
             raise
     
+    async def _stream_gemini(
+        self,
+        messages: list,
+        max_tokens: int,
+        temperature: float
+    ) -> AsyncGenerator[str, None]:
+        """Stream from Google Gemini."""
+        try:
+            async for chunk in self.gemini_client.stream_chat(
+                messages=messages,
+                max_tokens=max_tokens,
+                temperature=temperature
+            ):
+                yield chunk
+        except Exception as e:
+            logger.error(f"Gemini Error: {str(e)}")
+            raise
+    
     async def _stream_nebius(
         self,
         messages: list,
@@ -518,20 +569,12 @@ class LLMClient:
     ) -> AsyncGenerator[str, None]:
         """Stream from Ollama local inference."""
         try:
-            response = self.ollama_client.chat(
-                model=config.ollama_model,
+            async for chunk in self.ollama_client.stream_chat(
                 messages=messages,
-                stream=True,
-                options={
-                    "num_predict": max_tokens,
-                    "temperature": temperature
-                }
-            )
-            
-            for chunk in response:
-                if 'message' in chunk and 'content' in chunk['message']:
-                    yield chunk['message']['content']
-                    
+                max_tokens=max_tokens,
+                temperature=temperature
+            ):
+                yield chunk
         except Exception as e:
             logger.error(f"Ollama Error: {str(e)}")
             raise
