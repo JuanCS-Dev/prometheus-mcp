@@ -422,7 +422,7 @@ class NextGenExecutorAgent(BaseAgent):
     ):
         """Initialize NextGen Executor Agent"""
         super().__init__(
-            role=AgentRole.PLANNER,
+            role=AgentRole.EXECUTOR,  # Fixed: Was PLANNER (Constitutional Audit Nov 2025)
             capabilities=[
                 AgentCapability.BASH_EXEC,
                 AgentCapability.READ_ONLY

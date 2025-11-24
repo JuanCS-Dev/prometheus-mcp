@@ -361,12 +361,23 @@ class LLMClient:
                 
             except Exception as e:
                 last_error = e
-                logger.error(f"❌ Provider {current_provider} failed: {str(e)[:100]}")
+                error_msg = str(e)
                 
+                # Check if error is quota/rate limit (429)
+                is_quota_error = "429" in error_msg or "quota" in error_msg.lower()
+                
+                if is_quota_error:
+                    logger.warning(f"⚠️  Provider {current_provider} quota exceeded (429)")
+                else:
+                    logger.error(f"❌ Provider {current_provider} failed: {error_msg[:100]}")
+                
+                # Attempt failover if more providers available
                 if providers_to_try.index(current_provider) < len(providers_to_try) - 1:
-                    logger.info(f"🔄 Failing over to next provider...")
+                    next_provider = providers_to_try[providers_to_try.index(current_provider) + 1]
+                    logger.info(f"🔄 Failing over: {current_provider} → {next_provider}")
                     continue
                 else:
+                    logger.error(f"🚨 All {len(providers_to_try)} providers exhausted")
                     break
         
         raise RuntimeError(f"All providers failed. Last error: {last_error}")

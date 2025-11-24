@@ -1,0 +1,711 @@
+{
+  "generated": "2025-11-24T17:59:22.373204",
+  "total_issues": 88,
+  "issues": [
+    {
+      "id": "ISSUE-001",
+      "title": "Creating file in non-existent directory should fail gracefully.",
+      "severity": "MEDIUM",
+      "category": "UNKNOWN",
+      "persona": "SENIOR",
+      "file": "test_senior_developer.py"
+    },
+    {
+      "id": "ISSUE-002",
+      "title": "File writes should be atomic to prevent corruption.",
+      "severity": "MEDIUM",
+      "category": "UNKNOWN",
+      "persona": "SENIOR",
+      "file": "test_senior_developer.py"
+    },
+    {
+      "id": "ISSUE-003",
+      "title": "Git operations outside repo should have clear error.",
+      "severity": "HIGH",
+      "category": "UNKNOWN",
+      "persona": "SENIOR",
+      "file": "test_senior_developer.py"
+    },
+    {
+      "id": "ISSUE-004",
+      "title": "Concurrent access to same file should be handled.",
+      "severity": "MEDIUM",
+      "category": "UNKNOWN",
+      "persona": "SENIOR",
+      "file": "test_senior_developer.py"
+    },
+    {
+      "id": "ISSUE-005",
+      "title": "Path traversal should be blocked.",
+      "severity": "MEDIUM",
+      "category": "UNKNOWN",
+      "persona": "SENIOR",
+      "file": "test_senior_developer.py"
+    },
+    {
+      "id": "ISSUE-006",
+      "title": "Empty files should be handled correctly.",
+      "severity": "MEDIUM",
+      "category": "UNKNOWN",
+      "persona": "SENIOR",
+      "file": "test_senior_developer.py"
+    },
+    {
+      "id": "ISSUE-007",
+      "title": "Large files should not cause OOM.",
+      "severity": "MEDIUM",
+      "category": "UNKNOWN",
+      "persona": "SENIOR",
+      "file": "test_senior_developer.py"
+    },
+    {
+      "id": "ISSUE-008",
+      "title": "Agent should validate tasks before execution.",
+      "severity": "MEDIUM",
+      "category": "LOGIC",
+      "persona": "SENIOR",
+      "file": "test_senior_developer.py"
+    },
+    {
+      "id": "ISSUE-009",
+      "title": "Agent responses should have consistent structure.",
+      "severity": "MEDIUM",
+      "category": "UNKNOWN",
+      "persona": "SENIOR",
+      "file": "test_senior_developer.py"
+    },
+    {
+      "id": "ISSUE-010",
+      "title": "Agents should strictly enforce capabilities.",
+      "severity": "MEDIUM",
+      "category": "UNKNOWN",
+      "persona": "SENIOR",
+      "file": "test_senior_developer.py"
+    },
+    {
+      "id": "ISSUE-011",
+      "title": "LLM timeout should be handled gracefully.",
+      "severity": "HIGH",
+      "category": "LOGIC",
+      "persona": "SENIOR",
+      "file": "test_senior_developer.py"
+    },
+    {
+      "id": "ISSUE-012",
+      "title": "Network errors should have retry logic.",
+      "severity": "MEDIUM",
+      "category": "UNKNOWN",
+      "persona": "SENIOR",
+      "file": "test_senior_developer.py"
+    },
+    {
+      "id": "ISSUE-013",
+      "title": "Shell should handle SIGINT gracefully.",
+      "severity": "MEDIUM",
+      "category": "UNKNOWN",
+      "persona": "SENIOR",
+      "file": "test_senior_developer.py"
+    },
+    {
+      "id": "ISSUE-014",
+      "title": "Error messages should be consistent language.",
+      "severity": "MEDIUM",
+      "category": "UNKNOWN",
+      "persona": "SENIOR",
+      "file": "test_senior_developer.py"
+    },
+    {
+      "id": "ISSUE-015",
+      "title": "CLI help should be comprehensive.",
+      "severity": "MEDIUM",
+      "category": "UNKNOWN",
+      "persona": "SENIOR",
+      "file": "test_senior_developer.py"
+    },
+    {
+      "id": "ISSUE-016",
+      "title": "Version should follow semver.",
+      "severity": "MEDIUM",
+      "category": "UNKNOWN",
+      "persona": "SENIOR",
+      "file": "test_senior_developer.py"
+    },
+    {
+      "id": "ISSUE-017",
+      "title": "CLI should use proper exit codes.",
+      "severity": "MEDIUM",
+      "category": "UNKNOWN",
+      "persona": "SENIOR",
+      "file": "test_senior_developer.py"
+    },
+    {
+      "id": "ISSUE-018",
+      "title": "Vague file creation request handling.",
+      "severity": "MEDIUM",
+      "category": "UNKNOWN",
+      "persona": "VIBE_CODER",
+      "file": "test_vibe_coder.py"
+    },
+    {
+      "id": "ISSUE-019",
+      "title": "System should tolerate common typos.",
+      "severity": "MEDIUM",
+      "category": "UNKNOWN",
+      "persona": "VIBE_CODER",
+      "file": "test_vibe_coder.py"
+    },
+    {
+      "id": "ISSUE-020",
+      "title": "Incomplete commands should get helpful prompts.",
+      "severity": "LOW",
+      "category": "UX",
+      "persona": "VIBE_CODER",
+      "file": "test_vibe_coder.py"
+    },
+    {
+      "id": "ISSUE-021",
+      "title": "Import errors should be user-friendly.",
+      "severity": "MEDIUM",
+      "category": "UNKNOWN",
+      "persona": "VIBE_CODER",
+      "file": "test_vibe_coder.py"
+    },
+    {
+      "id": "ISSUE-022",
+      "title": "Syntax errors should be explained simply.",
+      "severity": "MEDIUM",
+      "category": "UNKNOWN",
+      "persona": "VIBE_CODER",
+      "file": "test_vibe_coder.py"
+    },
+    {
+      "id": "ISSUE-023",
+      "title": "Permission errors should explain resolution.",
+      "severity": "MEDIUM",
+      "category": "UNKNOWN",
+      "persona": "VIBE_CODER",
+      "file": "test_vibe_coder.py"
+    },
+    {
+      "id": "ISSUE-024",
+      "title": "Network errors should check common causes.",
+      "severity": "MEDIUM",
+      "category": "UX",
+      "persona": "VIBE_CODER",
+      "file": "test_vibe_coder.py"
+    },
+    {
+      "id": "ISSUE-025",
+      "title": "AI should use visible context.",
+      "severity": "HIGH",
+      "category": "UX",
+      "persona": "VIBE_CODER",
+      "file": "test_vibe_coder.py"
+    },
+    {
+      "id": "ISSUE-026",
+      "title": "AI should understand",
+      "severity": "MEDIUM",
+      "category": "UX",
+      "persona": "VIBE_CODER",
+      "file": "test_vibe_coder.py"
+    },
+    {
+      "id": "ISSUE-027",
+      "title": "AI should detect what file user is talking about.",
+      "severity": "HIGH",
+      "category": "UX",
+      "persona": "VIBE_CODER",
+      "file": "test_vibe_coder.py"
+    },
+    {
+      "id": "ISSUE-028",
+      "title": "System should not get frustrated with repetition.",
+      "severity": "LOW",
+      "category": "UX",
+      "persona": "VIBE_CODER",
+      "file": "test_vibe_coder.py"
+    },
+    {
+      "id": "ISSUE-029",
+      "title": "System should detect user frustration.",
+      "severity": "LOW",
+      "category": "UX",
+      "persona": "VIBE_CODER",
+      "file": "test_vibe_coder.py"
+    },
+    {
+      "id": "ISSUE-030",
+      "title": "System should support easy undo.",
+      "severity": "HIGH",
+      "category": "UX",
+      "persona": "VIBE_CODER",
+      "file": "test_vibe_coder.py"
+    },
+    {
+      "id": "ISSUE-031",
+      "title": "System should handle multiline paste.",
+      "severity": "MEDIUM",
+      "category": "UX",
+      "persona": "VIBE_CODER",
+      "file": "test_vibe_coder.py"
+    },
+    {
+      "id": "ISSUE-032",
+      "title": "System should handle StackOverflow-style paste.",
+      "severity": "LOW",
+      "category": "UX",
+      "persona": "VIBE_CODER",
+      "file": "test_vibe_coder.py"
+    },
+    {
+      "id": "ISSUE-033",
+      "title": "System should extract code from markdown.",
+      "severity": "MEDIUM",
+      "category": "UX",
+      "persona": "VIBE_CODER",
+      "file": "test_vibe_coder.py"
+    },
+    {
+      "id": "ISSUE-034",
+      "title": "Long operations should show progress.",
+      "severity": "MEDIUM",
+      "category": "UX",
+      "persona": "VIBE_CODER",
+      "file": "test_vibe_coder.py"
+    },
+    {
+      "id": "ISSUE-035",
+      "title": "Complex operations should explain steps.",
+      "severity": "LOW",
+      "category": "UX",
+      "persona": "VIBE_CODER",
+      "file": "test_vibe_coder.py"
+    },
+    {
+      "id": "ISSUE-036",
+      "title": "Success should be clearly communicated.",
+      "severity": "LOW",
+      "category": "UX",
+      "persona": "VIBE_CODER",
+      "file": "test_vibe_coder.py"
+    },
+    {
+      "id": "ISSUE-037",
+      "title": "Semicolon command chaining should be blocked.",
+      "severity": "MEDIUM",
+      "category": "UNKNOWN",
+      "persona": "SCRIPT_KID",
+      "file": "test_script_kid.py"
+    },
+    {
+      "id": "ISSUE-038",
+      "title": "Backtick command substitution should be blocked.",
+      "severity": "MEDIUM",
+      "category": "UNKNOWN",
+      "persona": "SCRIPT_KID",
+      "file": "test_script_kid.py"
+    },
+    {
+      "id": "ISSUE-039",
+      "title": "$() command substitution should be blocked.",
+      "severity": "MEDIUM",
+      "category": "UNKNOWN",
+      "persona": "SCRIPT_KID",
+      "file": "test_script_kid.py"
+    },
+    {
+      "id": "ISSUE-040",
+      "title": "Newline injection should be blocked.",
+      "severity": "MEDIUM",
+      "category": "UNKNOWN",
+      "persona": "SCRIPT_KID",
+      "file": "test_script_kid.py"
+    },
+    {
+      "id": "ISSUE-041",
+      "title": "../../../ path traversal should be blocked.",
+      "severity": "MEDIUM",
+      "category": "UNKNOWN",
+      "persona": "SCRIPT_KID",
+      "file": "test_script_kid.py"
+    },
+    {
+      "id": "ISSUE-042",
+      "title": "Null byte injection should be blocked.",
+      "severity": "MEDIUM",
+      "category": "UNKNOWN",
+      "persona": "SCRIPT_KID",
+      "file": "test_script_kid.py"
+    },
+    {
+      "id": "ISSUE-043",
+      "title": "Symlink attacks should be prevented.",
+      "severity": "MEDIUM",
+      "category": "UNKNOWN",
+      "persona": "SCRIPT_KID",
+      "file": "test_script_kid.py"
+    },
+    {
+      "id": "ISSUE-044",
+      "title": "Infinite loop in generated code should be caught.",
+      "severity": "HIGH",
+      "category": "SECURITY",
+      "persona": "SCRIPT_KID",
+      "file": "test_script_kid.py"
+    },
+    {
+      "id": "ISSUE-045",
+      "title": "Memory exhaustion should be prevented.",
+      "severity": "HIGH",
+      "category": "SECURITY",
+      "persona": "SCRIPT_KID",
+      "file": "test_script_kid.py"
+    },
+    {
+      "id": "ISSUE-046",
+      "title": "Fork bomb should be detected and blocked.",
+      "severity": "MEDIUM",
+      "category": "UNKNOWN",
+      "persona": "SCRIPT_KID",
+      "file": "test_script_kid.py"
+    },
+    {
+      "id": "ISSUE-047",
+      "title": "Disk filling attacks should be limited.",
+      "severity": "MEDIUM",
+      "category": "SECURITY",
+      "persona": "SCRIPT_KID",
+      "file": "test_script_kid.py"
+    },
+    {
+      "id": "ISSUE-048",
+      "title": "sudo commands should be blocked.",
+      "severity": "MEDIUM",
+      "category": "UNKNOWN",
+      "persona": "SCRIPT_KID",
+      "file": "test_script_kid.py"
+    },
+    {
+      "id": "ISSUE-049",
+      "title": "setuid manipulation should be blocked.",
+      "severity": "MEDIUM",
+      "category": "UNKNOWN",
+      "persona": "SCRIPT_KID",
+      "file": "test_script_kid.py"
+    },
+    {
+      "id": "ISSUE-050",
+      "title": "Dangerous env variables should be blocked.",
+      "severity": "MEDIUM",
+      "category": "UNKNOWN",
+      "persona": "SCRIPT_KID",
+      "file": "test_script_kid.py"
+    },
+    {
+      "id": "ISSUE-051",
+      "title": "Data exfiltration via curl should be blocked.",
+      "severity": "MEDIUM",
+      "category": "UNKNOWN",
+      "persona": "SCRIPT_KID",
+      "file": "test_script_kid.py"
+    },
+    {
+      "id": "ISSUE-052",
+      "title": "DNS exfiltration should be considered.",
+      "severity": "MEDIUM",
+      "category": "UNKNOWN",
+      "persona": "SCRIPT_KID",
+      "file": "test_script_kid.py"
+    },
+    {
+      "id": "ISSUE-053",
+      "title": "User can't override system prompt.",
+      "severity": "MEDIUM",
+      "category": "UNKNOWN",
+      "persona": "SCRIPT_KID",
+      "file": "test_script_kid.py"
+    },
+    {
+      "id": "ISSUE-054",
+      "title": "Indirect prompt injection via files.",
+      "severity": "HIGH",
+      "category": "SECURITY",
+      "persona": "SCRIPT_KID",
+      "file": "test_script_kid.py"
+    },
+    {
+      "id": "ISSUE-055",
+      "title": "Python code shouldn't escape sandbox.",
+      "severity": "CRITICAL",
+      "category": "UNKNOWN",
+      "persona": "SCRIPT_KID",
+      "file": "test_script_kid.py"
+    },
+    {
+      "id": "ISSUE-056",
+      "title": "File descriptors shouldn't leak info.",
+      "severity": "MEDIUM",
+      "category": "UNKNOWN",
+      "persona": "SCRIPT_KID",
+      "file": "test_script_kid.py"
+    },
+    {
+      "id": "ISSUE-057",
+      "title": "Concurrent file reads should be safe.",
+      "severity": "MEDIUM",
+      "category": "UNKNOWN",
+      "persona": "STRESS_TEST",
+      "file": "test_stress_edge_cases.py"
+    },
+    {
+      "id": "ISSUE-058",
+      "title": "Concurrent writes to same file should be serialized.",
+      "severity": "MEDIUM",
+      "category": "UNKNOWN",
+      "persona": "STRESS_TEST",
+      "file": "test_stress_edge_cases.py"
+    },
+    {
+      "id": "ISSUE-059",
+      "title": "Multiple agent executions should not interfere.",
+      "severity": "MEDIUM",
+      "category": "INTEGRATION",
+      "persona": "STRESS_TEST",
+      "file": "test_stress_edge_cases.py"
+    },
+    {
+      "id": "ISSUE-060",
+      "title": "Writing very large file content should work.",
+      "severity": "MEDIUM",
+      "category": "UNKNOWN",
+      "persona": "STRESS_TEST",
+      "file": "test_stress_edge_cases.py"
+    },
+    {
+      "id": "ISSUE-061",
+      "title": "Very long command should be handled.",
+      "severity": "MEDIUM",
+      "category": "UNKNOWN",
+      "persona": "STRESS_TEST",
+      "file": "test_stress_edge_cases.py"
+    },
+    {
+      "id": "ISSUE-062",
+      "title": "Directory with many files should work.",
+      "severity": "MEDIUM",
+      "category": "UNKNOWN",
+      "persona": "STRESS_TEST",
+      "file": "test_stress_edge_cases.py"
+    },
+    {
+      "id": "ISSUE-063",
+      "title": "Unicode filenames should work.",
+      "severity": "MEDIUM",
+      "category": "UNKNOWN",
+      "persona": "STRESS_TEST",
+      "file": "test_stress_edge_cases.py"
+    },
+    {
+      "id": "ISSUE-064",
+      "title": "Unicode content should be preserved.",
+      "severity": "MEDIUM",
+      "category": "UNKNOWN",
+      "persona": "STRESS_TEST",
+      "file": "test_stress_edge_cases.py"
+    },
+    {
+      "id": "ISSUE-065",
+      "title": "Special characters in path should be escaped.",
+      "severity": "MEDIUM",
+      "category": "UNKNOWN",
+      "persona": "STRESS_TEST",
+      "file": "test_stress_edge_cases.py"
+    },
+    {
+      "id": "ISSUE-066",
+      "title": "Partial failures should leave clean state.",
+      "severity": "HIGH",
+      "category": "LOGIC",
+      "persona": "STRESS_TEST",
+      "file": "test_stress_edge_cases.py"
+    },
+    {
+      "id": "ISSUE-067",
+      "title": "Network timeouts should retry gracefully.",
+      "severity": "MEDIUM",
+      "category": "LOGIC",
+      "persona": "STRESS_TEST",
+      "file": "test_stress_edge_cases.py"
+    },
+    {
+      "id": "ISSUE-068",
+      "title": "Disk full should be handled gracefully.",
+      "severity": "HIGH",
+      "category": "LOGIC",
+      "persona": "STRESS_TEST",
+      "file": "test_stress_edge_cases.py"
+    },
+    {
+      "id": "ISSUE-069",
+      "title": "API rate limits should be handled.",
+      "severity": "MEDIUM",
+      "category": "LOGIC",
+      "persona": "STRESS_TEST",
+      "file": "test_stress_edge_cases.py"
+    },
+    {
+      "id": "ISSUE-070",
+      "title": "Rapid tool calls should be throttled.",
+      "severity": "LOW",
+      "category": "PERFORMANCE",
+      "persona": "STRESS_TEST",
+      "file": "test_stress_edge_cases.py"
+    },
+    {
+      "id": "ISSUE-071",
+      "title": "Planner output should be executable by Executor.",
+      "severity": "HIGH",
+      "category": "INTEGRATION",
+      "persona": "INTEGRATION",
+      "file": "test_agent_integration.py"
+    },
+    {
+      "id": "ISSUE-072",
+      "title": "Explorer findings should propagate to other agents.",
+      "severity": "MEDIUM",
+      "category": "INTEGRATION",
+      "persona": "INTEGRATION",
+      "file": "test_agent_integration.py"
+    },
+    {
+      "id": "ISSUE-073",
+      "title": "Reviewer feedback should trigger corrections.",
+      "severity": "MEDIUM",
+      "category": "INTEGRATION",
+      "persona": "INTEGRATION",
+      "file": "test_agent_integration.py"
+    },
+    {
+      "id": "ISSUE-074",
+      "title": "Architect phase should exist and work.",
+      "severity": "MEDIUM",
+      "category": "UNKNOWN",
+      "persona": "INTEGRATION",
+      "file": "test_agent_integration.py"
+    },
+    {
+      "id": "ISSUE-075",
+      "title": "DevSquad should enforce phase ordering.",
+      "severity": "MEDIUM",
+      "category": "INTEGRATION",
+      "persona": "INTEGRATION",
+      "file": "test_agent_integration.py"
+    },
+    {
+      "id": "ISSUE-076",
+      "title": "Failed phases should allow rollback.",
+      "severity": "MEDIUM",
+      "category": "INTEGRATION",
+      "persona": "INTEGRATION",
+      "file": "test_agent_integration.py"
+    },
+    {
+      "id": "ISSUE-077",
+      "title": "System should create working Flask app.",
+      "severity": "HIGH",
+      "category": "UNKNOWN",
+      "persona": "INTEGRATION",
+      "file": "test_agent_integration.py"
+    },
+    {
+      "id": "ISSUE-078",
+      "title": "System should create working CLI tool.",
+      "severity": "HIGH",
+      "category": "INTEGRATION",
+      "persona": "INTEGRATION",
+      "file": "test_agent_integration.py"
+    },
+    {
+      "id": "ISSUE-079",
+      "title": "System should create working data processor.",
+      "severity": "MEDIUM",
+      "category": "INTEGRATION",
+      "persona": "INTEGRATION",
+      "file": "test_agent_integration.py"
+    },
+    {
+      "id": "ISSUE-080",
+      "title": "Governance should block dangerous operations.",
+      "severity": "MEDIUM",
+      "category": "INTEGRATION",
+      "persona": "INTEGRATION",
+      "file": "test_agent_integration.py"
+    },
+    {
+      "id": "ISSUE-081",
+      "title": "Sofia counsel should be available.",
+      "severity": "LOW",
+      "category": "UNKNOWN",
+      "persona": "INTEGRATION",
+      "file": "test_agent_integration.py"
+    },
+    {
+      "id": "ISSUE-082",
+      "title": "All governance decisions should be logged.",
+      "severity": "MEDIUM",
+      "category": "INTEGRATION",
+      "persona": "INTEGRATION",
+      "file": "test_agent_integration.py"
+    },
+    {
+      "id": "ISSUE-083",
+      "title": "Read \u2192 Modify \u2192 Write should be atomic.",
+      "severity": "MEDIUM",
+      "category": "UNKNOWN",
+      "persona": "INTEGRATION",
+      "file": "test_agent_integration.py"
+    },
+    {
+      "id": "ISSUE-084",
+      "title": "Search \u2192 Edit chain should preserve context.",
+      "severity": "MEDIUM",
+      "category": "UNKNOWN",
+      "persona": "INTEGRATION",
+      "file": "test_agent_integration.py"
+    },
+    {
+      "id": "ISSUE-085",
+      "title": "Git workflow should be chainable.",
+      "severity": "MEDIUM",
+      "category": "INTEGRATION",
+      "persona": "INTEGRATION",
+      "file": "test_agent_integration.py"
+    },
+    {
+      "id": "ISSUE-086",
+      "title": "Session context should persist across commands.",
+      "severity": "HIGH",
+      "category": "INTEGRATION",
+      "persona": "INTEGRATION",
+      "file": "test_agent_integration.py"
+    },
+    {
+      "id": "ISSUE-087",
+      "title": "Session should recover from crash.",
+      "severity": "MEDIUM",
+      "category": "INTEGRATION",
+      "persona": "INTEGRATION",
+      "file": "test_agent_integration.py"
+    },
+    {
+      "id": "ISSUE-088",
+      "title": "Command history should persist.",
+      "severity": "LOW",
+      "category": "UX",
+      "persona": "INTEGRATION",
+      "file": "test_agent_integration.py"
+    }
+  ],
+  "test_returncode": 0
+}

@@ -1,211 +1,119 @@
-"""MCP (Model Context Protocol) filesystem server manager."""
+"""MCP Client Adapter with Developer-Friendly Factory.
 
-import json
-from pathlib import Path
-from typing import List, Optional, Dict
-from .context import ContextBuilder
+Philosophy (Boris Cherny):
+    - Explicit is better than implicit
+    - Fail fast with clear error messages
+    - Type-safe interfaces
+    - Zero-config convenience functions
+
+Compliance: Vértice Constitution v3.0 - Artigo IX, P2, P3
+"""
+
+from typing import Any, Dict, Optional, TYPE_CHECKING
+import warnings
+
+if TYPE_CHECKING:
+    from qwen_dev_cli.tools.base import ToolRegistry, ToolResult
 
 
-class MCPManager:
-    """Manage MCP filesystem server integration.
-    
-    This is a simplified implementation that uses direct file injection
-    instead of complex tool calling, based on validated approach from research.
+def create_mcp_client(
+    registry: Optional['ToolRegistry'] = None,
+    auto_setup: bool = True
+) -> 'MCPClient':
+    """Create MCP client with optional auto-setup (RECOMMENDED).
+
+    Args:
+        registry: Pre-configured tool registry
+        auto_setup: Auto-setup default tools when registry=None
+
+    Returns:
+        Configured MCPClient
+
+    Raises:
+        ValueError: If registry=None and auto_setup=False
+
+    Example:
+        >>> from qwen_dev_cli.core.mcp import create_mcp_client
+        >>> mcp = create_mcp_client()  # Auto-setup
     """
-    
-    def __init__(self, root_dir: Optional[str] = None):
-        """Initialize MCP manager.
-        
-        Args:
-            root_dir: Root directory for filesystem access (default: current dir)
-        """
-        self.root_dir = Path(root_dir or Path.cwd()).resolve()
-        self.context_builder = ContextBuilder()
-        self.enabled = True
-    
-    async def call_tool(self, tool_name: str, arguments: Dict) -> Dict:
-        """
-        Tool calling interface for agents.
-        Provides basic filesystem operations.
-        """
-        try:
-            if tool_name == "read_file":
-                path = Path(arguments.get("path", ""))
-                if path.exists():
-                    return {
-                        "success": True,
-                        "content": path.read_text(encoding='utf-8')
-                    }
-                return {"success": False, "error": f"File not found: {path}"}
-            
-            elif tool_name == "write_file":
-                path = Path(arguments.get("path", ""))
-                content = arguments.get("content", "")
-                path.write_text(content, encoding='utf-8')
-                return {"success": True}
-            
-            elif tool_name == "list_files":
-                pattern = arguments.get("pattern", "*.py")
-                files = self.list_files(pattern)
-                return {"success": True, "files": [str(f) for f in files]}
-            
-            else:
-                return {"success": False, "error": f"Unknown tool: {tool_name}"}
-        
-        except Exception as e:
-            return {"success": False, "error": str(e)}
-    
-    def list_files(self, pattern: str = "*.py", recursive: bool = True) -> List[str]:
-        """List files in root directory.
-        
-        Args:
-            pattern: Glob pattern for files
-            recursive: Search recursively
-            
-        Returns:
-            List of file paths (relative to root_dir)
-        """
-        try:
-            if recursive:
-                files = list(self.root_dir.rglob(pattern))
-            else:
-                files = list(self.root_dir.glob(pattern))
-            
-            # Filter out venv, .git, __pycache__
-            filtered = []
-            for f in files:
-                rel_path = f.relative_to(self.root_dir)
-                parts = rel_path.parts
-                
-                if any(p.startswith('.') or p in ['venv', 'env', '__pycache__', 'node_modules'] 
-                       for p in parts):
-                    continue
-                
-                filtered.append(str(f))
-            
-            return filtered
-            
-        except Exception as e:
-            print(f"Error listing files: {e}")
-            return []
-    
-    def get_file_info(self, file_path: str) -> Dict[str, any]:
-        """Get file information.
-        
-        Args:
-            file_path: Path to file
-            
-        Returns:
-            Dictionary with file info
-        """
-        try:
-            path = Path(file_path).resolve()
-            
-            if not path.exists():
-                return {"error": "File not found"}
-            
-            stat = path.stat()
-            
-            return {
-                "name": path.name,
-                "path": str(path),
-                "size": stat.st_size,
-                "size_kb": stat.st_size / 1024,
-                "modified": stat.st_mtime,
-                "is_file": path.is_file(),
-                "suffix": path.suffix
-            }
-            
-        except Exception as e:
-            return {"error": str(e)}
-    
-    def inject_files_to_context(self, file_paths: List[str]) -> Dict[str, str]:
-        """Inject multiple files into context builder.
-        
-        Args:
-            file_paths: List of file paths
-            
-        Returns:
-            Dictionary of results
-        """
-        return self.context_builder.add_files(file_paths)
-    
-    def inject_pattern_to_context(self, pattern: str = "*.py") -> Dict[str, str]:
-        """Inject files matching pattern to context.
-        
-        Args:
-            pattern: Glob pattern
-            
-        Returns:
-            Dictionary of results
-        """
-        files = self.list_files(pattern, recursive=False)
-        
-        if not files:
-            return {"error": f"No files found matching: {pattern}"}
-        
-        # Limit to max_context_files
-        max_files = self.context_builder.max_files
-        if len(files) > max_files:
-            files = files[:max_files]
-        
-        return self.inject_files_to_context(files)
-    
-    def get_context(self) -> str:
-        """Get formatted context from all injected files.
-        
-        Returns:
-            Formatted context string
-        """
-        return self.context_builder.get_context()
-    
-    def get_stats(self) -> Dict[str, any]:
-        """Get MCP context statistics.
-        
-        Returns:
-            Dictionary with stats
-        """
-        stats = self.context_builder.get_stats()
-        stats["root_dir"] = str(self.root_dir)
-        stats["enabled"] = self.enabled
-        return stats
-    
-    def clear(self):
-        """Clear all context."""
-        self.context_builder.clear()
-    
-    def toggle(self, enabled: bool = True):
-        """Enable or disable MCP.
-        
-        Args:
-            enabled: True to enable, False to disable
-        """
-        self.enabled = enabled
-    
-    def as_tool_description(self) -> Dict[str, any]:
-        """Get MCP filesystem server as tool description.
-        
-        Returns:
-            Tool description dictionary
-        """
-        return {
-            "name": "filesystem",
-            "description": "Read files from the local filesystem",
-            "parameters": {
-                "type": "object",
-                "properties": {
-                    "path": {
-                        "type": "string",
-                        "description": "Path to file to read"
-                    },
-                    "pattern": {
-                        "type": "string",
-                        "description": "Glob pattern for multiple files"
-                    }
-                }
-            }
-        }
+    if registry is None:
+        if not auto_setup:
+            raise ValueError(
+                "registry required when auto_setup=False. "
+                "Quick start: mcp = create_mcp_client()"
+            )
+
+        from qwen_dev_cli.tools.registry_setup import setup_default_tools
+        registry, mcp = setup_default_tools()
+        return mcp
+
+    from qwen_dev_cli.tools.base import ToolRegistry
+
+    if not isinstance(registry, ToolRegistry):
+        raise TypeError(
+            f"registry must be ToolRegistry, got {type(registry).__name__}"
+        )
+
+    return MCPClient(registry)
 
 
-# Global MCP manager instance
-mcp_manager = MCPManager()
+class MCPClient:
+    """Adapter for ToolRegistry to match MCP interface.
+
+    PREFER: Use create_mcp_client() factory instead of direct instantiation.
+    """
+
+    def __init__(self, registry: 'ToolRegistry'):
+        """Initialize MCP client."""
+        from qwen_dev_cli.tools.base import ToolRegistry
+
+        if not isinstance(registry, ToolRegistry):
+            raise TypeError(
+                f"registry must be ToolRegistry, got {type(registry).__name__}. "
+                f"Use: from qwen_dev_cli.core.mcp import create_mcp_client; "
+                f"mcp = create_mcp_client()"
+            )
+
+        self.registry = registry
+
+        if len(registry.tools) == 0:
+            warnings.warn(
+                "MCPClient created with empty registry. "
+                "Agents will fail. Use create_mcp_client() for auto-setup.",
+                UserWarning,
+                stacklevel=2
+            )
+
+    async def call_tool(self, tool_name: str, arguments: Dict[str, Any]) -> Dict[str, Any]:
+        """Execute a tool by name."""
+        tool = self.registry.get(tool_name)
+        if not tool:
+            available = list(self.registry.tools.keys())
+            raise ValueError(
+                f"Tool '{tool_name}' not found. "
+                f"Available: {available}. "
+                f"Use setup_default_tools() to register tools."
+            )
+
+        is_valid, error = tool.validate_params(**arguments)
+        if not is_valid:
+            raise ValueError(f"Invalid params for '{tool_name}': {error}")
+
+        try:
+            result = await tool._execute_validated(**arguments)
+        except Exception as e:
+            raise Exception(f"Tool '{tool_name}' failed: {str(e)}") from e
+
+        from qwen_dev_cli.tools.base import ToolResult
+
+        if isinstance(result, ToolResult):
+            if not result.success:
+                raise Exception(result.error or f"Tool '{tool_name}' failed")
+            return result.data if isinstance(result.data, dict) else {"output": result.data}
+
+        if hasattr(result, 'to_dict'):
+            return result.to_dict()
+        return {'result': result}
+
+
+__all__ = ['MCPClient', 'create_mcp_client']

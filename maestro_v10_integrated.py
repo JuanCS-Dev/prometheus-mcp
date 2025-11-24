@@ -795,7 +795,7 @@ class Shell:
             self.c.print("\n[dim]🔌 Initializing v6.0 Agent Framework...[/dim]")
 
             # Initialize core clients
-            llm = LLMClient()  # Uses gemini-2.0-flash-exp by default
+            llm = LLMClient()  # Uses GEMINI_MODEL from .env (default: gemini-2.5-flash)
 
             # Create tool registry and MCP client
             tool_registry = ToolRegistry()

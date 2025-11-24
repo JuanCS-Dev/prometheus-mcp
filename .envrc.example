@@ -1,0 +1,16 @@
+# Optional Environment Configuration for qwen-dev-cli
+# Copy to .envrc to use with direnv, or source manually
+
+# Suppress gRPC ALTS warnings (cosmetic, not functional)
+export GRPC_ENABLE_FORK_SUPPORT=1
+export GRPC_POLL_STRATEGY=poll
+
+# Python optimization
+export PYTHONUNBUFFERED=1
+
+# Disable pip version check (faster startup)
+export PIP_DISABLE_PIP_VERSION_CHECK=1
+
+# Optional: Activate virtual environment
+# Uncomment if using venv:
+# source .venv/bin/activate

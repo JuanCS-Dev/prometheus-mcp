@@ -55,6 +55,9 @@ from qwen_dev_cli.agents.planner import PlannerAgent
 from qwen_dev_cli.agents.explorer import ExplorerAgent
 from qwen_dev_cli.agents.reviewer import ReviewerAgent
 
+# Governance integration (Phase 5 - Nov 2025)
+from qwen_dev_cli.maestro_governance import MaestroGovernance, render_sofia_counsel
+
 # ============================================================================
 # CONFIGURATION & SETUP
 # ============================================================================
@@ -98,6 +101,7 @@ class GlobalState:
         self.initialized = False
         self.llm_client = None
         self.mcp_client = None
+        self.governance = None  # MaestroGovernance instance (Phase 5)
 
 state = GlobalState()
 
@@ -188,31 +192,33 @@ async def execute_agent_task(
     agent_name: str,
     prompt: str,
     context: dict = None,
-    stream: bool = True
+    stream: bool = True,
+    with_governance: bool = True
 ) -> dict:
     """
     Delegates execution to the specific v6.0 Agent.
-    
+
     Args:
         agent_name: Name of agent (planner, reviewer, explorer)
         prompt: User prompt/request
         context: Additional context
         stream: Enable streaming output (future: real-time updates)
-    
+        with_governance: Enable governance checks (default: True)
+
     Returns:
         dict: Agent response data (ExecutionPlan, ReviewReport, etc.)
     """
     start_time = datetime.now()
     agent_name = agent_name.lower()
-    
+
     # Validate agent exists
     if agent_name not in state.agents:
         raise ValueError(f"Agent '{agent_name}' not found in swarm. Available: {list(state.agents.keys())}")
-    
+
     target_agent = state.agents[agent_name]
-    
+
     console.print(f"\n[bold blue]⚡ {target_agent.role.value.upper()}[/bold blue] [dim]activated[/dim]")
-    
+
     try:
         # Create the standardized Task object (BaseAgent protocol)
         task = AgentTask(
@@ -220,37 +226,55 @@ async def execute_agent_task(
             context=context or {},
             metadata={"interface": "maestro_v7", "timestamp": datetime.now().isoformat()}
         )
-        
-        # EXECUTION WITH LIVE SPINNER
-        # The v6.0 agent runs here. Typer's event loop keeps UI alive.
-        with Progress(
-            SpinnerColumn("dots12"),
-            TextColumn("[bold blue]{task.description}"),
-            console=console,
-            transient=True
-        ) as progress:
-            spinner_task = progress.add_task("Reasoning...", total=None)
-            
-            # THE REAL CALL to agent's neural core
-            response = await target_agent.execute(task)
-            
-            progress.update(spinner_task, completed=True)
-        
+
+        # GOVERNANCE INTEGRATION (Phase 5 - Nov 2025)
+        # Execute through governance pipeline if available and enabled
+        if with_governance and state.governance:
+            with Progress(
+                SpinnerColumn("dots12"),
+                TextColumn("[bold blue]{task.description}"),
+                console=console,
+                transient=True
+            ) as progress:
+                spinner_task = progress.add_task("Reasoning with governance...", total=None)
+
+                # Execute with constitutional checks
+                response = await state.governance.execute_with_governance(
+                    agent=target_agent,
+                    task=task
+                )
+
+                progress.update(spinner_task, completed=True)
+        else:
+            # Fallback: Execute without governance
+            with Progress(
+                SpinnerColumn("dots12"),
+                TextColumn("[bold blue]{task.description}"),
+                console=console,
+                transient=True
+            ) as progress:
+                spinner_task = progress.add_task("Reasoning...", total=None)
+
+                # THE REAL CALL to agent's neural core
+                response = await target_agent.execute(task)
+
+                progress.update(spinner_task, completed=True)
+
         duration = (datetime.now() - start_time).total_seconds()
-        
+
         # Check success
         if not response.success:
             render_error(f"{agent_name.title()} reported failure", response.error or "Unknown error")
             return {"status": "failed", "error": response.error, "reasoning": response.reasoning}
-        
+
         render_success("Task Complete", duration)
-        
+
         # Log reasoning for debugging
         logger.info(f"{agent_name} reasoning: {response.reasoning}")
-        
+
         # Return the payload (already a dict from Pydantic model_dump())
         return response.data
-        
+
     except Exception as e:
         render_error(f"Crash in {agent_name}", str(e))
         logger.exception(f"Agent {agent_name} crash details")
@@ -284,14 +308,30 @@ async def ensure_initialized():
                 "reviewer": ReviewerAgent(state.llm_client, state.mcp_client)
                 # Add Security, Refactorer here as they're implemented
             }
-            
+
             # Optional: Pre-load Explorer graph cache
             try:
                 if hasattr(state.agents["explorer"], "load_graph"):
                     await state.agents["explorer"].load_graph()
             except:
                 pass  # First run, no cache yet
-        
+
+        # 3. Initialize Constitutional Governance (Phase 5 - Nov 2025)
+        try:
+            state.governance = MaestroGovernance(
+                llm_client=state.llm_client,
+                mcp_client=state.mcp_client,
+                enable_governance=True,
+                enable_counsel=True,
+                enable_observability=True,
+                auto_risk_detection=True
+            )
+            await state.governance.initialize()
+        except Exception as e:
+            logger.warning(f"Governance initialization failed: {e}")
+            console.print(f"[yellow]⚠️  Running without governance (degraded mode)[/yellow]")
+            state.governance = None
+
         state.initialized = True
         console.print("[green]✓[/green] [bold]Vértice-MAXIMUS Online[/bold]\n")
         
@@ -437,6 +477,104 @@ async def agent_explore(
     
     else:
         console.print(result)
+
+@agent_app.async_command("sofia")
+async def agent_sofia(
+    question: Annotated[str, typer.Argument(help="Ethical question or dilemma to consult Sofia about")],
+):
+    """
+    🕊️  Consult Sofia (Wise Counselor) for ethical guidance.
+
+    Sofia provides philosophical counsel using Socratic method and virtue ethics
+    from Early Christianity (Pre-Nicene, 50-325 AD).
+
+    Example:
+        maestro agent sofia "Should I implement aggressive caching that might compromise user privacy?"
+        maestro agent sofia "How do I balance feature velocity with code quality?"
+    """
+    await ensure_initialized()
+
+    if not state.governance:
+        render_error("Sofia not available", "Governance system not initialized")
+        raise typer.Exit(1)
+
+    console.print("\n[bold magenta]🕊️  Consulting Sofia (Wise Counselor)...[/bold magenta]")
+    console.print("[dim]Sofia will deliberate on your question using virtue ethics and Socratic method[/dim]\n")
+
+    try:
+        # Ask Sofia directly (no worker agent involved)
+        result = await state.governance.ask_sofia(question)
+
+        # Render beautiful counsel output
+        render_sofia_counsel(result)
+
+    except Exception as e:
+        render_error("Sofia consultation failed", str(e))
+        logger.exception("Sofia command error")
+        raise typer.Exit(1)
+
+@agent_app.async_command("governance")
+async def agent_governance_status():
+    """
+    🛡️  Show governance system status.
+
+    Displays status of Justiça (governance) and Sofia (counselor) systems,
+    including configuration and availability.
+
+    Example:
+        maestro agent governance
+    """
+    await ensure_initialized()
+
+    if not state.governance:
+        console.print("[yellow]⚠️  Governance system not initialized[/yellow]")
+        raise typer.Exit(1)
+
+    status = state.governance.get_governance_status()
+
+    # Create status table
+    table = Table(title="🛡️  Constitutional Governance Status", border_style="cyan")
+    table.add_column("Component", style="cyan")
+    table.add_column("Status", style="white")
+    table.add_column("Details", style="dim")
+
+    # Add rows
+    table.add_row(
+        "System",
+        "✅ Online" if status["initialized"] else "❌ Offline",
+        "Governance pipeline active"
+    )
+
+    table.add_row(
+        "Justiça (Governance)",
+        "✅ Active" if status["justica_available"] else "❌ Unavailable",
+        "Constitutional checks enabled" if status["governance_enabled"] else "Disabled"
+    )
+
+    table.add_row(
+        "Sofia (Counselor)",
+        "✅ Active" if status["sofia_available"] else "❌ Unavailable",
+        "Ethical counsel enabled" if status["counsel_enabled"] else "Disabled"
+    )
+
+    table.add_row(
+        "Observability",
+        "✅ Active" if status["observability_enabled"] else "❌ Disabled",
+        "OpenTelemetry tracing"
+    )
+
+    table.add_row(
+        "Risk Detection",
+        "✅ Auto" if status["auto_risk_detection"] else "⚙️  Manual",
+        "Automatic risk level detection"
+    )
+
+    console.print(table)
+
+    # Show usage hint
+    console.print("\n[dim]Commands:[/dim]")
+    console.print("[dim]  • maestro agent sofia \"<question>\"  - Consult Sofia for ethical guidance[/dim]")
+    console.print("[dim]  • maestro agent plan/review/explore  - All protected by governance[/dim]")
 
 # ============================================================================
 # COMMANDS: CONFIGURATION

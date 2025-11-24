@@ -19,11 +19,44 @@ from datetime import datetime
 from enum import Enum
 from typing import Any, Dict, List, Optional, TypeVar, Generic, cast
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, model_validator
 
 # --- Core Types ---
 
 class AgentRole(str, Enum):
+    """
+    Agent role types in the qwen-dev-cli multi-agent system.
+
+    Core Roles:
+        ARCHITECT: System architecture and design decisions
+        EXPLORER: Codebase exploration and understanding
+        PLANNER: Task planning and coordination
+        REFACTORER: Code refactoring and improvement
+        REVIEWER: Code review and quality assurance
+
+    Specialized Roles:
+        SECURITY: Security analysis and vulnerability detection
+        PERFORMANCE: Performance optimization and profiling
+        TESTING: Test generation and execution
+        DOCUMENTATION: Documentation generation and maintenance
+        DATABASE: Database operations and schema management
+        DEVOPS: DevOps operations and CI/CD
+
+    Governance & Wisdom Roles (NEW in Agent Integration v1.0):
+        GOVERNANCE: Constitutional governance agent that evaluates actions
+                    for violations and enforces organizational principles.
+                    First line of defense for multi-agent integrity.
+                    Implements Justiça framework with 5 constitutional principles.
+
+        COUNSELOR: Wise counselor agent that provides philosophical guidance
+                   and ethical deliberation using Socratic method and virtue
+                   ethics from Early Christianity (Pre-Nicene, 50-325 AD).
+                   Implements Sofia framework with 10 virtues and System 2 thinking.
+
+    See Also:
+        - docs/planning/AGENT_JUSTICA_SOFIA_IMPLEMENTATION_PLAN.md
+        - docs/AGENTS_JUSTICA_SOFIA.md
+    """
     ARCHITECT = "architect"
     EXPLORER = "explorer"
     PLANNER = "planner"
@@ -36,6 +69,13 @@ class AgentRole(str, Enum):
     DATABASE = "database"
     DEVOPS = "devops"
     REFACTOR = "refactor"  # Alias for compatibility
+
+    # NEW: Governance & Wisdom agents
+    GOVERNANCE = "governance"  # Justiça constitutional governance
+    COUNSELOR = "counselor"    # Sofia wise counselor
+
+    # Execution agent (Nov 2025 - Constitutional Audit Fix)
+    EXECUTOR = "executor"      # Command execution agent (bash, shell operations)
 
 class AgentCapability(str, Enum):
     READ_ONLY = "read_only"
@@ -54,21 +94,85 @@ class TaskStatus(str, Enum):
     BLOCKED = "blocked"
 
 class AgentTask(BaseModel):
+    # 🔒 INPUT VALIDATION (AIR GAP #8-9): Enable strict mode
+    # Prevents type coercion: float/int won't be converted to str
+    model_config = {"strict": True, "validate_assignment": True}
+
     task_id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     request: str
     context: Dict[str, Any] = Field(default_factory=dict)
     session_id: str = "default"
     metadata: Dict[str, Any] = Field(default_factory=dict)
-    
+
     # New in v2.0: History tracking
     history: List[Dict[str, Any]] = Field(default_factory=list)
 
+    @model_validator(mode='before')
+    @classmethod
+    def handle_deprecated_description_field(cls, values):
+        """Handle deprecated 'description' field (renamed to 'request' in v2.0).
+
+        Provides backwards compatibility with migration warning.
+
+        Migration Guide: See MIGRATION_v2.0.md
+        Compliance: Vértice Constitution v3.0 P3 (fail with clear guidance)
+        """
+        if isinstance(values, dict) and 'description' in values:
+            import warnings
+            warnings.warn(
+                "AgentTask field 'description' is deprecated since v2.0. "
+                "Use 'request' instead. "
+                "See MIGRATION_v2.0.md for migration guide. "
+                "Support for 'description' will be removed in v3.0.",
+                DeprecationWarning,
+                stacklevel=3
+            )
+            # Auto-migrate: copy description to request if request not provided
+            if 'request' not in values:
+                values['request'] = values['description']
+            # Remove deprecated field
+            del values['description']
+        return values
+
+    @model_validator(mode='after')
+    def validate_context_size(self) -> 'AgentTask':
+        """
+        Validate context size to prevent memory bombs.
+
+        🔒 SECURITY FIX (AIR GAP #30, #39): Prevent OOM attacks
+        """
+        import sys
+
+        # Calculate approximate size of context (recursively)
+        context_size = sys.getsizeof(str(self.context))
+
+        # Limit to 10MB (configurable via env var)
+        max_size = 10 * 1024 * 1024  # 10MB
+        if context_size > max_size:
+            raise ValueError(
+                f"Context size ({context_size} bytes) exceeds maximum "
+                f"allowed size ({max_size} bytes). This prevents memory exhaustion attacks."
+            )
+
+        # Check number of keys (prevent dict explosion)
+        if isinstance(self.context, dict) and len(self.context) > 10000:
+            raise ValueError(
+                f"Context has {len(self.context)} keys, maximum is 10000. "
+                "This prevents resource exhaustion attacks."
+            )
+
+        return self
+
 class AgentResponse(BaseModel):
+    # 🔒 INPUT VALIDATION (AIR GAP #10-11): Enable strict mode
+    # Prevents type coercion: "yes" won't be converted to True
+    model_config = {"strict": True, "validate_assignment": True}
+
     success: bool
     data: Dict[str, Any] = Field(default_factory=dict)
     reasoning: str = ""
     error: Optional[str] = None
-    
+
     # New in v2.0: Execution metrics
     metrics: Dict[str, float] = Field(default_factory=dict)
     timestamp: datetime = Field(default_factory=datetime.utcnow)

@@ -20,15 +20,9 @@ class GeminiProvider:
             model_name: Model name override
         """
         self.api_key = api_key or os.getenv("GEMINI_API_KEY")
-        # FORCE 2.0 Flash (fastest) - ignore env if not set properly
-        default_model = "gemini-2.0-flash-exp"
-        env_model = os.getenv("GEMINI_MODEL", "")
-        
-        # Only use env if it's a 2.0 model, otherwise use fastest
-        if "2.0" in env_model or "flash-thinking" in env_model:
-            self.model_name = model_name or env_model
-        else:
-            self.model_name = model_name or default_model
+        # Respect GEMINI_MODEL from .env unconditionally (Constitutional compliance)
+        default_model = "gemini-2.5-flash"  # Stable production model
+        self.model_name = model_name or os.getenv("GEMINI_MODEL", default_model)
         self._client = None
         self._genai = None
         self.generation_config = None
