@@ -669,6 +669,54 @@ class LLMClient:
         async for chunk in self.stream_chat(messages, **kwargs):
             yield chunk
 
+    async def generate_stream(
+        self,
+        prompt: str,
+        system_prompt: Optional[str] = None,
+        context: Optional[str] = None,
+        max_tokens: int = 2048,
+        temperature: float = 0.7,
+        provider: Optional[str] = None
+    ) -> AsyncGenerator[str, None]:
+        """
+        Stream LLM tokens one by one.
+
+        This method wraps stream_chat() with a simpler interface
+        that agents can use for streaming.
+
+        Args:
+            prompt: The user prompt
+            system_prompt: Optional system instruction
+            context: Optional context to prepend
+            max_tokens: Maximum tokens to generate
+            temperature: Sampling temperature
+            provider: Force provider (hf, gemini, ollama, auto)
+
+        Yields:
+            str: Individual tokens as generated
+        """
+        messages = []
+
+        if system_prompt:
+            messages.append({"role": "system", "content": system_prompt})
+
+        if context:
+            messages.append({
+                "role": "user",
+                "content": f"Context information:\n{context}\n\nNow respond to:"
+            })
+
+        messages.append({"role": "user", "content": prompt})
+
+        async for chunk in self.stream_chat(
+            prompt=prompt,
+            context=context,
+            max_tokens=max_tokens,
+            temperature=temperature,
+            provider=provider
+        ):
+            yield chunk
+
 
 # Global LLM client instance
 llm_client = LLMClient(

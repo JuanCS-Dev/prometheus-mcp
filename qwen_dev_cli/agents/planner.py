@@ -23,11 +23,13 @@ References:
 - Building agents with the Claude Agent SDK (2025)
 """
 
+import asyncio
 import json
 import re
 import heapq
+import uuid
 from dataclasses import dataclass, field
-from typing import Any, Dict, List, Optional, Set, Tuple
+from typing import Any, AsyncIterator, Dict, List, Optional, Set, Tuple
 from enum import Enum
 from pydantic import BaseModel, Field, ValidationError, field_validator
 
@@ -607,15 +609,28 @@ CRITICAL:
         return context
     
     async def _load_team_standards(self) -> Dict[str, Any]:
-        """Load team standards from CLAUDE.md or similar"""
+        """Load team standards from CLAUDE.md or similar.
+
+        CLAUDE.md is optional. Falls back to empty standards if not found.
+
+        Compliance: Vértice Constitution v3.0 - P3 (fail gracefully)
+        """
         # Try to read CLAUDE.md (Anthropic best practice)
         try:
             result = await self._execute_tool("read_file", {"path": "CLAUDE.md"})
             if result.get("success"):
+                self.logger.info("Loaded team standards from CLAUDE.md")
                 return {"claude_md": result.get("content", "")}
-        except:
-            pass
-        
+        except FileNotFoundError:
+            self.logger.debug(
+                "CLAUDE.md not found (optional). "
+                "Using default standards. "
+                "Create CLAUDE.md for project-specific guidelines."
+            )
+        except Exception as e:
+            self.logger.warning(f"Failed to load CLAUDE.md: {e}")
+
+        # Fallback: Empty standards (agent uses defaults)
         return {}
     
     async def _discover_available_tools(self) -> List[str]:
@@ -1085,8 +1100,80 @@ RESPOND WITH PURE JSON ONLY.
                 return {"sops": arr}  # Wrap in expected structure
         except (json.JSONDecodeError, AttributeError):
             pass
-        
+
         return None
+
+    async def execute_streaming(
+        self,
+        task: AgentTask
+    ) -> AsyncIterator[Dict[str, Any]]:
+        """
+        Streaming execution for PlannerAgent.
+
+        Enables real-time token display in MAESTRO UI PLANNER panel.
+
+        Yields:
+            Dict with format {"type": "status"|"thinking"|"result", "data": ...}
+        """
+        trace_id = getattr(task, 'trace_id', str(uuid.uuid4()))
+
+        try:
+            # PHASE 1: Initial Status
+            yield {"type": "status", "data": "📋 Loading project context..."}
+
+            cwd = task.context.get('cwd', '.') if task.context else '.'
+            await asyncio.sleep(0.05)
+
+            # PHASE 2: Build Prompt
+            yield {"type": "status", "data": "🎯 Generating plan..."}
+
+            prompt = f"""Create an execution plan for the following request:
+
+REQUEST: {task.request}
+
+CONTEXT:
+- Working Directory: {cwd}
+
+Generate a comprehensive plan with clear steps, dependencies, and success criteria.
+Respond with a valid JSON object containing the plan structure."""
+
+            # PHASE 3: Stream LLM Response (CRITICAL!)
+            response_buffer = []
+
+            async for token in self.llm.generate_stream(
+                prompt=prompt,
+                system_prompt=self._get_system_prompt() if hasattr(self, '_get_system_prompt') else None,
+                max_tokens=4096,
+                temperature=0.3
+            ):
+                response_buffer.append(token)
+                yield {"type": "thinking", "data": token}  # Real-time streaming!
+
+            llm_response = ''.join(response_buffer)
+
+            # PHASE 4: Process
+            yield {"type": "status", "data": "⚙️ Processing plan..."}
+
+            plan = self._robust_json_parse(llm_response) if hasattr(self, '_robust_json_parse') else {"raw_response": llm_response}
+
+            # PHASE 5: Return Result
+            yield {"type": "status", "data": "✅ Plan complete!"}
+
+            yield {
+                "type": "result",
+                "data": AgentResponse(
+                    success=True,
+                    data={
+                        "plan": plan,
+                        "sops": plan.get("sops", []) if isinstance(plan, dict) else [],
+                    },
+                    reasoning=f"Generated plan with {len(plan.get('sops', []) if isinstance(plan, dict) else [])} steps"
+                )
+            }
+
+        except Exception as e:
+            self.logger.exception(f"[{trace_id}] Planning error: {e}")
+            yield {"type": "error", "data": {"error": str(e), "trace_id": trace_id}}
 
 # ============================================================================
 # PLAN VALIDATOR - Quality Assurance
