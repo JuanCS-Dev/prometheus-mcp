@@ -219,7 +219,7 @@ class MaestroGovernance:
         if not isinstance(prompt, str):
             try:
                 prompt = str(prompt)
-            except:
+            except (TypeError, ValueError):
                 return "MEDIUM"
 
         if not self.auto_risk_detection:

@@ -2458,7 +2458,7 @@ Output ONLY the command, no explanation, no markdown."""
         # Use input_session if available, or simple prompt
         try:
             request = await self.input_session.prompt_async("Mission Request: ")
-        except:
+        except (AttributeError, EOFError, KeyboardInterrupt):
             # Fallback if input_session not fully set up in tests or some modes
             request = self.console.input("Mission Request: ")
             

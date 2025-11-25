@@ -313,7 +313,7 @@ async def ensure_initialized():
             try:
                 if hasattr(state.agents["explorer"], "load_graph"):
                     await state.agents["explorer"].load_graph()
-            except:
+            except (AttributeError, KeyError, FileNotFoundError):
                 pass  # First run, no cache yet
 
         # 3. Initialize Constitutional Governance (Phase 5 - Nov 2025)

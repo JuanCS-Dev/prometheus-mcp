@@ -56,60 +56,60 @@ from qwen_dev_cli.agents.testing import TestingAgent
 # UI (required)
 from qwen_dev_cli.ui.command_palette import CommandCategory
 
-# Optional imports
+# Optional imports with proper exception handling
 try:
     from qwen_dev_cli.tools.search import SearchTool
-except:
+except ImportError:
     SearchTool = None
 
 try:
     from qwen_dev_cli.tui.components.dashboard import Dashboard
-except:
+except ImportError:
     Dashboard = None
 
 try:
     from qwen_dev_cli.tui.components.status import StatusBar
-except:
+except ImportError:
     StatusBar = None
 
 try:
     from qwen_dev_cli.tui.components.metrics import MetricsDisplay
-except:
+except ImportError:
     MetricsDisplay = None
 
 try:
     from qwen_dev_cli.tui.components.autocomplete import AutocompleteEngine
-except:
+except ImportError:
     AutocompleteEngine = None
 
 try:
     from qwen_dev_cli.tui.landing import show_landing
-except:
+except ImportError:
     show_landing = None
 
 try:
     from qwen_dev_cli.tui.feedback import FeedbackManager
-except:
+except ImportError:
     FeedbackManager = None
 
 try:
     from qwen_dev_cli.tui.history import HistoryManager
-except:
+except ImportError:
     HistoryManager = None
 
 try:
     from qwen_dev_cli.ui.preview_enhanced import PreviewManager
-except:
+except ImportError:
     PreviewManager = None
 
 try:
     from qwen_dev_cli.ui.timeline import Timeline
-except:
+except ImportError:
     Timeline = None
 
 try:
     from qwen_dev_cli.shell.executor import ShellExecutor
-except:
+except ImportError:
     ShellExecutor = None
 
 console = Console()

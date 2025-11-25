@@ -486,21 +486,21 @@ class HTTPRequestTool(ValidatedTool):
                     import json
                     body_json = json.loads(body)
                     request_kwargs["json"] = body_json
-                except:
+                except (json.JSONDecodeError, TypeError, ValueError):
                     # Not JSON, send as text
                     request_kwargs["content"] = body
-            
+
             # Make request
             async with httpx.AsyncClient() as client:
                 resp = await client.request(**request_kwargs)
-            
+
             # Parse response
             content_type = resp.headers.get("content-type", "").lower()
-            
+
             if "application/json" in content_type:
                 try:
                     response_data = resp.json()
-                except:
+                except (json.JSONDecodeError, ValueError):
                     response_data = resp.text
             else:
                 response_data = resp.text[:10000]  # Limit text responses

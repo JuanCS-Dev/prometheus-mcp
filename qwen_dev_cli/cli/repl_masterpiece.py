@@ -762,7 +762,8 @@ class MasterpieceREPL:
                                 readme_content = f.read()[:2000]  # First 2000 chars
                                 context_parts.append(f"\n=== README ===\n{readme_content}")
                                 break
-                        except:
+                        except (IOError, OSError) as e:
+                            logger.debug(f"Could not read {readme_path}: {e}")
                             pass
                 
                 # pyproject.toml ou package.json
@@ -774,9 +775,10 @@ class MasterpieceREPL:
                                 config_content = f.read()[:1000]
                                 context_parts.append(f"\n=== {config_file} ===\n{config_content}")
                                 break
-                        except:
+                        except (IOError, OSError) as e:
+                            logger.debug(f"Could not read {config_path}: {e}")
                             pass
-                
+
                 # Structure
                 try:
                     import subprocess
@@ -788,7 +790,8 @@ class MasterpieceREPL:
                     )
                     if result.returncode == 0:
                         context_parts.append(f"\n=== Structure ===\n{result.stdout[:1000]}")
-                except:
+                except (subprocess.TimeoutExpired, OSError) as e:
+                    logger.debug(f"Could not get project structure: {e}")
                     pass
                 
                 project_context = "\n".join(context_parts)

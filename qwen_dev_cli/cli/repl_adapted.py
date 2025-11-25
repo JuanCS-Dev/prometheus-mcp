@@ -167,7 +167,8 @@ class EnhancedREPL:
         self.git_diff_tool = GitDiffTool()
         try:
             self.web_search = WebSearchTool()
-        except:
+        except Exception as e:
+            logger.warning(f"WebSearchTool not available: {e}")
             self.web_search = None
 
         # Commands and session

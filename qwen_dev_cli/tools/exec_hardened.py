@@ -303,7 +303,7 @@ class PTYExecutor:
             # Ensure terminal settings restored
             try:
                 termios.tcsetattr(sys.stdin, termios.TCSADRAIN, old_settings)
-            except:
+            except (termios.error, ValueError, OSError):
                 pass
 
 
@@ -565,7 +565,7 @@ class BashCommandToolHardened(ValidatedTool):
                 try:
                     proc.kill()
                     await proc.wait()
-                except:
+                except (ProcessLookupError, OSError):
                     pass
                 
                 return ToolResult(

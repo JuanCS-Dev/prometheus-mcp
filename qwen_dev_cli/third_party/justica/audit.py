@@ -484,7 +484,7 @@ class AuditLogger:
         if self.async_mode:
             try:
                 self._queue.put_nowait(entry)
-            except:
+            except (asyncio.QueueFull, AttributeError):
                 self._write_to_backends(entry)  # Fallback síncrono
         else:
             self._write_to_backends(entry)

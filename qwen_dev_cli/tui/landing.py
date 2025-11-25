@@ -49,7 +49,7 @@ class LandingScreen:
             # Fonts: 'slant', 'small', 'ansi_shadow', 'electronic'
             try:
                 ascii_art = pyfiglet.figlet_format("NEUROSHELL", font="slant")
-            except:
+            except (pyfiglet.FontNotFound, Exception):
                 ascii_art = pyfiglet.figlet_format("NEUROSHELL")
         else:
             ascii_art = "NEUROSHELL (pyfiglet not found)"
@@ -138,7 +138,7 @@ class LandingScreen:
             from ..session import SessionManager
             manager = SessionManager()
             sessions = manager.list_sessions(limit=3)
-        except:
+        except (ImportError, AttributeError, Exception):
             sessions = []
 
         if not sessions:
