@@ -871,12 +871,14 @@ Output JSON with:
     def _parse_llm_json(self, text: str) -> Dict[str, Any]:
         """Robust JSON extraction"""
         import re
+        import logging
         try:
             match = re.search(r'\{.*\}', text, re.DOTALL)
             if match:
                 return json.loads(match.group(0))
             return {"summary": "LLM response parsing failed", "additional_issues": []}
-        except:
+        except json.JSONDecodeError as e:
+            logging.warning(f"Failed to parse LLM JSON response: {e}")
             return {"summary": "LLM response invalid JSON", "additional_issues": []}
 
     def _calculate_score(

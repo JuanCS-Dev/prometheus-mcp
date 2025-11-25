@@ -70,9 +70,12 @@ tmp/
 
 # Project specific
 .qwen_backups/
+.streaming_fix_backups/
 .backup/
 test_results.log
 .qwen_history
+*.BROKEN_BACKUP*
+*_backup_*
 
 # Test artifacts and logs
 test_*.log

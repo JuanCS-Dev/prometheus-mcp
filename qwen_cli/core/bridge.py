@@ -5121,8 +5121,9 @@ Similar to Claude Code's CLAUDE.md functionality.
                         detections["frameworks"].append("express")
                     if "@nestjs/core" in deps:
                         detections["frameworks"].append("nestjs")
-                except:
-                    pass
+                except (json.JSONDecodeError, IOError, OSError) as e:
+                    import logging
+                    logging.debug(f"Failed to parse package.json: {e}")
 
             pyproject = project_path / "pyproject.toml"
             if pyproject.exists():
@@ -5136,8 +5137,9 @@ Similar to Claude Code's CLAUDE.md functionality.
                         detections["frameworks"].append("fastapi")
                     if "pytest" in content.lower():
                         detections["testing_frameworks"].append("pytest")
-                except:
-                    pass
+                except (IOError, OSError) as e:
+                    import logging
+                    logging.debug(f"Failed to read pyproject.toml: {e}")
 
             # Generate recommendations
             if "nextjs" in detections["frameworks"]:
@@ -5227,8 +5229,9 @@ Similar to Claude Code's CLAUDE.md functionality.
                         "status": "installed",
                         "path": result.stdout.decode().strip()
                     })
-            except:
-                pass
+            except (subprocess.SubprocessError, FileNotFoundError, OSError) as e:
+                import logging
+                logging.debug(f"MCP server check failed for {server.get('name', 'unknown')}: {e}")
 
         return {
             "success": True,
@@ -5430,11 +5433,13 @@ Frameworks: {', '.join(frameworks) if frameworks else 'None detected'}
                     "file": cmd_file.name,
                     "description": first_line[:100]
                 })
-            except:
+            except (IOError, OSError, UnicodeDecodeError) as e:
+                import logging
+                logging.warning(f"Failed to read slash command file {cmd_file}: {e}")
                 commands.append({
                     "name": cmd_file.stem,
                     "file": cmd_file.name,
-                    "description": "(error reading file)"
+                    "description": f"(error: {type(e).__name__})"
                 })
 
         return {

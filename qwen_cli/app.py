@@ -38,6 +38,9 @@ from rich.text import Text
 # Output formatting
 from qwen_cli.core.output_formatter import OutputFormatter
 
+# Streaming markdown components (CORRIGE AIR GAP)
+from qwen_cli.components.streaming_adapter import StreamingResponseWidget
+
 # Clipboard support
 import pyperclip
 
@@ -543,8 +546,10 @@ class ResponseView(VerticalScroll):
     def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
         self.current_response = ""
-        self._response_widget: Static | None = None
+        # CORRIGIDO: Usa StreamingResponseWidget com markdown rendering
+        self._response_widget: Static | StreamingResponseWidget | None = None
         self._thinking_widget: Static | None = None
+        self._use_streaming_markdown: bool = True  # Flag para habilitar/desabilitar
 
     def add_banner(self) -> None:
         """Add startup banner."""
@@ -578,7 +583,11 @@ class ResponseView(VerticalScroll):
         self.scroll_end(animate=True)
 
     def end_thinking(self) -> None:
-        """Remove thinking indicator and finalize response with Panel formatting."""
+        """
+        Remove thinking indicator and finalize response with Panel formatting.
+
+        CORRIGIDO (2025-11-25): Finaliza StreamingResponseWidget corretamente.
+        """
         self.is_thinking = False
         if self._thinking_widget:
             self._thinking_widget.remove()
@@ -586,13 +595,17 @@ class ResponseView(VerticalScroll):
 
         # Wrap completed response in Panel for beautiful display
         if self.current_response and self._response_widget:
-            # Format with OutputFormatter Panel
-            formatted_panel = OutputFormatter.format_response(
-                self.current_response,
-                title="Response",
-                border_style="cyan"
-            )
-            self._response_widget.update(formatted_panel)
+            if self._use_streaming_markdown and isinstance(self._response_widget, StreamingResponseWidget):
+                # NOVO: Finaliza o streaming (remove cursor, aplica formatação final)
+                self._response_widget.finalize_sync()
+            else:
+                # Fallback: Format with OutputFormatter Panel
+                formatted_panel = OutputFormatter.format_response(
+                    self.current_response,
+                    title="Response",
+                    border_style="cyan"
+                )
+                self._response_widget.update(formatted_panel)
 
         # Reset for next response
         self.current_response = ""
@@ -602,26 +615,48 @@ class ResponseView(VerticalScroll):
         """
         Append streaming chunk.
 
+        CORRIGIDO (2025-11-25): Agora usa StreamingResponseWidget
+        com markdown rendering ao vivo em vez de plain text.
+
         Optimized for 60fps:
         - No animation on scroll
         - Direct widget update
+        - Streaming markdown rendering
         """
         self.current_response += chunk
 
         if self._response_widget:
             # Update existing widget (fast path)
-            self._response_widget.update(self.current_response)
+            if self._use_streaming_markdown and isinstance(self._response_widget, StreamingResponseWidget):
+                # NOVO: Usa append_chunk do StreamingResponseWidget
+                self._response_widget.append_chunk(chunk)
+            else:
+                # Fallback: plain text update
+                self._response_widget.update(self.current_response)
         else:
             # Create new widget (first chunk)
-            self._response_widget = SelectableStatic(
-                self.current_response,
-                classes="ai-response"
-            )
             # Remove thinking indicator if present
             if self._thinking_widget:
                 self._thinking_widget.remove()
                 self._thinking_widget = None
+
+            if self._use_streaming_markdown:
+                # NOVO: Usa StreamingResponseWidget com markdown
+                self._response_widget = StreamingResponseWidget(
+                    classes="ai-response",
+                    enable_markdown=True
+                )
+            else:
+                # Fallback: plain text
+                self._response_widget = SelectableStatic(
+                    self.current_response,
+                    classes="ai-response"
+                )
             self.mount(self._response_widget)
+
+            # Se é StreamingResponseWidget, envia o primeiro chunk
+            if self._use_streaming_markdown and isinstance(self._response_widget, StreamingResponseWidget):
+                self._response_widget.append_chunk(chunk)
 
         # No animation for 60fps performance
         self.scroll_end(animate=False)
@@ -2649,31 +2684,47 @@ class QwenApp(App):
         command: str,
         view: ResponseView
     ) -> None:
-        """Execute bash command (demo - uses asyncio.subprocess)."""
-        view.add_action(f"Running: {command}")
+        """
+        Execute bash command SECURELY via whitelist.
 
-        try:
-            import shlex
+        Uses SafeCommandExecutor to prevent shell injection.
+        Only whitelisted commands are allowed.
 
-            proc = await asyncio.create_subprocess_shell(
-                command,
-                stdout=asyncio.subprocess.PIPE,
-                stderr=asyncio.subprocess.PIPE
-            )
+        Security: OWASP compliant - no shell=True, no user input in shell
+        """
+        from qwen_cli.core.safe_executor import get_safe_executor
 
-            stdout, stderr = await proc.communicate()
+        executor = get_safe_executor()
 
-            if proc.returncode == 0:
-                output = stdout.decode() if stdout else ""
-                if output:
-                    view.add_code_block(output, language="bash", title=command)
-                view.add_success(f"Command completed (exit code: 0)")
-            else:
-                error = stderr.decode() if stderr else "Unknown error"
-                view.add_error(f"Command failed: {error}")
+        # Check if command is allowed BEFORE execution
+        is_allowed, reason = executor.is_command_allowed(command)
 
-        except Exception as e:
-            view.add_error(f"Execution error: {e}")
+        if not is_allowed:
+            view.add_error(f"🚫 Command blocked: {reason}")
+            view.add_action("Allowed commands:")
+
+            # Show allowed commands by category
+            allowed_by_cat = executor.get_allowed_commands_by_category()
+            for category, commands in allowed_by_cat.items():
+                view.add_action(f"  [{category}]")
+                for cmd in commands[:3]:  # Show first 3 per category
+                    view.add_action(f"    • {cmd}")
+            return
+
+        view.add_action(f"🔒 Executing (whitelisted): {command}")
+
+        # Execute securely
+        result = await executor.execute(command)
+
+        if result.success:
+            if result.stdout:
+                view.add_code_block(result.stdout, language="bash", title=command)
+            view.add_success(f"✓ Command completed (exit code: {result.exit_code})")
+        else:
+            error_msg = result.error_message or result.stderr or "Unknown error"
+            view.add_error(f"Command failed: {error_msg}")
+            if result.stderr:
+                view.add_code_block(result.stderr, language="text", title="stderr")
 
     async def _read_file(
         self,

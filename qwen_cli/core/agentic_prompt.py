@@ -451,8 +451,9 @@ def get_dynamic_context() -> Dict[str, Any]:
         )
         if result.returncode == 0:
             context['git_branch'] = result.stdout.strip()
-    except:
-        pass
+    except (subprocess.SubprocessError, FileNotFoundError, OSError, subprocess.TimeoutExpired) as e:
+        import logging
+        logging.debug(f"Failed to get git branch: {e}")
 
     # Get git status summary
     try:
@@ -467,8 +468,9 @@ def get_dynamic_context() -> Dict[str, Any]:
                 added = [l[3:] for l in lines if l.startswith('A ') or l.startswith('??')]
                 context['modified_files'] = set(modified[:10])
                 context['git_status'] = f"{len(modified)} modified, {len(added)} untracked"
-    except:
-        pass
+    except (subprocess.SubprocessError, FileNotFoundError, OSError, subprocess.TimeoutExpired) as e:
+        import logging
+        logging.debug(f"Failed to get git status: {e}")
 
     return context
 
