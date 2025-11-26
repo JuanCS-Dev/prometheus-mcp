@@ -1,0 +1,169 @@
+{
+  "timestamp": "2025-11-26T14:15:50.868360",
+  "summary": {
+    "total": 8,
+    "passed": 8,
+    "failed": 0,
+    "errors": 0,
+    "skipped": 0,
+    "pass_rate": "100.0%",
+    "duration": "0.03s"
+  },
+  "results": [
+    {
+      "name": "write_and_read_file",
+      "status": "passed",
+      "duration": 0.015849590301513672,
+      "screenshots": [],
+      "logs": [
+        "\u2713 File written successfully",
+        "\u2713 File read successfully",
+        "\u2713 Content verified (173 chars)"
+      ],
+      "error": null,
+      "metadata": {
+        "tools": [
+          "WriteFileTool",
+          "ReadFileTool"
+        ],
+        "file_size": 173,
+        "lines": 9
+      }
+    },
+    {
+      "name": "edit_file",
+      "status": "passed",
+      "duration": 0.0003104209899902344,
+      "screenshots": [],
+      "logs": [
+        "\u2713 Created initial file",
+        "\u2713 File edited successfully",
+        "\u2713 Edit verified"
+      ],
+      "error": null,
+      "metadata": {
+        "tools": [
+          "WriteFileTool",
+          "EditFileTool",
+          "ReadFileTool"
+        ],
+        "changes": 1
+      }
+    },
+    {
+      "name": "search_in_files",
+      "status": "passed",
+      "duration": 0.0017976760864257812,
+      "screenshots": [],
+      "logs": [
+        "\u2713 Found 8 function definitions",
+        "\u2713 First match: main.py:3"
+      ],
+      "error": null,
+      "metadata": {
+        "tools": [
+          "SearchFilesTool"
+        ],
+        "matches_found": 8
+      }
+    },
+    {
+      "name": "search_for_bugs",
+      "status": "passed",
+      "duration": 0.001397848129272461,
+      "screenshots": [],
+      "logs": [
+        "\u2713 Found 4 BUG markers",
+        "  - main.py:13: return a / b  # BUG: no zero check...",
+        "  - main.py:30: result = a / b  # BUG: no zero check...",
+        "  - config.py:3: DEBUG = True..."
+      ],
+      "error": null,
+      "metadata": {
+        "tools": [
+          "SearchFilesTool"
+        ],
+        "bugs_found": 4
+      }
+    },
+    {
+      "name": "create_python_module",
+      "status": "passed",
+      "duration": 0.0006709098815917969,
+      "screenshots": [],
+      "logs": [
+        "\u2713 Created mypackage/__init__.py",
+        "\u2713 Created mypackage/core.py",
+        "\u2713 Created mypackage/utils.py",
+        "\u2713 Created tests/__init__.py",
+        "\u2713 Created tests/test_core.py",
+        "\u2713 Created README.md",
+        "\u2713 Created pyproject.toml"
+      ],
+      "error": null,
+      "metadata": {
+        "project_type": "python_module",
+        "files_created": 7
+      }
+    },
+    {
+      "name": "git_status",
+      "status": "passed",
+      "duration": 0.005337953567504883,
+      "screenshots": [],
+      "logs": [
+        "\u2713 Git status retrieved",
+        "\u2713 Data type: <class 'dict'>",
+        "\u2713 Branch: main",
+        "\u2713 Modified files: 0"
+      ],
+      "error": null,
+      "metadata": {
+        "tools": [
+          "GitStatusTool"
+        ],
+        "status_data": "{'branch': 'main', 'modified': [], 'untracked': [], 'staged': ['tests/e2e_textual/E2E_REPORT.json', 'tests/e2e_textual/E2E_REPORT.md', 'tests/e2e_textual/__init__.py', 'tests/e2e_textual/conftest.py',"
+      }
+    },
+    {
+      "name": "plan_mode_cycle",
+      "status": "passed",
+      "duration": 0.0004112720489501953,
+      "screenshots": [],
+      "logs": [
+        "\u2713 Entered plan mode",
+        "\u2713 Plan content written",
+        "\u2713 Exited plan mode"
+      ],
+      "error": null,
+      "metadata": {
+        "tools": [
+          "EnterPlanModeTool",
+          "ExitPlanModeTool"
+        ],
+        "plan_file": "/tmp/jdev_e2e_j_vvfpd2/.jdev/plans/e2e_plan.md"
+      }
+    },
+    {
+      "name": "search_and_fix_workflow",
+      "status": "passed",
+      "duration": 0.0025446414947509766,
+      "screenshots": [],
+      "logs": [
+        "Step 1: Searching for issues...",
+        "  Found 3 issues",
+        "Step 2: Reading main.py...",
+        "  Read 859 chars",
+        "Step 3: Fixing division bug...",
+        "  \u2713 Bug fixed!"
+      ],
+      "error": null,
+      "metadata": {
+        "workflow": "search_fix",
+        "tools": 3,
+        "fixed": true,
+        "issues_found": 3
+      }
+    }
+  ]
+}
