@@ -1495,7 +1495,7 @@ RESPOND WITH PURE JSON ONLY.
 
             # Detect language and add instruction
             try:
-                from qwen_cli.core.language_detector import LanguageDetector
+                from qwen_core import LanguageDetector
                 lang_instruction = LanguageDetector.get_prompt_instruction(task.request)
             except ImportError:
                 lang_instruction = None

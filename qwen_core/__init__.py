@@ -40,6 +40,11 @@ from qwen_core.protocols import (
     ToolProtocol,
 )
 
+from qwen_core.language_detector import (
+    LanguageDetector,
+    LANGUAGE_NAMES,
+)
+
 __all__ = [
     # Enums
     "AgentRole",
@@ -57,6 +62,9 @@ __all__ = [
     "MCPClientProtocol",
     "AgentProtocol",
     "ToolProtocol",
+    # Utilities
+    "LanguageDetector",
+    "LANGUAGE_NAMES",
 ]
 
 __version__ = "1.0.0"
