@@ -1,5 +1,5 @@
 """
-PlannerAgent v5.0: Enterprise-Grade Orchestrator (Nov 2025)
+PlannerAgent v6.0: "Espetacular" Edition (Nov 2025)
 
 Revolutionary features based on Claude/Anthropic's 2025 best practices:
     ✓ GOAP (Goal-Oriented Action Planning) - Used in F.E.A.R. AI
@@ -11,16 +11,31 @@ Revolutionary features based on Claude/Anthropic's 2025 best practices:
     ✓ Fork-Join Patterns for Scalability
     ✓ Observability Hooks (OpenTelemetry Ready)
 
+NEW in v6.0 (Inspired by Claude Code, Cursor, Devin):
+    ✓ Interactive Clarifying Questions (Cursor 2.1 pattern)
+    ✓ plan.md Artifact Generation (Claude Code pattern)
+    ✓ Confidence Ratings per Step (Devin pattern)
+    ✓ Read-Only Exploration Mode (Claude Plan Mode)
+
+NEW in v6.1 (Verbalized Sampling - Zhang et al. 2025):
+    ✓ Multi-Plan Generation (Standard/Accelerator/Lateral)
+    ✓ Verbalized Probabilities (P(Success), P(Friction), P(Quality))
+    ✓ Risk/Reward Scoring with automatic recommendation
+    ✓ Comparison Matrix for plan selection
+
 Architecture inspired by:
 - Anthropic Claude SDK Best Practices (2025)
 - Claude-Flow v2.7 Hive-Mind Intelligence
 - GOAP Planning Systems (F.E.A.R., STRIPS)
 - Multi-Agent Orchestration Patterns
+- Cursor AI Plan Mode (Nov 2025)
+- Devin AI Planning System (2025)
 
 References:
 - https://docs.claude.com/en/docs/build-with-claude/prompt-engineering/overview
 - Claude Code: Best practices for agentic coding (2025)
 - Building agents with the Claude Agent SDK (2025)
+- Zhang et al. (2025): Verbalized Sampling for Planning
 """
 
 import asyncio
@@ -29,7 +44,9 @@ import re
 import heapq
 import uuid
 from dataclasses import dataclass, field
-from typing import Any, AsyncIterator, Dict, List, Optional, Set, Tuple
+from datetime import datetime
+from pathlib import Path
+from typing import Any, AsyncIterator, Callable, Dict, List, Optional, Set, Tuple
 from enum import Enum
 from pydantic import BaseModel, Field, ValidationError, field_validator
 
@@ -63,6 +80,283 @@ class CheckpointType(str, Enum):
     VALIDATION = "validation"      # Validate before continuing
     ROLLBACK = "rollback"          # Can rollback to here
     DECISION = "decision"          # Decision point for branching
+
+
+# ============================================================================
+# NEW v6.0: CLARIFYING QUESTIONS (Cursor 2.1 Pattern)
+# ============================================================================
+
+class ClarifyingQuestion(BaseModel):
+    """
+    Interactive question to gather user context before planning.
+
+    Inspired by Cursor 2.1's clarifying questions feature that asks
+    2-3 targeted questions before generating a plan.
+    """
+    id: str = Field(default_factory=lambda: f"q-{uuid.uuid4().hex[:8]}")
+    question: str = Field(..., description="The question to ask the user")
+    category: str = Field(default="general", description="scope|approach|constraints|preferences")
+    options: List[str] = Field(default_factory=list, description="Suggested answers (optional)")
+    required: bool = Field(default=False, description="Must be answered before planning")
+    default: Optional[str] = Field(default=None, description="Default if user skips")
+
+
+class ClarificationResponse(BaseModel):
+    """User's response to clarifying questions"""
+    question_id: str
+    answer: str
+    skipped: bool = False
+
+
+class PlanningMode(str, Enum):
+    """
+    Planning modes inspired by Claude Code Plan Mode.
+
+    EXPLORATION: Read-only, gather context, no modifications
+    PLANNING: Generate plan, await approval
+    EXECUTION: Execute approved plan
+    """
+    EXPLORATION = "exploration"  # Read-only exploration (Claude Plan Mode)
+    PLANNING = "planning"        # Generate plan
+    EXECUTION = "execution"      # Execute plan
+
+
+# ============================================================================
+# NEW v6.0: CONFIDENCE RATINGS (Devin Pattern)
+# ============================================================================
+
+class ConfidenceLevel(str, Enum):
+    """Confidence levels for plan steps (Devin-inspired)"""
+    CERTAIN = "certain"      # 0.9-1.0: Well-understood, low risk
+    CONFIDENT = "confident"  # 0.7-0.9: Good understanding, manageable risk
+    MODERATE = "moderate"    # 0.5-0.7: Some uncertainty, may need adjustment
+    LOW = "low"              # 0.3-0.5: Significant uncertainty
+    SPECULATIVE = "speculative"  # 0.0-0.3: Best guess, high risk
+
+
+@dataclass
+class StepConfidence:
+    """
+    Confidence rating for a planning step.
+
+    Inspired by Devin's confidence ratings that help users
+    understand which parts of a plan are more reliable.
+    """
+    score: float  # 0.0 to 1.0
+    level: ConfidenceLevel
+    reasoning: str  # Why this confidence level
+    risk_factors: List[str] = field(default_factory=list)
+
+    @classmethod
+    def from_score(cls, score: float, reasoning: str = "", risks: List[str] = None) -> 'StepConfidence':
+        """Create confidence from numeric score"""
+        score = max(0.0, min(1.0, score))  # Clamp to [0, 1]
+
+        if score >= 0.9:
+            level = ConfidenceLevel.CERTAIN
+        elif score >= 0.7:
+            level = ConfidenceLevel.CONFIDENT
+        elif score >= 0.5:
+            level = ConfidenceLevel.MODERATE
+        elif score >= 0.3:
+            level = ConfidenceLevel.LOW
+        else:
+            level = ConfidenceLevel.SPECULATIVE
+
+        return cls(
+            score=score,
+            level=level,
+            reasoning=reasoning or f"Confidence score: {score:.2f}",
+            risk_factors=risks or []
+        )
+
+
+# ============================================================================
+# NEW v6.1: MULTI-PLAN GENERATION (Zhang et al. Verbalized Sampling)
+# ============================================================================
+
+class PlanStrategy(str, Enum):
+    """
+    Plan generation strategies based on Verbalized Sampling.
+
+    Instead of collapsing to a single "average" plan, we explore
+    the latent space of possibilities with distinct approaches.
+    """
+    STANDARD = "standard"      # Plan A: Conventional, low risk path
+    ACCELERATOR = "accelerator"  # Plan B: High speed, higher risk
+    LATERAL = "lateral"        # Plan C: Creative/unconventional approach
+
+
+@dataclass
+class PlanProbabilities:
+    """
+    Verbalized probability estimates for a plan.
+
+    Based on Zhang et al. (2025) - explicit probability reasoning
+    helps LLMs make better decisions under uncertainty.
+    """
+    success: float  # P(Success): Probability of achieving the goal
+    friction: float  # P(Friction): Probability of encountering blockers
+    time_overrun: float  # P(TimeOverrun): Probability of taking longer than estimated
+    quality: float  # P(Quality): Probability of high-quality output
+
+    @property
+    def risk_reward_ratio(self) -> float:
+        """Calculate risk/reward ratio for plan comparison."""
+        reward = self.success * self.quality
+        risk = self.friction + self.time_overrun
+        if risk == 0:
+            return float('inf')
+        return reward / risk
+
+    @property
+    def overall_score(self) -> float:
+        """Weighted overall score (0-1)."""
+        return (
+            self.success * 0.4 +
+            (1 - self.friction) * 0.25 +
+            (1 - self.time_overrun) * 0.15 +
+            self.quality * 0.2
+        )
+
+    def to_display(self) -> str:
+        """Format for display."""
+        return (
+            f"P(Success)={self.success:.2f} | "
+            f"P(Friction)={self.friction:.2f} | "
+            f"P(Quality)={self.quality:.2f}"
+        )
+
+
+class AlternativePlan(BaseModel):
+    """
+    A single alternative plan with its strategy and probabilities.
+
+    Part of the Multi-Plan Generation system inspired by
+    Verbalized Sampling (Zhang et al. 2025).
+    """
+    strategy: PlanStrategy
+    name: str  # Human-readable name
+    description: str  # Brief description of the approach
+    plan: Dict[str, Any]  # The actual ExecutionPlan data
+
+    # Verbalized probabilities
+    p_success: float = Field(ge=0.0, le=1.0, description="P(Success)")
+    p_friction: float = Field(ge=0.0, le=1.0, description="P(Friction)")
+    p_time_overrun: float = Field(default=0.3, ge=0.0, le=1.0)
+    p_quality: float = Field(default=0.7, ge=0.0, le=1.0)
+
+    # Analysis
+    pros: List[str] = Field(default_factory=list)
+    cons: List[str] = Field(default_factory=list)
+    best_for: str = ""  # When to choose this plan
+
+    @property
+    def probabilities(self) -> PlanProbabilities:
+        return PlanProbabilities(
+            success=self.p_success,
+            friction=self.p_friction,
+            time_overrun=self.p_time_overrun,
+            quality=self.p_quality
+        )
+
+    @property
+    def risk_reward_ratio(self) -> float:
+        return self.probabilities.risk_reward_ratio
+
+    @property
+    def overall_score(self) -> float:
+        return self.probabilities.overall_score
+
+
+class MultiPlanResult(BaseModel):
+    """
+    Result of multi-plan generation.
+
+    Contains 3 alternative plans and a recommendation.
+    """
+    task_summary: str
+    plans: List[AlternativePlan] = Field(min_length=1, max_length=5)
+    recommended_plan: PlanStrategy
+    recommendation_reasoning: str
+
+    # Comparison matrix
+    comparison_summary: str = ""
+
+    # Metadata
+    generated_at: str = Field(default_factory=lambda: datetime.now().isoformat())
+    generation_time_ms: Optional[int] = None
+
+    def get_plan(self, strategy: PlanStrategy) -> Optional[AlternativePlan]:
+        """Get plan by strategy."""
+        for plan in self.plans:
+            if plan.strategy == strategy:
+                return plan
+        return None
+
+    def get_recommended(self) -> Optional[AlternativePlan]:
+        """Get the recommended plan."""
+        return self.get_plan(self.recommended_plan)
+
+    def to_markdown(self) -> str:
+        """Format as markdown for display."""
+        lines = [
+            "# 🎯 Multi-Plan Analysis (Verbalized Sampling)",
+            "",
+            f"**Task:** {self.task_summary}",
+            "",
+            "---",
+            "",
+        ]
+
+        for plan in self.plans:
+            emoji = {"standard": "📋", "accelerator": "🚀", "lateral": "💡"}.get(
+                plan.strategy.value, "📌"
+            )
+            lines.extend([
+                f"## {emoji} Plan {plan.strategy.value.upper()}: {plan.name}",
+                "",
+                f"*{plan.description}*",
+                "",
+                f"**Probabilities:** {plan.probabilities.to_display()}",
+                "",
+                f"**Overall Score:** {plan.overall_score:.2f}",
+                "",
+            ])
+
+            if plan.pros:
+                lines.append("**Pros:**")
+                for pro in plan.pros:
+                    lines.append(f"- ✅ {pro}")
+                lines.append("")
+
+            if plan.cons:
+                lines.append("**Cons:**")
+                for con in plan.cons:
+                    lines.append(f"- ⚠️ {con}")
+                lines.append("")
+
+            if plan.best_for:
+                lines.append(f"**Best for:** {plan.best_for}")
+                lines.append("")
+
+            lines.append("---")
+            lines.append("")
+
+        # Recommendation
+        rec = self.get_recommended()
+        lines.extend([
+            "## 🎯 RECOMMENDATION",
+            "",
+            f"**Selected:** Plan {self.recommended_plan.value.upper()}" +
+            (f" - {rec.name}" if rec else ""),
+            "",
+            f"**Reasoning:** {self.recommendation_reasoning}",
+            "",
+        ])
+
+        return "\n".join(lines)
+
 
 @dataclass
 class WorldState:
@@ -128,35 +422,51 @@ class Action:
         return new_state
 
 class SOPStep(BaseModel):
-    """Enhanced SOP with GOAP integration"""
+    """Enhanced SOP with GOAP integration and v6.0 Confidence Ratings"""
     id: str
     role: str
     action: str
     objective: str
     definition_of_done: str
-    
+
     # GOAP fields
     preconditions: Dict[str, Any] = Field(default_factory=dict)
     effects: Dict[str, Any] = Field(default_factory=dict)
     cost: float = Field(default=1.0, description="Execution cost (time/tokens/complexity)")
-    
+
     # Orchestration fields
     dependencies: List[str] = Field(default_factory=list)
     strategy: ExecutionStrategy = ExecutionStrategy.SEQUENTIAL
     priority: AgentPriority = AgentPriority.MEDIUM
-    
+
     # Context isolation (Anthropic best practice)
     context_isolation: bool = Field(default=True, description="Isolate agent context")
     max_tokens: int = Field(default=4000, description="Token budget for this step")
-    
+
     # Safety
     checkpoint: Optional[CheckpointType] = None
     rollback_on_error: bool = False
     retry_count: int = 0
-    
+
     # Observability
     correlation_id: Optional[str] = None
     telemetry_tags: Dict[str, str] = Field(default_factory=dict)
+
+    # NEW v6.0: Confidence Rating (Devin pattern)
+    confidence_score: float = Field(
+        default=0.7,
+        ge=0.0,
+        le=1.0,
+        description="Confidence in successful execution (0.0-1.0)"
+    )
+    confidence_reasoning: str = Field(
+        default="",
+        description="Explanation for confidence level"
+    )
+    risk_factors: List[str] = Field(
+        default_factory=list,
+        description="Known risks that affect confidence"
+    )
 
 class ExecutionStage(BaseModel):
     """
@@ -171,27 +481,27 @@ class ExecutionStage(BaseModel):
     required: bool = True  # Must succeed for plan to continue
 
 class ExecutionPlan(BaseModel):
-    """Comprehensive execution plan with enterprise features"""
+    """Comprehensive execution plan with enterprise features + v6.0 enhancements"""
     plan_id: str
     goal: str
     strategy_overview: str
-    
+
     # GOAP fields
     initial_state: Dict[str, Any] = Field(default_factory=dict)
     goal_state: Dict[str, Any] = Field(default_factory=dict)
     estimated_cost: float = 0.0
-    
+
     # Multi-stage execution
     stages: List[ExecutionStage] = Field(default_factory=list)
-    
+
     # Legacy SOPs (for backward compatibility)
     sops: List[SOPStep] = Field(default_factory=list)
-    
+
     # Safety & Recovery
     rollback_strategy: str = "Restore from last checkpoint"
     checkpoints: List[str] = Field(default_factory=list)
     risk_assessment: str = "MEDIUM"
-    
+
     # Coordination
     parallel_execution_opportunities: List[List[str]] = Field(
         default_factory=list,
@@ -201,16 +511,50 @@ class ExecutionPlan(BaseModel):
         default_factory=list,
         description="Longest dependency chain"
     )
-    
+
     # Resource planning
     estimated_duration: str = "30-60 minutes"
     token_budget: int = 50000
     max_parallel_agents: int = 4
-    
+
     # Observability
-    plan_version: str = "1.0"
+    plan_version: str = "6.0"
     created_at: Optional[str] = None
     metadata: Dict[str, Any] = Field(default_factory=dict)
+
+    # NEW v6.0: Planning Mode (Claude Code pattern)
+    mode: PlanningMode = Field(
+        default=PlanningMode.PLANNING,
+        description="Current planning mode (exploration/planning/execution)"
+    )
+
+    # NEW v6.0: Clarifying Questions (Cursor 2.1 pattern)
+    clarifying_questions: List[ClarifyingQuestion] = Field(
+        default_factory=list,
+        description="Questions asked before planning"
+    )
+    clarification_responses: List[ClarificationResponse] = Field(
+        default_factory=list,
+        description="User's answers to clarifying questions"
+    )
+
+    # NEW v6.0: Overall Confidence (Devin pattern)
+    overall_confidence: float = Field(
+        default=0.7,
+        ge=0.0,
+        le=1.0,
+        description="Weighted average confidence across all steps"
+    )
+    confidence_summary: str = Field(
+        default="",
+        description="Human-readable confidence assessment"
+    )
+
+    # NEW v6.0: Plan Artifact Path (Claude Code pattern)
+    plan_artifact_path: Optional[str] = Field(
+        default=None,
+        description="Path to generated plan.md file"
+    )
 
 # ============================================================================
 # GOAP PLANNER - The Brain
@@ -418,8 +762,8 @@ class DependencyAnalyzer:
 
 class PlannerAgent(BaseAgent):
     """
-    Enterprise-Grade Planning & Orchestration Agent v5.0
-    
+    Enterprise-Grade Planning & Orchestration Agent v6.0 "Espetacular"
+
     The "Queen" of the multi-agent swarm (Claude-Flow pattern).
     Responsible for:
     - High-level strategic planning (GOAP)
@@ -427,11 +771,23 @@ class PlannerAgent(BaseAgent):
     - Resource allocation
     - Risk assessment
     - Observability
-    
+
+    NEW in v6.0 (Inspired by Claude Code, Cursor 2.1, Devin):
+    - Interactive Clarifying Questions before planning
+    - plan.md Artifact Generation for user tracking
+    - Confidence Ratings per step
+    - Read-Only Exploration Mode
+
     Keep tool permissions narrow: "read and route" (Anthropic best practice).
     """
-    
-    def __init__(self, llm_client: Any, mcp_client: Any):
+
+    def __init__(
+        self,
+        llm_client: Any,
+        mcp_client: Any,
+        plan_artifact_dir: Optional[str] = None,
+        ask_clarifying_questions: bool = True,
+    ):
         super().__init__(
             role=AgentRole.PLANNER,
             capabilities=[
@@ -442,14 +798,23 @@ class PlannerAgent(BaseAgent):
             mcp_client=mcp_client,
             system_prompt=self._build_system_prompt()
         )
-        
+
         # Initialize analyzers
         self.dependency_analyzer = DependencyAnalyzer()
         self.goap_planner: Optional[GOAPPlanner] = None
 
+        # NEW v6.0: Configuration
+        self.plan_artifact_dir = plan_artifact_dir or ".qwen/plans"
+        self.ask_clarifying_questions = ask_clarifying_questions
+        self.current_mode: PlanningMode = PlanningMode.PLANNING
+
+        # NEW v6.0: Callbacks for interactive features
+        self._question_callback: Optional[Callable] = None
+        self._approval_callback: Optional[Callable] = None
+
     def _build_system_prompt(self) -> str:
         return """
-You are PlannerAgent v5.0 - Enterprise Orchestration Queen 👑
+You are PlannerAgent v6.0 "Espetacular" - Enterprise Orchestration Queen 👑
 
 MISSION: Convert high-level goals into optimal, executable multi-agent workflows.
 
@@ -1140,7 +1505,7 @@ Respond with a valid JSON object containing the plan structure."""
             # PHASE 3: Stream LLM Response (CRITICAL!)
             response_buffer = []
 
-            async for token in self.llm.generate_stream(
+            async for token in self.llm_client.stream(
                 prompt=prompt,
                 system_prompt=self._get_system_prompt() if hasattr(self, '_get_system_prompt') else None,
                 max_tokens=4096,
@@ -1174,6 +1539,790 @@ Respond with a valid JSON object containing the plan structure."""
         except Exception as e:
             self.logger.exception(f"[{trace_id}] Planning error: {e}")
             yield {"type": "error", "data": {"error": str(e), "trace_id": trace_id}}
+
+    # =========================================================================
+    # NEW v6.0: CLARIFYING QUESTIONS (Cursor 2.1 Pattern)
+    # =========================================================================
+
+    def set_question_callback(self, callback: Callable[[List[ClarifyingQuestion]], List[ClarificationResponse]]):
+        """Set callback for asking clarifying questions to user."""
+        self._question_callback = callback
+
+    def set_approval_callback(self, callback: Callable[[ExecutionPlan], bool]):
+        """Set callback for getting user approval before execution."""
+        self._approval_callback = callback
+
+    async def _generate_clarifying_questions(
+        self,
+        task: AgentTask
+    ) -> List[ClarifyingQuestion]:
+        """
+        Generate 2-3 targeted clarifying questions based on the task.
+
+        Inspired by Cursor 2.1's approach of asking questions before planning.
+        """
+        prompt = f"""Analyze this task and generate 2-3 clarifying questions that would help create a better plan.
+
+TASK: {task.request}
+
+CONTEXT: {json.dumps(task.context, indent=2) if task.context else "None provided"}
+
+Generate questions in this JSON format:
+{{
+  "questions": [
+    {{
+      "question": "The question text",
+      "category": "scope|approach|constraints|preferences",
+      "options": ["Option 1", "Option 2", "Option 3"],
+      "required": true/false
+    }}
+  ]
+}}
+
+Focus on:
+1. SCOPE: What's included/excluded from the task?
+2. APPROACH: Which implementation strategy to use?
+3. CONSTRAINTS: Any limitations or requirements?
+4. PREFERENCES: Code style, testing preferences, etc?
+
+Respond with ONLY the JSON, no explanation."""
+
+        try:
+            response = await self._call_llm(prompt)
+            data = self._robust_json_parse(response)
+
+            if data and "questions" in data:
+                questions = []
+                for q in data["questions"][:3]:  # Max 3 questions
+                    questions.append(ClarifyingQuestion(
+                        question=q.get("question", ""),
+                        category=q.get("category", "general"),
+                        options=q.get("options", []),
+                        required=q.get("required", False)
+                    ))
+                return questions
+        except Exception as e:
+            self.logger.warning(f"Failed to generate clarifying questions: {e}")
+
+        # Fallback: Default questions
+        return [
+            ClarifyingQuestion(
+                question="What is the scope of this task? (e.g., single file, module, entire project)",
+                category="scope",
+                options=["Single file", "Module/directory", "Entire project"],
+                required=False
+            ),
+            ClarifyingQuestion(
+                question="Do you want tests written for the changes?",
+                category="preferences",
+                options=["Yes, with high coverage", "Basic tests only", "No tests needed"],
+                required=False
+            )
+        ]
+
+    async def execute_with_clarification(
+        self,
+        task: AgentTask,
+        responses: Optional[List[ClarificationResponse]] = None
+    ) -> AgentResponse:
+        """
+        Execute planning with optional clarifying questions.
+
+        This is the v6.0 enhanced entry point that:
+        1. Generates clarifying questions (if enabled)
+        2. Waits for user responses (via callback)
+        3. Incorporates responses into planning
+        4. Generates plan with confidence ratings
+        5. Creates plan.md artifact
+        """
+        clarifying_questions: List[ClarifyingQuestion] = []
+        clarification_responses: List[ClarificationResponse] = responses or []
+
+        # Step 1: Generate and ask clarifying questions
+        if self.ask_clarifying_questions and not responses:
+            clarifying_questions = await self._generate_clarifying_questions(task)
+
+            if clarifying_questions and self._question_callback:
+                try:
+                    clarification_responses = self._question_callback(clarifying_questions)
+                except Exception as e:
+                    self.logger.warning(f"Question callback failed: {e}")
+
+        # Step 2: Enrich task context with clarification responses
+        enriched_context = task.context.copy() if task.context else {}
+        enriched_context["clarifications"] = {
+            r.question_id: r.answer
+            for r in clarification_responses
+            if not r.skipped
+        }
+
+        enriched_task = AgentTask(
+            task_id=task.task_id,
+            request=task.request,
+            context=enriched_context,
+            session_id=task.session_id,
+            metadata=task.metadata
+        )
+
+        # Step 3: Execute standard planning
+        response = await self.execute(enriched_task)
+
+        # Step 4: Enhance response with v6.0 features
+        if response.success and "plan" in response.data:
+            plan_data = response.data["plan"]
+
+            # Add clarifying questions to plan
+            if isinstance(plan_data, dict):
+                plan_data["clarifying_questions"] = [q.model_dump() for q in clarifying_questions]
+                plan_data["clarification_responses"] = [r.model_dump() for r in clarification_responses]
+
+                # Calculate overall confidence
+                sops = plan_data.get("sops", [])
+                if sops:
+                    confidence_scores = [s.get("confidence_score", 0.7) for s in sops]
+                    plan_data["overall_confidence"] = sum(confidence_scores) / len(confidence_scores)
+                    plan_data["confidence_summary"] = self._generate_confidence_summary(
+                        plan_data["overall_confidence"]
+                    )
+
+                # Generate plan.md artifact
+                artifact_path = await self._generate_plan_artifact(plan_data, task)
+                if artifact_path:
+                    plan_data["plan_artifact_path"] = artifact_path
+
+        return response
+
+    # =========================================================================
+    # NEW v6.0: CONFIDENCE RATINGS (Devin Pattern)
+    # =========================================================================
+
+    def _calculate_step_confidence(
+        self,
+        step: SOPStep,
+        context: Dict[str, Any]
+    ) -> Tuple[float, str, List[str]]:
+        """
+        Calculate confidence score for a planning step.
+
+        Factors:
+        - Role familiarity (how common is this operation)
+        - Dependency complexity (more deps = lower confidence)
+        - Cost (higher cost = more complex = lower confidence)
+        - Priority (critical steps get extra scrutiny)
+
+        Returns:
+            (score, reasoning, risk_factors)
+        """
+        score = 0.8  # Base confidence
+        reasoning_parts = []
+        risks = []
+
+        # Factor 1: Role familiarity
+        familiar_roles = {"architect", "coder", "tester", "reviewer", "documenter"}
+        if step.role.lower() in familiar_roles:
+            score += 0.05
+            reasoning_parts.append("familiar role")
+        else:
+            score -= 0.1
+            risks.append(f"Unfamiliar role: {step.role}")
+
+        # Factor 2: Dependency complexity
+        dep_count = len(step.dependencies)
+        if dep_count == 0:
+            score += 0.05
+            reasoning_parts.append("no dependencies")
+        elif dep_count <= 2:
+            pass  # Neutral
+        else:
+            score -= 0.05 * (dep_count - 2)
+            risks.append(f"High dependency count: {dep_count}")
+
+        # Factor 3: Cost/complexity
+        if step.cost <= 1.0:
+            score += 0.05
+            reasoning_parts.append("low complexity")
+        elif step.cost <= 3.0:
+            pass  # Neutral
+        else:
+            score -= 0.1
+            risks.append(f"High complexity (cost={step.cost})")
+
+        # Factor 4: Priority risk
+        if step.priority == AgentPriority.CRITICAL:
+            score -= 0.05
+            risks.append("Critical priority increases risk exposure")
+
+        # Clamp score
+        score = max(0.1, min(1.0, score))
+
+        reasoning = f"Confidence {score:.2f}: " + ", ".join(reasoning_parts) if reasoning_parts else f"Base confidence: {score:.2f}"
+
+        return score, reasoning, risks
+
+    def _generate_confidence_summary(self, overall_confidence: float) -> str:
+        """Generate human-readable confidence summary."""
+        if overall_confidence >= 0.9:
+            return "🟢 HIGH CONFIDENCE: This plan is well-understood with low risk."
+        elif overall_confidence >= 0.7:
+            return "🟡 GOOD CONFIDENCE: Plan is solid with manageable risks."
+        elif overall_confidence >= 0.5:
+            return "🟠 MODERATE CONFIDENCE: Some uncertainty exists. Review carefully."
+        elif overall_confidence >= 0.3:
+            return "🔴 LOW CONFIDENCE: Significant uncertainty. Consider breaking into smaller tasks."
+        else:
+            return "⚫ SPECULATIVE: High uncertainty. Recommend exploration before execution."
+
+    # =========================================================================
+    # NEW v6.0: PLAN.MD ARTIFACT (Claude Code Pattern)
+    # =========================================================================
+
+    async def _generate_plan_artifact(
+        self,
+        plan_data: Dict[str, Any],
+        task: AgentTask
+    ) -> Optional[str]:
+        """
+        Generate a plan.md file for user tracking.
+
+        Inspired by Claude Code's plan mode that generates a structured
+        markdown file with checkboxes for each step.
+        """
+        try:
+            # Ensure directory exists
+            artifact_dir = Path(self.plan_artifact_dir)
+            artifact_dir.mkdir(parents=True, exist_ok=True)
+
+            # Generate filename
+            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+            plan_id = plan_data.get("plan_id", "unknown")[:8]
+            filename = f"plan_{timestamp}_{plan_id}.md"
+            filepath = artifact_dir / filename
+
+            # Generate markdown content
+            content = self._format_plan_as_markdown(plan_data, task)
+
+            # Write file
+            filepath.write_text(content, encoding="utf-8")
+
+            self.logger.info(f"Generated plan artifact: {filepath}")
+            return str(filepath)
+
+        except Exception as e:
+            self.logger.warning(f"Failed to generate plan artifact: {e}")
+            return None
+
+    def _format_plan_as_markdown(
+        self,
+        plan_data: Dict[str, Any],
+        task: AgentTask
+    ) -> str:
+        """Format plan as structured markdown with checkboxes."""
+        lines = [
+            f"# 📋 Execution Plan",
+            f"",
+            f"**Goal:** {plan_data.get('goal', task.request)}",
+            f"",
+            f"**Generated:** {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}",
+            f"",
+            f"**Confidence:** {plan_data.get('confidence_summary', 'Not calculated')}",
+            f"",
+            f"---",
+            f"",
+            f"## Strategy Overview",
+            f"",
+            f"{plan_data.get('strategy_overview', 'Sequential execution of planned steps.')}",
+            f"",
+        ]
+
+        # Add clarifying questions and responses
+        questions = plan_data.get("clarifying_questions", [])
+        responses = plan_data.get("clarification_responses", [])
+        if questions:
+            lines.extend([
+                f"## Clarifications",
+                f"",
+            ])
+            response_map = {r.get("question_id"): r.get("answer") for r in responses}
+            for q in questions:
+                answer = response_map.get(q.get("id"), "Not answered")
+                lines.append(f"- **Q:** {q.get('question', 'Unknown')}")
+                lines.append(f"  - **A:** {answer}")
+            lines.append("")
+
+        # Add stages/steps with checkboxes
+        lines.extend([
+            f"## Execution Steps",
+            f"",
+        ])
+
+        stages = plan_data.get("stages", [])
+        sops = plan_data.get("sops", [])
+
+        if stages:
+            for stage in stages:
+                lines.append(f"### {stage.get('name', 'Stage')}")
+                lines.append(f"")
+                lines.append(f"*{stage.get('description', '')}*")
+                lines.append(f"")
+                for step in stage.get("steps", []):
+                    confidence = step.get("confidence_score", 0.7)
+                    conf_emoji = "🟢" if confidence >= 0.8 else "🟡" if confidence >= 0.6 else "🔴"
+                    lines.append(f"- [ ] **{step.get('id')}** ({step.get('role')}): {step.get('action')}")
+                    lines.append(f"  - {conf_emoji} Confidence: {confidence:.0%}")
+                    lines.append(f"  - ✅ Done when: {step.get('definition_of_done', 'Completed')}")
+                lines.append("")
+        elif sops:
+            for step in sops:
+                confidence = step.get("confidence_score", 0.7)
+                conf_emoji = "🟢" if confidence >= 0.8 else "🟡" if confidence >= 0.6 else "🔴"
+                lines.append(f"- [ ] **{step.get('id')}** ({step.get('role')}): {step.get('action')}")
+                lines.append(f"  - {conf_emoji} Confidence: {confidence:.0%}")
+                lines.append(f"  - ✅ Done when: {step.get('definition_of_done', 'Completed')}")
+            lines.append("")
+
+        # Add risk assessment
+        lines.extend([
+            f"## Risk Assessment",
+            f"",
+            f"**Level:** {plan_data.get('risk_assessment', 'MEDIUM')}",
+            f"",
+            f"**Rollback Strategy:** {plan_data.get('rollback_strategy', 'Restore from last checkpoint')}",
+            f"",
+        ])
+
+        # Add resource estimates
+        lines.extend([
+            f"## Resources",
+            f"",
+            f"- **Estimated Duration:** {plan_data.get('estimated_duration', 'Unknown')}",
+            f"- **Token Budget:** {plan_data.get('token_budget', 'Unknown')}",
+            f"- **Max Parallel Agents:** {plan_data.get('max_parallel_agents', 1)}",
+            f"",
+        ])
+
+        # Footer
+        lines.extend([
+            f"---",
+            f"",
+            f"*Generated by PlannerAgent v6.0 \"Espetacular\"*",
+        ])
+
+        return "\n".join(lines)
+
+    # =========================================================================
+    # NEW v6.0: EXPLORATION MODE (Claude Plan Mode Pattern)
+    # =========================================================================
+
+    async def explore(self, task: AgentTask) -> AgentResponse:
+        """
+        Execute in exploration mode - read-only analysis.
+
+        Like Claude Code's Plan Mode, this gathers context and analyzes
+        the task without making any modifications.
+
+        Use this before execute() to understand the problem space.
+        """
+        self.current_mode = PlanningMode.EXPLORATION
+
+        # Restrict to read-only operations
+        original_capabilities = self.capabilities.copy()
+        self.capabilities = [AgentCapability.READ_ONLY]
+
+        try:
+            # Gather context
+            context = await self._gather_context(task)
+
+            # Analyze task requirements
+            analysis_prompt = f"""Analyze this task in EXPLORATION mode (read-only).
+
+TASK: {task.request}
+
+CONTEXT:
+{json.dumps(context, indent=2)}
+
+Provide:
+1. UNDERSTANDING: What is being requested?
+2. SCOPE: What files/systems are involved?
+3. COMPLEXITY: How complex is this task? (Simple/Medium/Complex)
+4. RISKS: What could go wrong?
+5. QUESTIONS: What clarifications would help?
+6. APPROACH: Suggested high-level approach
+
+Respond in JSON format."""
+
+            response = await self._call_llm(analysis_prompt)
+            analysis = self._robust_json_parse(response)
+
+            return AgentResponse(
+                success=True,
+                data={
+                    "mode": "exploration",
+                    "analysis": analysis or {"raw": response},
+                    "context": context
+                },
+                reasoning="Exploration complete. Ready for planning phase.",
+                metadata={"mode": PlanningMode.EXPLORATION.value}
+            )
+
+        finally:
+            # Restore capabilities
+            self.capabilities = original_capabilities
+            self.current_mode = PlanningMode.PLANNING
+
+    # =========================================================================
+    # NEW v6.1: MULTI-PLAN GENERATION (Verbalized Sampling)
+    # =========================================================================
+
+    async def generate_multi_plan(
+        self,
+        task: AgentTask,
+        strategies: Optional[List[PlanStrategy]] = None
+    ) -> MultiPlanResult:
+        """
+        Generate multiple alternative plans using Verbalized Sampling.
+
+        Based on Zhang et al. (2025) - instead of generating one "average" plan,
+        we explore the latent space of possibilities with distinct approaches:
+
+        - STANDARD: Conventional, low-risk path
+        - ACCELERATOR: High-speed, higher-risk approach
+        - LATERAL: Creative/unconventional solution
+
+        Each plan includes verbalized probabilities:
+        - P(Success): Probability of achieving the goal
+        - P(Friction): Probability of encountering blockers
+        - P(Quality): Probability of high-quality output
+
+        Returns:
+            MultiPlanResult with all plans and recommendation
+        """
+        import time
+        start_time = time.time()
+
+        strategies = strategies or [
+            PlanStrategy.STANDARD,
+            PlanStrategy.ACCELERATOR,
+            PlanStrategy.LATERAL
+        ]
+
+        # Gather context once
+        context = await self._gather_context(task)
+
+        # Generate each plan type
+        plans: List[AlternativePlan] = []
+
+        for strategy in strategies:
+            try:
+                plan = await self._generate_plan_variant(task, context, strategy)
+                if plan:
+                    plans.append(plan)
+            except Exception as e:
+                self.logger.warning(f"Failed to generate {strategy.value} plan: {e}")
+
+        # If no plans generated, create a basic standard plan
+        if not plans:
+            basic_plan = self._create_fallback_plan(task, PlanStrategy.STANDARD)
+            plans.append(basic_plan)
+
+        # Select best plan
+        recommended, reasoning = self._select_best_plan(plans, task)
+
+        # Build comparison summary
+        comparison = self._build_comparison_summary(plans)
+
+        generation_time = int((time.time() - start_time) * 1000)
+
+        return MultiPlanResult(
+            task_summary=task.request[:200],
+            plans=plans,
+            recommended_plan=recommended,
+            recommendation_reasoning=reasoning,
+            comparison_summary=comparison,
+            generation_time_ms=generation_time
+        )
+
+    async def _generate_plan_variant(
+        self,
+        task: AgentTask,
+        context: Dict[str, Any],
+        strategy: PlanStrategy
+    ) -> Optional[AlternativePlan]:
+        """Generate a single plan variant for a specific strategy."""
+
+        strategy_prompts = {
+            PlanStrategy.STANDARD: """
+Generate a STANDARD plan - the conventional, low-risk approach.
+Focus on:
+- Proven patterns and best practices
+- Step-by-step sequential execution
+- Comprehensive validation at each step
+- Prefer stability over speed
+""",
+            PlanStrategy.ACCELERATOR: """
+Generate an ACCELERATOR plan - high-speed, parallel execution approach.
+Focus on:
+- Maximum parallelization of independent tasks
+- Aggressive timelines
+- Minimal validation (fail-fast approach)
+- Accept higher risk for faster delivery
+""",
+            PlanStrategy.LATERAL: """
+Generate a LATERAL plan - creative, unconventional approach.
+Focus on:
+- Alternative solutions that others might not consider
+- Novel use of tools or patterns
+- Potential shortcuts or innovations
+- "What if we approached this completely differently?"
+"""
+        }
+
+        prompt = f"""You are generating a {strategy.value.upper()} execution plan.
+
+TASK: {task.request}
+
+CONTEXT:
+{json.dumps(context, indent=2)}
+
+{strategy_prompts.get(strategy, "")}
+
+Generate a plan with VERBALIZED PROBABILITIES. Think explicitly about:
+- P(Success): How likely is this approach to succeed? (0.0-1.0)
+- P(Friction): How likely are we to hit blockers? (0.0-1.0)
+- P(TimeOverrun): How likely to take longer than estimated? (0.0-1.0)
+- P(Quality): How likely to produce high-quality output? (0.0-1.0)
+
+OUTPUT JSON FORMAT:
+{{
+  "name": "Short descriptive name for this plan variant",
+  "description": "Brief description of the approach",
+  "p_success": 0.XX,
+  "p_friction": 0.XX,
+  "p_time_overrun": 0.XX,
+  "p_quality": 0.XX,
+  "pros": ["advantage 1", "advantage 2"],
+  "cons": ["disadvantage 1", "disadvantage 2"],
+  "best_for": "When this plan is the best choice",
+  "sops": [
+    {{
+      "id": "step-1",
+      "role": "agent_role",
+      "action": "What to do",
+      "objective": "Why",
+      "definition_of_done": "Success criteria",
+      "dependencies": [],
+      "cost": 1.0,
+      "confidence_score": 0.XX
+    }}
+  ]
+}}
+
+RESPOND WITH PURE JSON ONLY."""
+
+        try:
+            response = await self._call_llm(prompt)
+            data = self._robust_json_parse(response)
+
+            if not data:
+                return None
+
+            return AlternativePlan(
+                strategy=strategy,
+                name=data.get("name", f"{strategy.value.title()} Plan"),
+                description=data.get("description", ""),
+                plan=data,
+                p_success=float(data.get("p_success", 0.7)),
+                p_friction=float(data.get("p_friction", 0.3)),
+                p_time_overrun=float(data.get("p_time_overrun", 0.3)),
+                p_quality=float(data.get("p_quality", 0.7)),
+                pros=data.get("pros", []),
+                cons=data.get("cons", []),
+                best_for=data.get("best_for", "")
+            )
+
+        except Exception as e:
+            self.logger.error(f"Failed to generate {strategy.value} variant: {e}")
+            return None
+
+    def _create_fallback_plan(
+        self,
+        task: AgentTask,
+        strategy: PlanStrategy
+    ) -> AlternativePlan:
+        """Create a basic fallback plan when LLM generation fails."""
+        return AlternativePlan(
+            strategy=strategy,
+            name="Basic Sequential Plan",
+            description="Fallback plan with standard sequential execution",
+            plan={
+                "sops": [
+                    {
+                        "id": "step-1",
+                        "role": "architect",
+                        "action": "Analyze and plan",
+                        "objective": "Understand requirements",
+                        "definition_of_done": "Plan documented",
+                        "cost": 2.0
+                    },
+                    {
+                        "id": "step-2",
+                        "role": "coder",
+                        "action": "Implement solution",
+                        "objective": "Write code",
+                        "definition_of_done": "Code compiles",
+                        "dependencies": ["step-1"],
+                        "cost": 5.0
+                    },
+                    {
+                        "id": "step-3",
+                        "role": "tester",
+                        "action": "Test implementation",
+                        "objective": "Verify correctness",
+                        "definition_of_done": "Tests pass",
+                        "dependencies": ["step-2"],
+                        "cost": 3.0
+                    }
+                ]
+            },
+            p_success=0.7,
+            p_friction=0.3,
+            p_time_overrun=0.4,
+            p_quality=0.6,
+            pros=["Simple and predictable", "Easy to follow"],
+            cons=["May not be optimal", "No parallelization"],
+            best_for="When other approaches fail or for simple tasks"
+        )
+
+    def _select_best_plan(
+        self,
+        plans: List[AlternativePlan],
+        task: AgentTask
+    ) -> Tuple[PlanStrategy, str]:
+        """
+        Select the best plan based on overall score and task characteristics.
+
+        Uses a weighted scoring system that considers:
+        - Success probability (most important)
+        - Friction probability (risk factor)
+        - Quality probability
+        - Time overrun probability
+        """
+        if not plans:
+            return PlanStrategy.STANDARD, "No plans available, defaulting to standard"
+
+        # Sort by overall score
+        sorted_plans = sorted(plans, key=lambda p: p.overall_score, reverse=True)
+        best = sorted_plans[0]
+
+        # Build reasoning
+        reasoning_parts = [
+            f"Selected {best.strategy.value.upper()} with score {best.overall_score:.2f}.",
+        ]
+
+        if best.p_success >= 0.8:
+            reasoning_parts.append(f"High success probability ({best.p_success:.0%}).")
+        if best.p_friction <= 0.3:
+            reasoning_parts.append(f"Low friction risk ({best.p_friction:.0%}).")
+
+        # Compare to alternatives
+        if len(sorted_plans) > 1:
+            runner_up = sorted_plans[1]
+            score_diff = best.overall_score - runner_up.overall_score
+            if score_diff < 0.1:
+                reasoning_parts.append(
+                    f"Close call with {runner_up.strategy.value.upper()} "
+                    f"(score diff: {score_diff:.2f})."
+                )
+
+        return best.strategy, " ".join(reasoning_parts)
+
+    def _build_comparison_summary(self, plans: List[AlternativePlan]) -> str:
+        """Build a comparison summary of all plans."""
+        if not plans:
+            return "No plans to compare."
+
+        lines = ["Plan Comparison:"]
+        for plan in sorted(plans, key=lambda p: p.overall_score, reverse=True):
+            lines.append(
+                f"  {plan.strategy.value.upper()}: "
+                f"Score={plan.overall_score:.2f} | "
+                f"Success={plan.p_success:.0%} | "
+                f"Friction={plan.p_friction:.0%}"
+            )
+
+        return "\n".join(lines)
+
+    async def execute_with_multi_plan(
+        self,
+        task: AgentTask,
+        auto_select: bool = True,
+        preferred_strategy: Optional[PlanStrategy] = None
+    ) -> AgentResponse:
+        """
+        Execute planning with multi-plan generation.
+
+        This is the ultimate v6.1 entry point that:
+        1. Generates 3 alternative plans (Standard/Accelerator/Lateral)
+        2. Calculates probabilities for each
+        3. Recommends the best plan
+        4. Optionally executes the selected plan
+
+        Args:
+            task: The task to plan
+            auto_select: If True, automatically use recommended plan
+            preferred_strategy: Override recommendation with specific strategy
+        """
+        # Generate multi-plan
+        multi_result = await self.generate_multi_plan(task)
+
+        # Select plan
+        if preferred_strategy:
+            selected = multi_result.get_plan(preferred_strategy)
+            if not selected:
+                selected = multi_result.get_recommended()
+        elif auto_select:
+            selected = multi_result.get_recommended()
+        else:
+            # Return multi-plan result for user selection
+            return AgentResponse(
+                success=True,
+                data={
+                    "multi_plan": multi_result.model_dump(),
+                    "requires_selection": True,
+                    "markdown": multi_result.to_markdown()
+                },
+                reasoning=f"Generated {len(multi_result.plans)} alternative plans. "
+                          f"Recommended: {multi_result.recommended_plan.value.upper()}",
+                metadata={"mode": "multi_plan_selection"}
+            )
+
+        # Execute the selected plan
+        if selected:
+            # Create a task with the selected plan's SOPs
+            plan_data = selected.plan
+            return AgentResponse(
+                success=True,
+                data={
+                    "plan": plan_data,
+                    "selected_strategy": selected.strategy.value,
+                    "probabilities": selected.probabilities.to_display(),
+                    "multi_plan_summary": multi_result.comparison_summary,
+                    "sops": plan_data.get("sops", [])
+                },
+                reasoning=f"Executing {selected.strategy.value.upper()} plan: {selected.name}. "
+                          f"{multi_result.recommendation_reasoning}",
+                metadata={
+                    "mode": "multi_plan_execution",
+                    "strategy": selected.strategy.value,
+                    "overall_score": selected.overall_score
+                }
+            )
+
+        return AgentResponse(
+            success=False,
+            error="No plan could be generated",
+            reasoning="All plan generation attempts failed."
+        )
+
 
 # ============================================================================
 # PLAN VALIDATOR - Quality Assurance

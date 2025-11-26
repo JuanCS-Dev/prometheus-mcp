@@ -121,8 +121,11 @@ HELP_AGENTS = """
 [bold cyan]│[/bold cyan]                 [bold white]Agentes Especializados[/bold white]                    [bold cyan]│[/bold cyan]
 [bold cyan]╰─────────────────────────────────────────────────────────────╯[/bold cyan]
 
-[bold yellow]Planejamento[/bold yellow]
+[bold yellow]Planejamento (v6.1)[/bold yellow]
   [cyan]/plan[/cyan] [white]<objetivo>[/white] [dim]......[/dim] GOAP planning, decompõe tarefas
+  [cyan]/plan multi[/cyan] [white]<obj>[/white] [dim]....[/dim] Gera 3 planos alternativos (risk/reward)
+  [cyan]/plan clarify[/cyan] [white]<obj>[/white] [dim]..[/dim] Faz perguntas antes de planejar
+  [cyan]/plan explore[/cyan] [white]<obj>[/white] [dim]..[/dim] Análise read-only (sem modificar)
   [cyan]/architect[/cyan] [white]<spec>[/white] [dim]....[/dim] Análise de arquitetura
 
 [bold yellow]Código[/bold yellow]
@@ -1268,8 +1271,30 @@ class QwenApp(App):
             view.add_success("Conversation context cleared.")
 
         # Agent commands - map to agents
+        # =====================================================================
+        # PLANNER v6.1 COMMANDS (multi, clarify, explore)
+        # =====================================================================
         elif command == "/plan":
-            await self._invoke_agent("planner", args or "Create a plan", view)
+            # Check for v6.1 sub-commands
+            if args:
+                args_lower = args.lower().strip()
+                if args_lower.startswith("multi ") or args_lower == "multi":
+                    # Multi-Plan Generation
+                    task = args[6:].strip() if args_lower.startswith("multi ") else ""
+                    await self._invoke_planner_v61("multi", task or "Generate multiple plans", view)
+                elif args_lower.startswith("clarify ") or args_lower == "clarify":
+                    # Clarification Mode
+                    task = args[8:].strip() if args_lower.startswith("clarify ") else ""
+                    await self._invoke_planner_v61("clarify", task or "Clarify requirements", view)
+                elif args_lower.startswith("explore ") or args_lower == "explore":
+                    # Exploration Mode (read-only)
+                    task = args[8:].strip() if args_lower.startswith("explore ") else ""
+                    await self._invoke_planner_v61("explore", task or "Explore codebase", view)
+                else:
+                    # Regular planning
+                    await self._invoke_agent("planner", args, view)
+            else:
+                await self._invoke_agent("planner", "Create a plan", view)
 
         elif command == "/execute":
             await self._invoke_agent("executor", args or "Execute task", view)
@@ -2675,6 +2700,59 @@ class QwenApp(App):
 
         except Exception as e:
             view.add_error(f"Agent error: {e}")
+            status.errors += 1
+        finally:
+            self.is_processing = False
+            status.mode = "READY"
+            view.end_thinking()
+
+    async def _invoke_planner_v61(
+        self,
+        mode: str,
+        task: str,
+        view: ResponseView
+    ) -> None:
+        """
+        Invoke Planner v6.1 with specific mode.
+
+        Modes:
+            - multi: Generate 3 alternative plans with risk/reward
+            - clarify: Ask clarifying questions before planning
+            - explore: Read-only analysis mode
+        """
+        self.is_processing = True
+        view.start_thinking()
+
+        status = self.query_one(StatusBar)
+        mode_labels = {
+            "multi": "MULTI-PLAN",
+            "clarify": "CLARIFY",
+            "explore": "EXPLORE"
+        }
+        status.mode = f"🎯 PLANNER:{mode_labels.get(mode, mode.upper())}"
+
+        try:
+            if mode == "multi":
+                async for chunk in self.bridge.invoke_planner_multi(task):
+                    view.append_chunk(chunk)
+                    await asyncio.sleep(0)
+            elif mode == "clarify":
+                async for chunk in self.bridge.invoke_planner_clarify(task):
+                    view.append_chunk(chunk)
+                    await asyncio.sleep(0)
+            elif mode == "explore":
+                async for chunk in self.bridge.invoke_planner_explore(task):
+                    view.append_chunk(chunk)
+                    await asyncio.sleep(0)
+            else:
+                view.add_error(f"Unknown planner mode: {mode}")
+                return
+
+            view.add_success(f"✓ Planner v6.1 ({mode}) complete")
+            status.governance_status = self.bridge.governance.get_status_emoji()
+
+        except Exception as e:
+            view.add_error(f"Planner v6.1 error: {e}")
             status.errors += 1
         finally:
             self.is_processing = False
