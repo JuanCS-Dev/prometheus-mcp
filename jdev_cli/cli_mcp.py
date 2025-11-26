@@ -3,7 +3,7 @@ import sys
 import asyncio
 import logging
 from jdev_cli.integrations.mcp import MCPConfig, run_mcp_server
-from jdev_cli.tools.base import get_default_registry
+from jdev_cli.tools.registry_helper import get_default_registry
 
 
 def main():

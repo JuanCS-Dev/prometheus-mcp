@@ -308,3 +308,19 @@ Or return helpful text if no tools are needed.
 def build_system_prompt(tool_schemas: List[Dict], context: Dict = None) -> str:
     """Build system prompt - uses enhanced version by default."""
     return build_enhanced_system_prompt(tool_schemas, context)
+
+
+# Default system prompt constant for backwards compatibility
+SYSTEM_PROMPT = """You are an expert AI code assistant with access to development tools.
+
+Your capabilities include:
+- File operations (read, write, edit, delete)
+- Code search and navigation
+- Git operations
+- Shell command execution
+
+Respond with ONLY a JSON array of tool calls when action is needed:
+[{"tool": "tool_name", "args": {"param": "value"}}]
+
+Or return helpful text if no tools are needed.
+"""

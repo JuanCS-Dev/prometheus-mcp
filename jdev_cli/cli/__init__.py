@@ -1,4 +1,4 @@
-"""CLI package for Qwen Dev CLI"""
+"""CLI package for Juan-Dev-Code"""
 
 # Setup logging FIRST
 from jdev_cli.core.logging_setup import setup_logging
@@ -12,6 +12,12 @@ from .intent_detector import IntentDetector
 # This avoids circular import issues from jdev_cli.cli.py vs jdev_cli/cli/ package conflict
 from jdev_cli.cli_app import app, validate_output_path
 
+
+def main():
+    """Main entry point for the CLI."""
+    app()
+
+
 __all__ = [
     "MasterpieceREPL",
     "start_masterpiece_repl",
@@ -19,4 +25,5 @@ __all__ = [
     "IntentDetector",
     "app",
     "validate_output_path",
+    "main",
 ]

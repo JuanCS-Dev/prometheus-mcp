@@ -34502,6 +34502,358 @@
       ],
       "last_modified": 1764168907.7844605
     },
+    "tests/unit/test_sprint3_parity.py": {
+      "path": "tests/unit/test_sprint3_parity.py",
+      "hash": "ed91efabc0f80fe3",
+      "symbols": [
+        {
+          "name": "TestImageReadTool",
+          "type": "class",
+          "file_path": "tests/unit/test_sprint3_parity.py",
+          "line_number": 20,
+          "docstring": "Test ImageReadTool.",
+          "signature": null,
+          "parent": null
+        },
+        {
+          "name": "TestPDFReadTool",
+          "type": "class",
+          "file_path": "tests/unit/test_sprint3_parity.py",
+          "line_number": 112,
+          "docstring": "Test PDFReadTool.",
+          "signature": null,
+          "parent": null
+        },
+        {
+          "name": "TestGitSafety",
+          "type": "class",
+          "file_path": "tests/unit/test_sprint3_parity.py",
+          "line_number": 162,
+          "docstring": "Test git safety protocols.",
+          "signature": null,
+          "parent": null
+        },
+        {
+          "name": "TestGitCommitTool",
+          "type": "class",
+          "file_path": "tests/unit/test_sprint3_parity.py",
+          "line_number": 211,
+          "docstring": "Test GitCommitTool.",
+          "signature": null,
+          "parent": null
+        },
+        {
+          "name": "TestGitPRCreateTool",
+          "type": "class",
+          "file_path": "tests/unit/test_sprint3_parity.py",
+          "line_number": 245,
+          "docstring": "Test GitPRCreateTool.",
+          "signature": null,
+          "parent": null
+        },
+        {
+          "name": "TestContextCompactor",
+          "type": "class",
+          "file_path": "tests/unit/test_sprint3_parity.py",
+          "line_number": 277,
+          "docstring": "Test ContextCompactor.",
+          "signature": null,
+          "parent": null
+        },
+        {
+          "name": "TestSprint3Integration",
+          "type": "class",
+          "file_path": "tests/unit/test_sprint3_parity.py",
+          "line_number": 388,
+          "docstring": "Integration tests for Sprint 3 features.",
+          "signature": null,
+          "parent": null
+        },
+        {
+          "name": "test_tool_import",
+          "type": "method",
+          "file_path": "tests/unit/test_sprint3_parity.py",
+          "line_number": 23,
+          "docstring": "Test tool can be imported.",
+          "signature": "test_tool_import(self)",
+          "parent": "TestImageReadTool"
+        },
+        {
+          "name": "test_tool_creation",
+          "type": "method",
+          "file_path": "tests/unit/test_sprint3_parity.py",
+          "line_number": 28,
+          "docstring": "Test tool creation.",
+          "signature": "test_tool_creation(self)",
+          "parent": "TestImageReadTool"
+        },
+        {
+          "name": "test_supported_formats",
+          "type": "method",
+          "file_path": "tests/unit/test_sprint3_parity.py",
+          "line_number": 36,
+          "docstring": "Test supported format list.",
+          "signature": "test_supported_formats(self)",
+          "parent": "TestImageReadTool"
+        },
+        {
+          "name": "test_tool_import",
+          "type": "method",
+          "file_path": "tests/unit/test_sprint3_parity.py",
+          "line_number": 115,
+          "docstring": "Test tool can be imported.",
+          "signature": "test_tool_import(self)",
+          "parent": "TestPDFReadTool"
+        },
+        {
+          "name": "test_tool_creation",
+          "type": "method",
+          "file_path": "tests/unit/test_sprint3_parity.py",
+          "line_number": 120,
+          "docstring": "Test tool creation.",
+          "signature": "test_tool_creation(self)",
+          "parent": "TestPDFReadTool"
+        },
+        {
+          "name": "test_validate_safe_command",
+          "type": "method",
+          "file_path": "tests/unit/test_sprint3_parity.py",
+          "line_number": 165,
+          "docstring": "Test safe commands pass validation.",
+          "signature": "test_validate_safe_command(self)",
+          "parent": "TestGitSafety"
+        },
+        {
+          "name": "test_block_force_push",
+          "type": "method",
+          "file_path": "tests/unit/test_sprint3_parity.py",
+          "line_number": 178,
+          "docstring": "Test force push is blocked.",
+          "signature": "test_block_force_push(self)",
+          "parent": "TestGitSafety"
+        },
+        {
+          "name": "test_block_hard_reset",
+          "type": "method",
+          "file_path": "tests/unit/test_sprint3_parity.py",
+          "line_number": 186,
+          "docstring": "Test hard reset is blocked.",
+          "signature": "test_block_hard_reset(self)",
+          "parent": "TestGitSafety"
+        },
+        {
+          "name": "test_block_config",
+          "type": "method",
+          "file_path": "tests/unit/test_sprint3_parity.py",
+          "line_number": 194,
+          "docstring": "Test git config is blocked.",
+          "signature": "test_block_config(self)",
+          "parent": "TestGitSafety"
+        },
+        {
+          "name": "test_block_no_verify",
+          "type": "method",
+          "file_path": "tests/unit/test_sprint3_parity.py",
+          "line_number": 202,
+          "docstring": "Test --no-verify is blocked.",
+          "signature": "test_block_no_verify(self)",
+          "parent": "TestGitSafety"
+        },
+        {
+          "name": "test_tool_import",
+          "type": "method",
+          "file_path": "tests/unit/test_sprint3_parity.py",
+          "line_number": 214,
+          "docstring": "Test tool can be imported.",
+          "signature": "test_tool_import(self)",
+          "parent": "TestGitCommitTool"
+        },
+        {
+          "name": "test_tool_creation",
+          "type": "method",
+          "file_path": "tests/unit/test_sprint3_parity.py",
+          "line_number": 219,
+          "docstring": "Test tool creation.",
+          "signature": "test_tool_creation(self)",
+          "parent": "TestGitCommitTool"
+        },
+        {
+          "name": "test_build_commit_message",
+          "type": "method",
+          "file_path": "tests/unit/test_sprint3_parity.py",
+          "line_number": 228,
+          "docstring": "Test commit message building.",
+          "signature": "test_build_commit_message(self)",
+          "parent": "TestGitCommitTool"
+        },
+        {
+          "name": "test_tool_import",
+          "type": "method",
+          "file_path": "tests/unit/test_sprint3_parity.py",
+          "line_number": 248,
+          "docstring": "Test tool can be imported.",
+          "signature": "test_tool_import(self)",
+          "parent": "TestGitPRCreateTool"
+        },
+        {
+          "name": "test_tool_creation",
+          "type": "method",
+          "file_path": "tests/unit/test_sprint3_parity.py",
+          "line_number": 253,
+          "docstring": "Test tool creation.",
+          "signature": "test_tool_creation(self)",
+          "parent": "TestGitPRCreateTool"
+        },
+        {
+          "name": "test_build_pr_body",
+          "type": "method",
+          "file_path": "tests/unit/test_sprint3_parity.py",
+          "line_number": 262,
+          "docstring": "Test PR body building.",
+          "signature": "test_build_pr_body(self)",
+          "parent": "TestGitPRCreateTool"
+        },
+        {
+          "name": "test_import",
+          "type": "method",
+          "file_path": "tests/unit/test_sprint3_parity.py",
+          "line_number": 280,
+          "docstring": "Test compactor can be imported.",
+          "signature": "test_import(self)",
+          "parent": "TestContextCompactor"
+        },
+        {
+          "name": "test_creation",
+          "type": "method",
+          "file_path": "tests/unit/test_sprint3_parity.py",
+          "line_number": 286,
+          "docstring": "Test compactor creation.",
+          "signature": "test_creation(self)",
+          "parent": "TestContextCompactor"
+        },
+        {
+          "name": "test_add_entry",
+          "type": "method",
+          "file_path": "tests/unit/test_sprint3_parity.py",
+          "line_number": 294,
+          "docstring": "Test adding entries.",
+          "signature": "test_add_entry(self)",
+          "parent": "TestContextCompactor"
+        },
+        {
+          "name": "test_auto_priority",
+          "type": "method",
+          "file_path": "tests/unit/test_sprint3_parity.py",
+          "line_number": 306,
+          "docstring": "Test automatic priority assignment.",
+          "signature": "test_auto_priority(self)",
+          "parent": "TestContextCompactor"
+        },
+        {
+          "name": "test_should_compact",
+          "type": "method",
+          "file_path": "tests/unit/test_sprint3_parity.py",
+          "line_number": 324,
+          "docstring": "Test compaction trigger.",
+          "signature": "test_should_compact(self)",
+          "parent": "TestContextCompactor"
+        },
+        {
+          "name": "test_deduplication",
+          "type": "method",
+          "file_path": "tests/unit/test_sprint3_parity.py",
+          "line_number": 338,
+          "docstring": "Test duplicate removal.",
+          "signature": "test_deduplication(self)",
+          "parent": "TestContextCompactor"
+        },
+        {
+          "name": "test_get_context",
+          "type": "method",
+          "file_path": "tests/unit/test_sprint3_parity.py",
+          "line_number": 356,
+          "docstring": "Test context retrieval.",
+          "signature": "test_get_context(self)",
+          "parent": "TestContextCompactor"
+        },
+        {
+          "name": "test_stats",
+          "type": "method",
+          "file_path": "tests/unit/test_sprint3_parity.py",
+          "line_number": 369,
+          "docstring": "Test statistics.",
+          "signature": "test_stats(self)",
+          "parent": "TestContextCompactor"
+        },
+        {
+          "name": "test_all_tools_importable",
+          "type": "method",
+          "file_path": "tests/unit/test_sprint3_parity.py",
+          "line_number": 391,
+          "docstring": "Test all Sprint 3 tools are importable.",
+          "signature": "test_all_tools_importable(self)",
+          "parent": "TestSprint3Integration"
+        },
+        {
+          "name": "test_helper_functions",
+          "type": "method",
+          "file_path": "tests/unit/test_sprint3_parity.py",
+          "line_number": 411,
+          "docstring": "Test helper functions return tools.",
+          "signature": "test_helper_functions(self)",
+          "parent": "TestSprint3Integration"
+        },
+        {
+          "name": "test_context_compactor_singleton",
+          "type": "method",
+          "file_path": "tests/unit/test_sprint3_parity.py",
+          "line_number": 421,
+          "docstring": "Test context compactor singleton.",
+          "signature": "test_context_compactor_singleton(self)",
+          "parent": "TestSprint3Integration"
+        }
+      ],
+      "imports": [
+        "asyncio",
+        "pytest",
+        "tempfile",
+        "pathlib",
+        "unittest.mock",
+        "jdev_cli.tools.media_tools",
+        "jdev_cli.tools.media_tools",
+        "jdev_cli.tools.media_tools",
+        "jdev_cli.tools.media_tools",
+        "jdev_cli.tools.media_tools",
+        "jdev_cli.tools.media_tools",
+        "jdev_cli.tools.media_tools",
+        "jdev_cli.tools.media_tools",
+        "jdev_cli.tools.media_tools",
+        "jdev_cli.tools.media_tools",
+        "jdev_cli.tools.git_workflow",
+        "jdev_cli.tools.git_workflow",
+        "jdev_cli.tools.git_workflow",
+        "jdev_cli.tools.git_workflow",
+        "jdev_cli.tools.git_workflow",
+        "jdev_cli.tools.git_workflow",
+        "jdev_cli.tools.git_workflow",
+        "jdev_cli.tools.git_workflow",
+        "jdev_cli.tools.git_workflow",
+        "jdev_cli.tools.git_workflow",
+        "jdev_cli.tools.git_workflow",
+        "jdev_cli.core.context_compact",
+        "jdev_cli.core.context_compact",
+        "jdev_cli.core.context_compact",
+        "jdev_cli.core.context_compact",
+        "jdev_cli.core.context_compact",
+        "jdev_cli.core.context_compact",
+        "jdev_cli.core.context_compact",
+        "jdev_cli.core.context_compact",
+        "jdev_cli.tools",
+        "jdev_cli.tools",
+        "jdev_cli.core.context_compact"
+      ],
+      "last_modified": 1764174527.3807116
+    },
     "tests/unit/test_planner_context.py": {
       "path": "tests/unit/test_planner_context.py",
       "hash": "c794cb59f00c4351",
@@ -34877,6 +35229,232 @@
         "jdev_cli.agents.explorer"
       ],
       "last_modified": 1764168907.7870994
+    },
+    "tests/unit/test_claude_parity.py": {
+      "path": "tests/unit/test_claude_parity.py",
+      "hash": "575499fa5e3c1cc4",
+      "symbols": [
+        {
+          "name": "TestMemorySystem",
+          "type": "class",
+          "file_path": "tests/unit/test_claude_parity.py",
+          "line_number": 23,
+          "docstring": "Test CLAUDE.md/MEMORY.md memory system.",
+          "signature": null,
+          "parent": null
+        },
+        {
+          "name": "TestAskUserQuestion",
+          "type": "class",
+          "file_path": "tests/unit/test_claude_parity.py",
+          "line_number": 122,
+          "docstring": "Test AskUserQuestion tool.",
+          "signature": null,
+          "parent": null
+        },
+        {
+          "name": "TestEditReplaceAll",
+          "type": "class",
+          "file_path": "tests/unit/test_claude_parity.py",
+          "line_number": 186,
+          "docstring": "Test EditFileTool replace_all parameter.",
+          "signature": null,
+          "parent": null
+        },
+        {
+          "name": "TestPlanMode",
+          "type": "class",
+          "file_path": "tests/unit/test_claude_parity.py",
+          "line_number": 249,
+          "docstring": "Test EnterPlanMode/ExitPlanMode tools.",
+          "signature": null,
+          "parent": null
+        },
+        {
+          "name": "TestNotebookEdit",
+          "type": "class",
+          "file_path": "tests/unit/test_claude_parity.py",
+          "line_number": 345,
+          "docstring": "Test NotebookEdit tool.",
+          "signature": null,
+          "parent": null
+        },
+        {
+          "name": "TestTaskResume",
+          "type": "class",
+          "file_path": "tests/unit/test_claude_parity.py",
+          "line_number": 372,
+          "docstring": "Test Task tool resume capability.",
+          "signature": null,
+          "parent": null
+        },
+        {
+          "name": "TestClaudeParityIntegration",
+          "type": "class",
+          "file_path": "tests/unit/test_claude_parity.py",
+          "line_number": 416,
+          "docstring": "Integration tests for all Claude Code parity features.",
+          "signature": null,
+          "parent": null
+        },
+        {
+          "name": "test_memory_manager_import",
+          "type": "method",
+          "file_path": "tests/unit/test_claude_parity.py",
+          "line_number": 26,
+          "docstring": "Test MemoryManager can be imported.",
+          "signature": "test_memory_manager_import(self)",
+          "parent": "TestMemorySystem"
+        },
+        {
+          "name": "test_memory_manager_creation",
+          "type": "method",
+          "file_path": "tests/unit/test_claude_parity.py",
+          "line_number": 32,
+          "docstring": "Test MemoryManager can be created.",
+          "signature": "test_memory_manager_creation(self)",
+          "parent": "TestMemorySystem"
+        },
+        {
+          "name": "test_memory_manager_load_no_file",
+          "type": "method",
+          "file_path": "tests/unit/test_claude_parity.py",
+          "line_number": 40,
+          "docstring": "Test loading when no CLAUDE.md exists.",
+          "signature": "test_memory_manager_load_no_file(self)",
+          "parent": "TestMemorySystem"
+        },
+        {
+          "name": "test_memory_manager_load_with_file",
+          "type": "method",
+          "file_path": "tests/unit/test_claude_parity.py",
+          "line_number": 51,
+          "docstring": "Test loading when JUAN.md exists.",
+          "signature": "test_memory_manager_load_with_file(self)",
+          "parent": "TestMemorySystem"
+        },
+        {
+          "name": "test_memory_context_generation",
+          "type": "method",
+          "file_path": "tests/unit/test_claude_parity.py",
+          "line_number": 83,
+          "docstring": "Test context generation for LLM.",
+          "signature": "test_memory_context_generation(self)",
+          "parent": "TestMemorySystem"
+        },
+        {
+          "name": "test_session_memory",
+          "type": "method",
+          "file_path": "tests/unit/test_claude_parity.py",
+          "line_number": 104,
+          "docstring": "Test session memory tracking.",
+          "signature": "test_session_memory(self)",
+          "parent": "TestMemorySystem"
+        },
+        {
+          "name": "test_tool_import",
+          "type": "method",
+          "file_path": "tests/unit/test_claude_parity.py",
+          "line_number": 125,
+          "docstring": "Test tool can be imported.",
+          "signature": "test_tool_import(self)",
+          "parent": "TestAskUserQuestion"
+        },
+        {
+          "name": "test_tool_creation",
+          "type": "method",
+          "file_path": "tests/unit/test_claude_parity.py",
+          "line_number": 130,
+          "docstring": "Test tool creation.",
+          "signature": "test_tool_creation(self)",
+          "parent": "TestAskUserQuestion"
+        },
+        {
+          "name": "test_tool_has_replace_all",
+          "type": "method",
+          "file_path": "tests/unit/test_claude_parity.py",
+          "line_number": 189,
+          "docstring": "Test replace_all parameter exists.",
+          "signature": "test_tool_has_replace_all(self)",
+          "parent": "TestEditReplaceAll"
+        },
+        {
+          "name": "test_tools_import",
+          "type": "method",
+          "file_path": "tests/unit/test_claude_parity.py",
+          "line_number": 252,
+          "docstring": "Test tools can be imported.",
+          "signature": "test_tools_import(self)",
+          "parent": "TestPlanMode"
+        },
+        {
+          "name": "test_tool_import",
+          "type": "method",
+          "file_path": "tests/unit/test_claude_parity.py",
+          "line_number": 348,
+          "docstring": "Test tool can be imported.",
+          "signature": "test_tool_import(self)",
+          "parent": "TestNotebookEdit"
+        },
+        {
+          "name": "test_tool_has_resume",
+          "type": "method",
+          "file_path": "tests/unit/test_claude_parity.py",
+          "line_number": 375,
+          "docstring": "Test resume parameter exists.",
+          "signature": "test_tool_has_resume(self)",
+          "parent": "TestTaskResume"
+        },
+        {
+          "name": "test_all_tools_registered",
+          "type": "method",
+          "file_path": "tests/unit/test_claude_parity.py",
+          "line_number": 419,
+          "docstring": "Test all parity tools are registered in __init__.",
+          "signature": "test_all_tools_registered(self)",
+          "parent": "TestClaudeParityIntegration"
+        },
+        {
+          "name": "test_memory_manager_from_core",
+          "type": "method",
+          "file_path": "tests/unit/test_claude_parity.py",
+          "line_number": 447,
+          "docstring": "Test memory manager accessible from core.",
+          "signature": "test_memory_manager_from_core(self)",
+          "parent": "TestClaudeParityIntegration"
+        }
+      ],
+      "imports": [
+        "asyncio",
+        "pytest",
+        "tempfile",
+        "pathlib",
+        "unittest.mock",
+        "jdev_cli.core.memory",
+        "jdev_cli.core.memory",
+        "jdev_cli.core.memory",
+        "jdev_cli.core.memory",
+        "jdev_cli.core.memory",
+        "jdev_cli.core.memory",
+        "jdev_cli.tools.claude_parity_tools",
+        "jdev_cli.tools.claude_parity_tools",
+        "jdev_cli.tools.claude_parity_tools",
+        "jdev_cli.tools.claude_parity_tools",
+        "jdev_cli.tools.file_ops",
+        "jdev_cli.tools.file_ops",
+        "jdev_cli.tools.file_ops",
+        "jdev_cli.tools.plan_mode",
+        "jdev_cli.tools.plan_mode",
+        "jdev_cli.tools.plan_mode",
+        "jdev_cli.tools.plan_mode",
+        "jdev_cli.tools.claude_parity_tools",
+        "jdev_cli.tools.claude_parity_tools",
+        "jdev_cli.tools.claude_parity_tools",
+        "jdev_cli.tools.claude_parity_tools",
+        "jdev_cli.tools",
+        "jdev_cli.core"
+      ],
+      "last_modified": 1764174514.5887616
     },
     "tests/unit/test_mcp_factory.py": {
       "path": "tests/unit/test_mcp_factory.py",
@@ -58237,7 +58815,7 @@
     },
     "jdev_cli/cli_mcp.py": {
       "path": "jdev_cli/cli_mcp.py",
-      "hash": "1efc6a097abe6e4d",
+      "hash": "3ce2419a158286cb",
       "symbols": [
         {
           "name": "main",
@@ -58254,9 +58832,9 @@
         "asyncio",
         "logging",
         "jdev_cli.integrations.mcp",
-        "jdev_cli.tools.base"
+        "jdev_cli.tools.registry_helper"
       ],
-      "last_modified": 1764168812.6205373
+      "last_modified": 1764174807.4212525
     },
     "jdev_cli/shell_main.py": {
       "path": "jdev_cli/shell_main.py",
@@ -58556,12 +59134,22 @@
     },
     "jdev_cli/__main__.py": {
       "path": "jdev_cli/__main__.py",
-      "hash": "c33f565df4ab9699",
-      "symbols": [],
-      "imports": [
-        "cli"
+      "hash": "482689f3da9aebe2",
+      "symbols": [
+        {
+          "name": "main",
+          "type": "function",
+          "file_path": "jdev_cli/__main__.py",
+          "line_number": 6,
+          "docstring": "Main entry point.",
+          "signature": "main()",
+          "parent": null
+        }
       ],
-      "last_modified": 1764168812.6216962
+      "imports": [
+        "cli_app"
+      ],
+      "last_modified": 1764174711.0697975
     },
     "jdev_cli/__init__.py": {
       "path": "jdev_cli/__init__.py",
@@ -77043,8 +77631,18 @@
     },
     "jdev_cli/cli/__init__.py": {
       "path": "jdev_cli/cli/__init__.py",
-      "hash": "8aa6c6b309f939ef",
-      "symbols": [],
+      "hash": "85d3ceb6d80e731f",
+      "symbols": [
+        {
+          "name": "main",
+          "type": "function",
+          "file_path": "jdev_cli/cli/__init__.py",
+          "line_number": 16,
+          "docstring": "Main entry point for the CLI.",
+          "signature": "main()",
+          "parent": null
+        }
+      ],
       "imports": [
         "jdev_cli.core.logging_setup",
         "repl_masterpiece",
@@ -77052,7 +77650,7 @@
         "intent_detector",
         "jdev_cli.cli_app"
       ],
-      "last_modified": 1764168812.6162798
+      "last_modified": 1764174721.3687382
     },
     "jdev_cli/shell/executor.py": {
       "path": "jdev_cli/shell/executor.py",
@@ -79445,6 +80043,210 @@
       ],
       "last_modified": 1764168812.61871
     },
+    "jdev_cli/tools/media_tools.py": {
+      "path": "jdev_cli/tools/media_tools.py",
+      "hash": "066ee4bf1cc80180",
+      "symbols": [
+        {
+          "name": "ImageInfo",
+          "type": "class",
+          "file_path": "jdev_cli/tools/media_tools.py",
+          "line_number": 33,
+          "docstring": "Information about an image file.",
+          "signature": null,
+          "parent": null
+        },
+        {
+          "name": "ImageReadTool",
+          "type": "class",
+          "file_path": "jdev_cli/tools/media_tools.py",
+          "line_number": 45,
+          "docstring": "Read image files and extract metadata.\n\nClaude Code parity: Read images for multimodal analysis.\n\nSupported formats:\n- PNG, JPG/JPEG, GIF, WebP, SVG\n- Returns dimensions, format, and optionally base64 data\n\nNote: For actual image understanding, the base64 data should be\npassed to a multimodal LLM (like Gemini Vision or Claude Vision).",
+          "signature": null,
+          "parent": null
+        },
+        {
+          "name": "PDFInfo",
+          "type": "class",
+          "file_path": "jdev_cli/tools/media_tools.py",
+          "line_number": 299,
+          "docstring": "Information about a PDF file.",
+          "signature": null,
+          "parent": null
+        },
+        {
+          "name": "PDFReadTool",
+          "type": "class",
+          "file_path": "jdev_cli/tools/media_tools.py",
+          "line_number": 310,
+          "docstring": "Read PDF files and extract text content.\n\nClaude Code parity: Read PDFs for text analysis.\n\nFeatures:\n- Extract text content from PDF\n- Get page count and metadata\n- Works without external dependencies (basic extraction)\n\nFor better PDF parsing, install pypdf: pip install pypdf",
+          "signature": null,
+          "parent": null
+        },
+        {
+          "name": "ScreenshotReadTool",
+          "type": "class",
+          "file_path": "jdev_cli/tools/media_tools.py",
+          "line_number": 520,
+          "docstring": "Read screenshot files for analysis.\n\nClaude Code parity: Handles screenshot paths from user input.\nDelegates to ImageReadTool for actual processing.",
+          "signature": null,
+          "parent": null
+        },
+        {
+          "name": "get_media_tools",
+          "type": "function",
+          "file_path": "jdev_cli/tools/media_tools.py",
+          "line_number": 561,
+          "docstring": "Get all media tools.",
+          "signature": "get_media_tools()",
+          "parent": null
+        },
+        {
+          "name": "__init__",
+          "type": "method",
+          "file_path": "jdev_cli/tools/media_tools.py",
+          "line_number": 61,
+          "docstring": null,
+          "signature": "__init__(self)",
+          "parent": "ImageReadTool"
+        },
+        {
+          "name": "_get_image_dimensions",
+          "type": "method",
+          "file_path": "jdev_cli/tools/media_tools.py",
+          "line_number": 165,
+          "docstring": "Get image dimensions without external dependencies.",
+          "signature": "_get_image_dimensions(self, path)",
+          "parent": "ImageReadTool"
+        },
+        {
+          "name": "_png_dimensions",
+          "type": "method",
+          "file_path": "jdev_cli/tools/media_tools.py",
+          "line_number": 190,
+          "docstring": "Extract dimensions from PNG header.",
+          "signature": "_png_dimensions(self, data)",
+          "parent": "ImageReadTool"
+        },
+        {
+          "name": "_jpeg_dimensions",
+          "type": "method",
+          "file_path": "jdev_cli/tools/media_tools.py",
+          "line_number": 198,
+          "docstring": "Extract dimensions from JPEG.",
+          "signature": "_jpeg_dimensions(self, f)",
+          "parent": "ImageReadTool"
+        },
+        {
+          "name": "_gif_dimensions",
+          "type": "method",
+          "file_path": "jdev_cli/tools/media_tools.py",
+          "line_number": 228,
+          "docstring": "Extract dimensions from GIF header.",
+          "signature": "_gif_dimensions(self, data)",
+          "parent": "ImageReadTool"
+        },
+        {
+          "name": "_webp_dimensions",
+          "type": "method",
+          "file_path": "jdev_cli/tools/media_tools.py",
+          "line_number": 236,
+          "docstring": "Extract dimensions from WebP header.",
+          "signature": "_webp_dimensions(self, data)",
+          "parent": "ImageReadTool"
+        },
+        {
+          "name": "_bmp_dimensions",
+          "type": "method",
+          "file_path": "jdev_cli/tools/media_tools.py",
+          "line_number": 257,
+          "docstring": "Extract dimensions from BMP header.",
+          "signature": "_bmp_dimensions(self, data)",
+          "parent": "ImageReadTool"
+        },
+        {
+          "name": "_svg_dimensions",
+          "type": "method",
+          "file_path": "jdev_cli/tools/media_tools.py",
+          "line_number": 265,
+          "docstring": "Extract dimensions from SVG.",
+          "signature": "_svg_dimensions(self, content)",
+          "parent": "ImageReadTool"
+        },
+        {
+          "name": "_human_size",
+          "type": "method",
+          "file_path": "jdev_cli/tools/media_tools.py",
+          "line_number": 285,
+          "docstring": "Convert bytes to human-readable size.",
+          "signature": "_human_size(self, size_bytes)",
+          "parent": "ImageReadTool"
+        },
+        {
+          "name": "__init__",
+          "type": "method",
+          "file_path": "jdev_cli/tools/media_tools.py",
+          "line_number": 323,
+          "docstring": null,
+          "signature": "__init__(self)",
+          "parent": "PDFReadTool"
+        },
+        {
+          "name": "_check_pypdf",
+          "type": "method",
+          "file_path": "jdev_cli/tools/media_tools.py",
+          "line_number": 347,
+          "docstring": "Check if pypdf is available.",
+          "signature": "_check_pypdf(self)",
+          "parent": "PDFReadTool"
+        },
+        {
+          "name": "_parse_page_range",
+          "type": "method",
+          "file_path": "jdev_cli/tools/media_tools.py",
+          "line_number": 487,
+          "docstring": "Parse page range specification.",
+          "signature": "_parse_page_range(self, spec, total)",
+          "parent": "PDFReadTool"
+        },
+        {
+          "name": "_human_size",
+          "type": "method",
+          "file_path": "jdev_cli/tools/media_tools.py",
+          "line_number": 507,
+          "docstring": "Convert bytes to human-readable size.",
+          "signature": "_human_size(self, size_bytes)",
+          "parent": "PDFReadTool"
+        },
+        {
+          "name": "__init__",
+          "type": "method",
+          "file_path": "jdev_cli/tools/media_tools.py",
+          "line_number": 527,
+          "docstring": null,
+          "signature": "__init__(self)",
+          "parent": "ScreenshotReadTool"
+        }
+      ],
+      "imports": [
+        "__future__",
+        "base64",
+        "io",
+        "logging",
+        "mimetypes",
+        "struct",
+        "zlib",
+        "dataclasses",
+        "pathlib",
+        "typing",
+        "base",
+        "re",
+        "pypdf",
+        "re",
+        "pypdf"
+      ],
+      "last_modified": 1764174105.6392775
+    },
     "jdev_cli/tools/search.py": {
       "path": "jdev_cli/tools/search.py",
       "hash": "cdb1aba9a9db6e36",
@@ -80156,7 +80958,7 @@
     },
     "jdev_cli/tools/file_ops.py": {
       "path": "jdev_cli/tools/file_ops.py",
-      "hash": "bca7c719034985ab",
+      "hash": "67a1746c5c6e6982",
       "symbols": [
         {
           "name": "ReadFileTool",
@@ -80181,7 +80983,7 @@
           "type": "class",
           "file_path": "jdev_cli/tools/file_ops.py",
           "line_number": 222,
-          "docstring": "Modify existing file using search/replace.\n\nBoris Cherny: Type-safe editing with validation.",
+          "docstring": "Modify existing file using search/replace.\n\nBoris Cherny: Type-safe editing with validation.\nClaude Code parity: Supports replace_all for bulk replacements.",
           "signature": null,
           "parent": null
         },
@@ -80189,7 +80991,7 @@
           "name": "ListDirectoryTool",
           "type": "class",
           "file_path": "jdev_cli/tools/file_ops.py",
-          "line_number": 380,
+          "line_number": 410,
           "docstring": "List files and directories.",
           "signature": null,
           "parent": null
@@ -80198,7 +81000,7 @@
           "name": "DeleteFileTool",
           "type": "class",
           "file_path": "jdev_cli/tools/file_ops.py",
-          "line_number": 473,
+          "line_number": 503,
           "docstring": "Delete file (moves to .trash for safety).",
           "signature": null,
           "parent": null
@@ -80243,7 +81045,7 @@
           "name": "__init__",
           "type": "method",
           "file_path": "jdev_cli/tools/file_ops.py",
-          "line_number": 228,
+          "line_number": 229,
           "docstring": null,
           "signature": "__init__(self, hook_executor, config_loader)",
           "parent": "EditFileTool"
@@ -80252,7 +81054,7 @@
           "name": "get_validators",
           "type": "method",
           "file_path": "jdev_cli/tools/file_ops.py",
-          "line_number": 252,
+          "line_number": 259,
           "docstring": "Validate input parameters.",
           "signature": "get_validators(self)",
           "parent": "EditFileTool"
@@ -80261,7 +81063,7 @@
           "name": "__init__",
           "type": "method",
           "file_path": "jdev_cli/tools/file_ops.py",
-          "line_number": 383,
+          "line_number": 413,
           "docstring": null,
           "signature": "__init__(self)",
           "parent": "ListDirectoryTool"
@@ -80270,7 +81072,7 @@
           "name": "get_validators",
           "type": "method",
           "file_path": "jdev_cli/tools/file_ops.py",
-          "line_number": 405,
+          "line_number": 435,
           "docstring": null,
           "signature": "get_validators(self)",
           "parent": "ListDirectoryTool"
@@ -80279,7 +81081,7 @@
           "name": "__init__",
           "type": "method",
           "file_path": "jdev_cli/tools/file_ops.py",
-          "line_number": 476,
+          "line_number": 506,
           "docstring": null,
           "signature": "__init__(self)",
           "parent": "DeleteFileTool"
@@ -80288,7 +81090,7 @@
           "name": "get_validators",
           "type": "method",
           "file_path": "jdev_cli/tools/file_ops.py",
-          "line_number": 493,
+          "line_number": 523,
           "docstring": null,
           "signature": "get_validators(self)",
           "parent": "DeleteFileTool"
@@ -80310,7 +81112,198 @@
         "tui.components.preview",
         "tui.components.preview"
       ],
-      "last_modified": 1764168812.6195173
+      "last_modified": 1764172989.5488424
+    },
+    "jdev_cli/tools/git_workflow.py": {
+      "path": "jdev_cli/tools/git_workflow.py",
+      "hash": "dd4b805151baa2ee",
+      "symbols": [
+        {
+          "name": "GitSafetyError",
+          "type": "class",
+          "file_path": "jdev_cli/tools/git_workflow.py",
+          "line_number": 34,
+          "docstring": "Raised when a git operation violates safety protocols.",
+          "signature": null,
+          "parent": null
+        },
+        {
+          "name": "GitSafetyConfig",
+          "type": "class",
+          "file_path": "jdev_cli/tools/git_workflow.py",
+          "line_number": 40,
+          "docstring": "Configuration for git safety protocols.\n\nClaude Code safety rules:\n- NEVER update git config\n- NEVER run destructive commands (push --force, hard reset)\n- NEVER skip hooks (--no-verify)\n- NEVER force push to main/master\n- Avoid git commit --amend unless explicitly requested",
+          "signature": null,
+          "parent": null
+        },
+        {
+          "name": "validate_git_command",
+          "type": "function",
+          "file_path": "jdev_cli/tools/git_workflow.py",
+          "line_number": 78,
+          "docstring": "Validate a git command against safety protocols.\n\nArgs:\n    command: Full git command string\n\nReturns:\n    Tuple of (is_safe, reason)",
+          "signature": "validate_git_command(command)",
+          "parent": null
+        },
+        {
+          "name": "GitStatusEnhancedTool",
+          "type": "class",
+          "file_path": "jdev_cli/tools/git_workflow.py",
+          "line_number": 112,
+          "docstring": "Enhanced git status with detailed information.\n\nReturns:\n- Current branch\n- Tracking branch status\n- Staged/unstaged/untracked files\n- Ahead/behind counts",
+          "signature": null,
+          "parent": null
+        },
+        {
+          "name": "GitCommitTool",
+          "type": "class",
+          "file_path": "jdev_cli/tools/git_workflow.py",
+          "line_number": 276,
+          "docstring": "Create git commits with Claude Code conventions.\n\nFeatures:\n- Validates changes before commit\n- Adds Claude Code signature\n- Respects safety protocols\n- Supports pre-commit hooks\n\nCommit message format:\n```\n<type>(<scope>): <description>\n\n<body>\n\n\ud83e\udd16 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>\n```",
+          "signature": null,
+          "parent": null
+        },
+        {
+          "name": "GitLogTool",
+          "type": "class",
+          "file_path": "jdev_cli/tools/git_workflow.py",
+          "line_number": 473,
+          "docstring": "Get git commit history.\n\nReturns recent commits with hash, author, date, and message.",
+          "signature": null,
+          "parent": null
+        },
+        {
+          "name": "GitDiffEnhancedTool",
+          "type": "class",
+          "file_path": "jdev_cli/tools/git_workflow.py",
+          "line_number": 563,
+          "docstring": "Enhanced git diff with statistics.\n\nShows changes between commits, branches, or working tree.",
+          "signature": null,
+          "parent": null
+        },
+        {
+          "name": "GitPRCreateTool",
+          "type": "class",
+          "file_path": "jdev_cli/tools/git_workflow.py",
+          "line_number": 674,
+          "docstring": "Create GitHub Pull Request using gh CLI.\n\nClaude Code parity: Create PRs with standard format.\nRequires: gh CLI installed and authenticated.",
+          "signature": null,
+          "parent": null
+        },
+        {
+          "name": "get_git_workflow_tools",
+          "type": "function",
+          "file_path": "jdev_cli/tools/git_workflow.py",
+          "line_number": 782,
+          "docstring": "Get all git workflow tools.",
+          "signature": "get_git_workflow_tools()",
+          "parent": null
+        },
+        {
+          "name": "__init__",
+          "type": "method",
+          "file_path": "jdev_cli/tools/git_workflow.py",
+          "line_number": 122,
+          "docstring": null,
+          "signature": "__init__(self)",
+          "parent": "GitStatusEnhancedTool"
+        },
+        {
+          "name": "_parse_status_v2",
+          "type": "method",
+          "file_path": "jdev_cli/tools/git_workflow.py",
+          "line_number": 194,
+          "docstring": "Parse git status --porcelain=v2 output.",
+          "signature": "_parse_status_v2(self, output)",
+          "parent": "GitStatusEnhancedTool"
+        },
+        {
+          "name": "_format_summary",
+          "type": "method",
+          "file_path": "jdev_cli/tools/git_workflow.py",
+          "line_number": 233,
+          "docstring": "Format a human-readable summary.",
+          "signature": "_format_summary(self, parsed, ahead, behind)",
+          "parent": "GitStatusEnhancedTool"
+        },
+        {
+          "name": "__init__",
+          "type": "method",
+          "file_path": "jdev_cli/tools/git_workflow.py",
+          "line_number": 297,
+          "docstring": null,
+          "signature": "__init__(self)",
+          "parent": "GitCommitTool"
+        },
+        {
+          "name": "_build_commit_message",
+          "type": "method",
+          "file_path": "jdev_cli/tools/git_workflow.py",
+          "line_number": 430,
+          "docstring": "Build full commit message with optional signature.",
+          "signature": "_build_commit_message(self, message, add_signature)",
+          "parent": "GitCommitTool"
+        },
+        {
+          "name": "__init__",
+          "type": "method",
+          "file_path": "jdev_cli/tools/git_workflow.py",
+          "line_number": 479,
+          "docstring": null,
+          "signature": "__init__(self)",
+          "parent": "GitLogTool"
+        },
+        {
+          "name": "__init__",
+          "type": "method",
+          "file_path": "jdev_cli/tools/git_workflow.py",
+          "line_number": 569,
+          "docstring": null,
+          "signature": "__init__(self)",
+          "parent": "GitDiffEnhancedTool"
+        },
+        {
+          "name": "_parse_diff_stats",
+          "type": "method",
+          "file_path": "jdev_cli/tools/git_workflow.py",
+          "line_number": 652,
+          "docstring": "Parse diff --stat output.",
+          "signature": "_parse_diff_stats(self, output)",
+          "parent": "GitDiffEnhancedTool"
+        },
+        {
+          "name": "__init__",
+          "type": "method",
+          "file_path": "jdev_cli/tools/git_workflow.py",
+          "line_number": 681,
+          "docstring": null,
+          "signature": "__init__(self)",
+          "parent": "GitPRCreateTool"
+        },
+        {
+          "name": "_build_pr_body",
+          "type": "method",
+          "file_path": "jdev_cli/tools/git_workflow.py",
+          "line_number": 768,
+          "docstring": "Build PR body with Juan-Dev-Code signature.",
+          "signature": "_build_pr_body(self, body)",
+          "parent": "GitPRCreateTool"
+        }
+      ],
+      "imports": [
+        "__future__",
+        "asyncio",
+        "logging",
+        "re",
+        "shlex",
+        "subprocess",
+        "dataclasses",
+        "datetime",
+        "pathlib",
+        "typing",
+        "base"
+      ],
+      "last_modified": 1764174506.0787947
     },
     "jdev_cli/tools/web_search.py": {
       "path": "jdev_cli/tools/web_search.py",
@@ -80405,6 +81398,139 @@
         "jdev_cli.tools.terminal"
       ],
       "last_modified": 1764168812.6197205
+    },
+    "jdev_cli/tools/plan_mode.py": {
+      "path": "jdev_cli/tools/plan_mode.py",
+      "hash": "1f7c1c70d6bf2f82",
+      "symbols": [
+        {
+          "name": "PlanState",
+          "type": "class",
+          "file_path": "jdev_cli/tools/plan_mode.py",
+          "line_number": 28,
+          "docstring": "Current state of plan mode.",
+          "signature": null,
+          "parent": null
+        },
+        {
+          "name": "get_plan_state",
+          "type": "function",
+          "file_path": "jdev_cli/tools/plan_mode.py",
+          "line_number": 47,
+          "docstring": "Get the current plan state.",
+          "signature": "get_plan_state()",
+          "parent": null
+        },
+        {
+          "name": "reset_plan_state",
+          "type": "function",
+          "file_path": "jdev_cli/tools/plan_mode.py",
+          "line_number": 52,
+          "docstring": "Reset plan state (for testing).",
+          "signature": "reset_plan_state()",
+          "parent": null
+        },
+        {
+          "name": "EnterPlanModeTool",
+          "type": "class",
+          "file_path": "jdev_cli/tools/plan_mode.py",
+          "line_number": 62,
+          "docstring": "Transition into planning mode for complex tasks.\n\nClaude Code parity: EnterPlanMode tool for structured task planning.\n\nUse this when:\n- Task has multiple valid approaches with trade-offs\n- Significant architectural decisions are needed\n- Large-scale changes touching many files\n- Requirements are unclear and need exploration\n- User input needed before starting implementation\n\nIn plan mode:\n- Explore codebase using Glob, Grep, Read tools\n- Understand existing patterns and architecture\n- Design implementation approach\n- Present plan to user for approval\n- Use AskUserQuestion to clarify approaches\n- Exit with ExitPlanMode when ready",
+          "signature": null,
+          "parent": null
+        },
+        {
+          "name": "ExitPlanModeTool",
+          "type": "class",
+          "file_path": "jdev_cli/tools/plan_mode.py",
+          "line_number": 202,
+          "docstring": "Exit planning mode and submit plan for approval.\n\nClaude Code parity: ExitPlanMode tool for plan submission.\n\nUse this when:\n- Plan file is complete with implementation steps\n- All clarifying questions have been resolved\n- Ready for user to review and approve the plan\n\nImportant:\n- Requires user approval before implementation begins\n- If there are ambiguities, use AskUserQuestion first\n- Only use for implementation planning, not research tasks",
+          "signature": null,
+          "parent": null
+        },
+        {
+          "name": "AddPlanNoteTool",
+          "type": "class",
+          "file_path": "jdev_cli/tools/plan_mode.py",
+          "line_number": 288,
+          "docstring": "Add a note to the current plan.\n\nUse during plan mode to document exploration findings,\narchitecture notes, or decision rationale.",
+          "signature": null,
+          "parent": null
+        },
+        {
+          "name": "GetPlanStatusTool",
+          "type": "class",
+          "file_path": "jdev_cli/tools/plan_mode.py",
+          "line_number": 368,
+          "docstring": "Get current plan mode status.",
+          "signature": null,
+          "parent": null
+        },
+        {
+          "name": "get_plan_mode_tools",
+          "type": "function",
+          "file_path": "jdev_cli/tools/plan_mode.py",
+          "line_number": 416,
+          "docstring": "Get all plan mode tools.",
+          "signature": "get_plan_mode_tools()",
+          "parent": null
+        },
+        {
+          "name": "__init__",
+          "type": "method",
+          "file_path": "jdev_cli/tools/plan_mode.py",
+          "line_number": 83,
+          "docstring": null,
+          "signature": "__init__(self)",
+          "parent": "EnterPlanModeTool"
+        },
+        {
+          "name": "_create_plan_template",
+          "type": "method",
+          "file_path": "jdev_cli/tools/plan_mode.py",
+          "line_number": 153,
+          "docstring": "Create initial plan file template.",
+          "signature": "_create_plan_template(self, task_description)",
+          "parent": "EnterPlanModeTool"
+        },
+        {
+          "name": "__init__",
+          "type": "method",
+          "file_path": "jdev_cli/tools/plan_mode.py",
+          "line_number": 218,
+          "docstring": null,
+          "signature": "__init__(self)",
+          "parent": "ExitPlanModeTool"
+        },
+        {
+          "name": "__init__",
+          "type": "method",
+          "file_path": "jdev_cli/tools/plan_mode.py",
+          "line_number": 295,
+          "docstring": null,
+          "signature": "__init__(self)",
+          "parent": "AddPlanNoteTool"
+        },
+        {
+          "name": "__init__",
+          "type": "method",
+          "file_path": "jdev_cli/tools/plan_mode.py",
+          "line_number": 371,
+          "docstring": null,
+          "signature": "__init__(self)",
+          "parent": "GetPlanStatusTool"
+        }
+      ],
+      "imports": [
+        "__future__",
+        "logging",
+        "dataclasses",
+        "datetime",
+        "pathlib",
+        "typing",
+        "base"
+      ],
+      "last_modified": 1764173098.1770663
     },
     "jdev_cli/tools/base.py": {
       "path": "jdev_cli/tools/base.py",
@@ -81386,10 +82512,24 @@
     },
     "jdev_cli/tools/__init__.py": {
       "path": "jdev_cli/tools/__init__.py",
-      "hash": "0a9e053d5bcaf186",
+      "hash": "25832cb305c7fb37",
       "symbols": [],
-      "imports": [],
-      "last_modified": 1764168812.6204784
+      "imports": [
+        "base",
+        "file_ops",
+        "file_mgmt",
+        "search",
+        "claude_parity_tools",
+        "plan_mode",
+        "media_tools",
+        "git_workflow",
+        "exec_hardened",
+        "git_ops",
+        "context",
+        "terminal",
+        "validated"
+      ],
+      "last_modified": 1764174290.9946125
     },
     "jdev_cli/prompts/user_templates.py": {
       "path": "jdev_cli/prompts/user_templates.py",
@@ -81476,7 +82616,7 @@
     },
     "jdev_cli/prompts/system_prompts.py": {
       "path": "jdev_cli/prompts/system_prompts.py",
-      "hash": "58388cb0a69594aa",
+      "hash": "4b9e8a6a9b3c5049",
       "symbols": [
         {
           "name": "build_enhanced_system_prompt",
@@ -81509,7 +82649,7 @@
       "imports": [
         "typing"
       ],
-      "last_modified": 1764168812.6206992
+      "last_modified": 1764174683.1509597
     },
     "jdev_cli/prompts/system_prompts_v1.py": {
       "path": "jdev_cli/prompts/system_prompts_v1.py",
@@ -81862,15 +83002,6 @@
       "symbols": [],
       "imports": [],
       "last_modified": 1764168812.6213226
-    },
-    "jdev_cli/shell_v2/__init__.py": {
-      "path": "jdev_cli/shell_v2/__init__.py",
-      "hash": "d742888556bb2f7f",
-      "symbols": [],
-      "imports": [
-        "repl"
-      ],
-      "last_modified": 1764168812.621407
     },
     "jdev_cli/commands/review.py": {
       "path": "jdev_cli/commands/review.py",
@@ -85238,6 +86369,283 @@
         "intelligence.context_enhanced"
       ],
       "last_modified": 1764168812.623614
+    },
+    "jdev_cli/core/context_compact.py": {
+      "path": "jdev_cli/core/context_compact.py",
+      "hash": "8ccd3d6547ae44aa",
+      "symbols": [
+        {
+          "name": "ContextEntry",
+          "type": "class",
+          "file_path": "jdev_cli/core/context_compact.py",
+          "line_number": 33,
+          "docstring": "A single context entry with metadata.",
+          "signature": null,
+          "parent": null
+        },
+        {
+          "name": "CompactedContext",
+          "type": "class",
+          "file_path": "jdev_cli/core/context_compact.py",
+          "line_number": 61,
+          "docstring": "Result of context compaction.",
+          "signature": null,
+          "parent": null
+        },
+        {
+          "name": "ContextCompactor",
+          "type": "class",
+          "file_path": "jdev_cli/core/context_compact.py",
+          "line_number": 82,
+          "docstring": "Automatic context compaction manager.\n\nStrategies:\n1. Priority-based retention (keep high-priority entries)\n2. Recency bias (keep recent entries)\n3. Summarization (compress old conversations)\n4. Deduplication (remove repeated content)\n5. Tool output truncation (shorten verbose outputs)\n\nUsage:\n    compactor = ContextCompactor(max_tokens=100000)\n    compactor.add_entry(content=\"...\", entry_type=\"user\")\n\n    if compactor.should_compact():\n        compacted = compactor.compact()",
+          "signature": null,
+          "parent": null
+        },
+        {
+          "name": "get_context_compactor",
+          "type": "function",
+          "file_path": "jdev_cli/core/context_compact.py",
+          "line_number": 462,
+          "docstring": "Get or create the context compactor singleton.",
+          "signature": "get_context_compactor(max_tokens)",
+          "parent": null
+        },
+        {
+          "name": "reset_context_compactor",
+          "type": "function",
+          "file_path": "jdev_cli/core/context_compact.py",
+          "line_number": 472,
+          "docstring": "Reset the context compactor (for testing).",
+          "signature": "reset_context_compactor()",
+          "parent": null
+        },
+        {
+          "name": "ContextCompactTool",
+          "type": "class",
+          "file_path": "jdev_cli/core/context_compact.py",
+          "line_number": 482,
+          "docstring": "Tool to manually trigger context compaction.\n\nClaude Code parity: Allows explicit context management.",
+          "signature": null,
+          "parent": null
+        },
+        {
+          "name": "__post_init__",
+          "type": "method",
+          "file_path": "jdev_cli/core/context_compact.py",
+          "line_number": 44,
+          "docstring": "Calculate token count if not provided.",
+          "signature": "__post_init__(self)",
+          "parent": "ContextEntry"
+        },
+        {
+          "name": "_estimate_tokens",
+          "type": "method",
+          "file_path": "jdev_cli/core/context_compact.py",
+          "line_number": 49,
+          "docstring": "Estimate token count (rough approximation).",
+          "signature": "_estimate_tokens(self, text)",
+          "parent": "ContextEntry"
+        },
+        {
+          "name": "content_hash",
+          "type": "method",
+          "file_path": "jdev_cli/core/context_compact.py",
+          "line_number": 55,
+          "docstring": "Get content hash for deduplication.",
+          "signature": "content_hash(self)",
+          "parent": "ContextEntry"
+        },
+        {
+          "name": "compression_ratio",
+          "type": "method",
+          "file_path": "jdev_cli/core/context_compact.py",
+          "line_number": 71,
+          "docstring": "Get compression ratio.",
+          "signature": "compression_ratio(self)",
+          "parent": "CompactedContext"
+        },
+        {
+          "name": "__init__",
+          "type": "method",
+          "file_path": "jdev_cli/core/context_compact.py",
+          "line_number": 112,
+          "docstring": "Initialize context compactor.\n\nArgs:\n    max_tokens: Maximum token limit\n    compact_threshold: Ratio at which to trigger compaction\n    target_ratio: Target ratio after compaction",
+          "signature": "__init__(self, max_tokens, compact_threshold, target_ratio)",
+          "parent": "ContextCompactor"
+        },
+        {
+          "name": "add_entry",
+          "type": "method",
+          "file_path": "jdev_cli/core/context_compact.py",
+          "line_number": 137,
+          "docstring": "Add a context entry.\n\nArgs:\n    content: Entry content\n    entry_type: Type of entry\n    priority: Priority level (auto-assigned if None)\n    can_compact: Whether entry can be compacted\n    metadata: Additional metadata\n\nReturns:\n    The created ContextEntry",
+          "signature": "add_entry(self, content, entry_type, priority, can_compact, metadata)",
+          "parent": "ContextCompactor"
+        },
+        {
+          "name": "_auto_priority",
+          "type": "method",
+          "file_path": "jdev_cli/core/context_compact.py",
+          "line_number": 179,
+          "docstring": "Auto-assign priority based on content and type.",
+          "signature": "_auto_priority(self, content, entry_type)",
+          "parent": "ContextCompactor"
+        },
+        {
+          "name": "should_compact",
+          "type": "method",
+          "file_path": "jdev_cli/core/context_compact.py",
+          "line_number": 210,
+          "docstring": "Check if compaction is needed.",
+          "signature": "should_compact(self)",
+          "parent": "ContextCompactor"
+        },
+        {
+          "name": "compact",
+          "type": "method",
+          "file_path": "jdev_cli/core/context_compact.py",
+          "line_number": 214,
+          "docstring": "Compact the context to reduce token usage.\n\nArgs:\n    target_tokens: Target token count (default: max_tokens * target_ratio)\n\nReturns:\n    CompactedContext with results",
+          "signature": "compact(self, target_tokens)",
+          "parent": "ContextCompactor"
+        },
+        {
+          "name": "_deduplicate",
+          "type": "method",
+          "file_path": "jdev_cli/core/context_compact.py",
+          "line_number": 248,
+          "docstring": "Remove duplicate entries.",
+          "signature": "_deduplicate(self)",
+          "parent": "ContextCompactor"
+        },
+        {
+          "name": "_truncate_verbose",
+          "type": "method",
+          "file_path": "jdev_cli/core/context_compact.py",
+          "line_number": 265,
+          "docstring": "Truncate verbose tool outputs.",
+          "signature": "_truncate_verbose(self)",
+          "parent": "ContextCompactor"
+        },
+        {
+          "name": "_summarize_old_conversations",
+          "type": "method",
+          "file_path": "jdev_cli/core/context_compact.py",
+          "line_number": 279,
+          "docstring": "Summarize old conversation turns.",
+          "signature": "_summarize_old_conversations(self)",
+          "parent": "ContextCompactor"
+        },
+        {
+          "name": "_create_turn_summary",
+          "type": "method",
+          "file_path": "jdev_cli/core/context_compact.py",
+          "line_number": 319,
+          "docstring": "Create a summary entry for a conversation turn.",
+          "signature": "_create_turn_summary(self, turn)",
+          "parent": "ContextCompactor"
+        },
+        {
+          "name": "_remove_low_priority",
+          "type": "method",
+          "file_path": "jdev_cli/core/context_compact.py",
+          "line_number": 340,
+          "docstring": "Remove low-priority entries to reach target.",
+          "signature": "_remove_low_priority(self, target_tokens)",
+          "parent": "ContextCompactor"
+        },
+        {
+          "name": "get_context",
+          "type": "method",
+          "file_path": "jdev_cli/core/context_compact.py",
+          "line_number": 377,
+          "docstring": "Get current context as string.\n\nArgs:\n    max_tokens: Maximum tokens to return\n\nReturns:\n    Formatted context string",
+          "signature": "get_context(self, max_tokens)",
+          "parent": "ContextCompactor"
+        },
+        {
+          "name": "get_recent_entries",
+          "type": "method",
+          "file_path": "jdev_cli/core/context_compact.py",
+          "line_number": 406,
+          "docstring": "Get recent context entries.",
+          "signature": "get_recent_entries(self, count)",
+          "parent": "ContextCompactor"
+        },
+        {
+          "name": "clear",
+          "type": "method",
+          "file_path": "jdev_cli/core/context_compact.py",
+          "line_number": 410,
+          "docstring": "Clear all context.",
+          "signature": "clear(self)",
+          "parent": "ContextCompactor"
+        },
+        {
+          "name": "total_tokens",
+          "type": "method",
+          "file_path": "jdev_cli/core/context_compact.py",
+          "line_number": 420,
+          "docstring": "Get total token count.",
+          "signature": "total_tokens(self)",
+          "parent": "ContextCompactor"
+        },
+        {
+          "name": "entry_count",
+          "type": "method",
+          "file_path": "jdev_cli/core/context_compact.py",
+          "line_number": 425,
+          "docstring": "Get entry count.",
+          "signature": "entry_count(self)",
+          "parent": "ContextCompactor"
+        },
+        {
+          "name": "utilization",
+          "type": "method",
+          "file_path": "jdev_cli/core/context_compact.py",
+          "line_number": 430,
+          "docstring": "Get context utilization ratio.",
+          "signature": "utilization(self)",
+          "parent": "ContextCompactor"
+        },
+        {
+          "name": "compaction_count",
+          "type": "method",
+          "file_path": "jdev_cli/core/context_compact.py",
+          "line_number": 435,
+          "docstring": "Get number of times context was compacted.",
+          "signature": "compaction_count(self)",
+          "parent": "ContextCompactor"
+        },
+        {
+          "name": "get_stats",
+          "type": "method",
+          "file_path": "jdev_cli/core/context_compact.py",
+          "line_number": 439,
+          "docstring": "Get context statistics.",
+          "signature": "get_stats(self)",
+          "parent": "ContextCompactor"
+        },
+        {
+          "name": "__init__",
+          "type": "method",
+          "file_path": "jdev_cli/core/context_compact.py",
+          "line_number": 492,
+          "docstring": null,
+          "signature": "__init__(self)",
+          "parent": "ContextCompactTool"
+        }
+      ],
+      "imports": [
+        "__future__",
+        "hashlib",
+        "logging",
+        "re",
+        "dataclasses",
+        "datetime",
+        "typing"
+      ],
+      "last_modified": 1764174253.843749
     },
     "jdev_cli/core/error_presenter.py": {
       "path": "jdev_cli/core/error_presenter.py",
@@ -90799,15 +92207,356 @@
       ],
       "last_modified": 1764168812.6277018
     },
+    "jdev_cli/core/memory.py": {
+      "path": "jdev_cli/core/memory.py",
+      "hash": "b4ac140d966dd7d1",
+      "symbols": [
+        {
+          "name": "MemoryEntry",
+          "type": "class",
+          "file_path": "jdev_cli/core/memory.py",
+          "line_number": 35,
+          "docstring": "A single memory entry with metadata.",
+          "signature": null,
+          "parent": null
+        },
+        {
+          "name": "ProjectMemory",
+          "type": "class",
+          "file_path": "jdev_cli/core/memory.py",
+          "line_number": 58,
+          "docstring": "Memory loaded from CLAUDE.md at project root.",
+          "signature": null,
+          "parent": null
+        },
+        {
+          "name": "UserMemory",
+          "type": "class",
+          "file_path": "jdev_cli/core/memory.py",
+          "line_number": 74,
+          "docstring": "Memory loaded from user's MEMORY.md file.",
+          "signature": null,
+          "parent": null
+        },
+        {
+          "name": "SessionMemory",
+          "type": "class",
+          "file_path": "jdev_cli/core/memory.py",
+          "line_number": 85,
+          "docstring": "In-memory session context (not persisted).",
+          "signature": null,
+          "parent": null
+        },
+        {
+          "name": "MemoryManager",
+          "type": "class",
+          "file_path": "jdev_cli/core/memory.py",
+          "line_number": 100,
+          "docstring": "Manages persistent and session memory.\n\nClaude Code parity:\n- Reads CLAUDE.md from project root\n- Reads MEMORY.md from user config directory\n- Provides unified memory context for LLM\n\nUsage:\n    manager = MemoryManager()\n    manager.load()\n\n    # Get context for LLM\n    context = manager.get_context()\n\n    # Add session memory\n    manager.add_session_entry(\"User prefers TypeScript over JavaScript\")",
+          "signature": null,
+          "parent": null
+        },
+        {
+          "name": "get_memory_manager",
+          "type": "function",
+          "file_path": "jdev_cli/core/memory.py",
+          "line_number": 522,
+          "docstring": "Get or create the memory manager singleton.\n\nArgs:\n    project_root: Project root directory\n    auto_load: Whether to auto-load memory\n\nReturns:\n    MemoryManager instance",
+          "signature": "get_memory_manager(project_root, auto_load)",
+          "parent": null
+        },
+        {
+          "name": "reset_memory_manager",
+          "type": "function",
+          "file_path": "jdev_cli/core/memory.py",
+          "line_number": 545,
+          "docstring": "Reset the memory manager (for testing).",
+          "signature": "reset_memory_manager()",
+          "parent": null
+        },
+        {
+          "name": "MemoryReadTool",
+          "type": "class",
+          "file_path": "jdev_cli/core/memory.py",
+          "line_number": 555,
+          "docstring": "Tool to read project/user memory.\n\nRead JUAN.md/MEMORY.md content (supports CLAUDE.md for compatibility).",
+          "signature": null,
+          "parent": null
+        },
+        {
+          "name": "MemoryWriteTool",
+          "type": "class",
+          "file_path": "jdev_cli/core/memory.py",
+          "line_number": 603,
+          "docstring": "Tool to write to project memory.\n\nWrite to JUAN.md (project memory file).",
+          "signature": null,
+          "parent": null
+        },
+        {
+          "name": "to_dict",
+          "type": "method",
+          "file_path": "jdev_cli/core/memory.py",
+          "line_number": 45,
+          "docstring": "Convert to dictionary.",
+          "signature": "to_dict(self)",
+          "parent": "MemoryEntry"
+        },
+        {
+          "name": "is_loaded",
+          "type": "method",
+          "file_path": "jdev_cli/core/memory.py",
+          "line_number": 68,
+          "docstring": "Check if memory is loaded.",
+          "signature": "is_loaded(self)",
+          "parent": "ProjectMemory"
+        },
+        {
+          "name": "__init__",
+          "type": "method",
+          "file_path": "jdev_cli/core/memory.py",
+          "line_number": 133,
+          "docstring": "Initialize memory manager.\n\nArgs:\n    project_root: Project root directory (default: cwd)\n    user_config_dir: User config directory (default: ~/.config/jdev-cli)",
+          "signature": "__init__(self, project_root, user_config_dir)",
+          "parent": "MemoryManager"
+        },
+        {
+          "name": "load",
+          "type": "method",
+          "file_path": "jdev_cli/core/memory.py",
+          "line_number": 162,
+          "docstring": "Load all memory sources.\n\nReturns:\n    True if any memory was loaded successfully",
+          "signature": "load(self)",
+          "parent": "MemoryManager"
+        },
+        {
+          "name": "_load_project_memory",
+          "type": "method",
+          "file_path": "jdev_cli/core/memory.py",
+          "line_number": 182,
+          "docstring": "Load project-level memory from JUAN.md (or CLAUDE.md for compatibility).",
+          "signature": "_load_project_memory(self)",
+          "parent": "MemoryManager"
+        },
+        {
+          "name": "_load_user_memory",
+          "type": "method",
+          "file_path": "jdev_cli/core/memory.py",
+          "line_number": 206,
+          "docstring": "Load user-level memory from MEMORY.md.",
+          "signature": "_load_user_memory(self)",
+          "parent": "MemoryManager"
+        },
+        {
+          "name": "_parse_sections",
+          "type": "method",
+          "file_path": "jdev_cli/core/memory.py",
+          "line_number": 231,
+          "docstring": "Parse markdown sections from content.\n\nSections are identified by ## headers.",
+          "signature": "_parse_sections(self, content)",
+          "parent": "MemoryManager"
+        },
+        {
+          "name": "_extract_instructions",
+          "type": "method",
+          "file_path": "jdev_cli/core/memory.py",
+          "line_number": 257,
+          "docstring": "Extract instruction lines from content.\n\nInstructions are lines that:\n- Start with \"- \" (list items)\n- Are in sections like \"instructions\", \"rules\", \"guidelines\"",
+          "signature": "_extract_instructions(self, content)",
+          "parent": "MemoryManager"
+        },
+        {
+          "name": "_extract_preferences",
+          "type": "method",
+          "file_path": "jdev_cli/core/memory.py",
+          "line_number": 281,
+          "docstring": "Extract key-value preferences from content.\n\nPreferences are in format:\n- key: value\n- **key**: value",
+          "signature": "_extract_preferences(self, content)",
+          "parent": "MemoryManager"
+        },
+        {
+          "name": "get_context",
+          "type": "method",
+          "file_path": "jdev_cli/core/memory.py",
+          "line_number": 306,
+          "docstring": "Get unified memory context for LLM.\n\nArgs:\n    max_tokens: Approximate max tokens for context\n\nReturns:\n    Formatted context string",
+          "signature": "get_context(self, max_tokens)",
+          "parent": "MemoryManager"
+        },
+        {
+          "name": "get_instructions",
+          "type": "method",
+          "file_path": "jdev_cli/core/memory.py",
+          "line_number": 358,
+          "docstring": "Get all instructions from memory.",
+          "signature": "get_instructions(self)",
+          "parent": "MemoryManager"
+        },
+        {
+          "name": "get_preference",
+          "type": "method",
+          "file_path": "jdev_cli/core/memory.py",
+          "line_number": 367,
+          "docstring": "Get a specific preference.\n\nArgs:\n    key: Preference key\n    default: Default value if not found\n\nReturns:\n    Preference value",
+          "signature": "get_preference(self, key, default)",
+          "parent": "MemoryManager"
+        },
+        {
+          "name": "add_session_entry",
+          "type": "method",
+          "file_path": "jdev_cli/core/memory.py",
+          "line_number": 392,
+          "docstring": "Add entry to session memory.\n\nArgs:\n    content: Memory content\n    tags: Optional tags for categorization",
+          "signature": "add_session_entry(self, content, tags)",
+          "parent": "MemoryManager"
+        },
+        {
+          "name": "add_key_decision",
+          "type": "method",
+          "file_path": "jdev_cli/core/memory.py",
+          "line_number": 406,
+          "docstring": "Record a key decision made during the session.",
+          "signature": "add_key_decision(self, decision)",
+          "parent": "MemoryManager"
+        },
+        {
+          "name": "add_warning",
+          "type": "method",
+          "file_path": "jdev_cli/core/memory.py",
+          "line_number": 410,
+          "docstring": "Record a warning for future reference.",
+          "signature": "add_warning(self, warning)",
+          "parent": "MemoryManager"
+        },
+        {
+          "name": "track_context_file",
+          "type": "method",
+          "file_path": "jdev_cli/core/memory.py",
+          "line_number": 414,
+          "docstring": "Track a file that has been read for context.",
+          "signature": "track_context_file(self, path)",
+          "parent": "MemoryManager"
+        },
+        {
+          "name": "track_modified_file",
+          "type": "method",
+          "file_path": "jdev_cli/core/memory.py",
+          "line_number": 419,
+          "docstring": "Track a file that has been modified.",
+          "signature": "track_modified_file(self, path)",
+          "parent": "MemoryManager"
+        },
+        {
+          "name": "save_project_memory",
+          "type": "method",
+          "file_path": "jdev_cli/core/memory.py",
+          "line_number": 428,
+          "docstring": "Save content to project JUAN.md.\n\nArgs:\n    content: New content for JUAN.md\n\nReturns:\n    True if saved successfully",
+          "signature": "save_project_memory(self, content)",
+          "parent": "MemoryManager"
+        },
+        {
+          "name": "append_to_project_memory",
+          "type": "method",
+          "file_path": "jdev_cli/core/memory.py",
+          "line_number": 449,
+          "docstring": "Append content to project JUAN.md.\n\nArgs:\n    content: Content to append\n\nReturns:\n    True if saved successfully",
+          "signature": "append_to_project_memory(self, content)",
+          "parent": "MemoryManager"
+        },
+        {
+          "name": "is_loaded",
+          "type": "method",
+          "file_path": "jdev_cli/core/memory.py",
+          "line_number": 485,
+          "docstring": "Check if any memory is loaded.",
+          "signature": "is_loaded(self)",
+          "parent": "MemoryManager"
+        },
+        {
+          "name": "project_memory",
+          "type": "method",
+          "file_path": "jdev_cli/core/memory.py",
+          "line_number": 490,
+          "docstring": "Get project memory.",
+          "signature": "project_memory(self)",
+          "parent": "MemoryManager"
+        },
+        {
+          "name": "user_memory",
+          "type": "method",
+          "file_path": "jdev_cli/core/memory.py",
+          "line_number": 495,
+          "docstring": "Get user memory.",
+          "signature": "user_memory(self)",
+          "parent": "MemoryManager"
+        },
+        {
+          "name": "session_memory",
+          "type": "method",
+          "file_path": "jdev_cli/core/memory.py",
+          "line_number": 500,
+          "docstring": "Get session memory.",
+          "signature": "session_memory(self)",
+          "parent": "MemoryManager"
+        },
+        {
+          "name": "has_project_memory",
+          "type": "method",
+          "file_path": "jdev_cli/core/memory.py",
+          "line_number": 505,
+          "docstring": "Check if project memory exists.",
+          "signature": "has_project_memory(self)",
+          "parent": "MemoryManager"
+        },
+        {
+          "name": "has_user_memory",
+          "type": "method",
+          "file_path": "jdev_cli/core/memory.py",
+          "line_number": 510,
+          "docstring": "Check if user memory exists.",
+          "signature": "has_user_memory(self)",
+          "parent": "MemoryManager"
+        },
+        {
+          "name": "__init__",
+          "type": "method",
+          "file_path": "jdev_cli/core/memory.py",
+          "line_number": 565,
+          "docstring": null,
+          "signature": "__init__(self)",
+          "parent": "MemoryReadTool"
+        },
+        {
+          "name": "__init__",
+          "type": "method",
+          "file_path": "jdev_cli/core/memory.py",
+          "line_number": 613,
+          "docstring": null,
+          "signature": "__init__(self)",
+          "parent": "MemoryWriteTool"
+        }
+      ],
+      "imports": [
+        "__future__",
+        "logging",
+        "os",
+        "dataclasses",
+        "datetime",
+        "pathlib",
+        "typing",
+        "re"
+      ],
+      "last_modified": 1764174490.8968537
+    },
     "jdev_cli/core/__init__.py": {
       "path": "jdev_cli/core/__init__.py",
-      "hash": "6465c8d10c0b2439",
+      "hash": "793771a9e87d9c0b",
       "symbols": [
         {
           "name": "__getattr__",
           "type": "function",
           "file_path": "jdev_cli/core/__init__.py",
-          "line_number": 70,
+          "line_number": 76,
           "docstring": "Lazy loading of modules for faster startup.",
           "signature": "__getattr__(name)",
           "parent": null
@@ -90827,9 +92576,10 @@
         "resilience",
         "error_presenter",
         "session_manager",
-        "context_tracker"
+        "context_tracker",
+        "memory"
       ],
-      "last_modified": 1764168865.9382086
+      "last_modified": 1764173190.2051523
     },
     "jdev_cli/core/audit_logger.py": {
       "path": "jdev_cli/core/audit_logger.py",
