@@ -146,6 +146,22 @@ class InputValidator:
         (r'%252e', "Double encoded traversal"),
         (r'\.\.%2f', "Mixed encoding traversal"),
         (r'\.\.%5c', "Mixed encoding traversal (backslash)"),
+        # Absolute paths to sensitive locations
+        (r'^/etc/', "Absolute path to /etc"),
+        (r'^/var/log/', "Absolute path to /var/log"),
+        (r'^/root/', "Absolute path to /root"),
+        (r'^/home/[^/]+/\.', "Hidden file in home directory"),
+        (r'^~/', "Home directory shortcut"),
+        (r'^~\\', "Home directory shortcut (Windows)"),
+        # Windows sensitive paths
+        (r'^[A-Za-z]:\\Windows\\', "Windows system directory"),
+        (r'^[A-Za-z]:\\Users\\[^\\]+\\\.', "Hidden file in Windows user dir"),
+        # SSH, AWS, GPG keys
+        (r'\.ssh[/\\]', "SSH directory access"),
+        (r'\.aws[/\\]', "AWS credentials directory"),
+        (r'\.gnupg[/\\]', "GnuPG directory access"),
+        (r'\.netrc', "Netrc credentials file"),
+        (r'\.env', "Environment file (may contain secrets)"),
     ]
 
     # Prompt injection patterns

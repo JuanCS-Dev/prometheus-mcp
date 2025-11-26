@@ -5,6 +5,8 @@ Inspired by max-code/claude-code
 """
 import asyncio
 import os
+import shlex
+import subprocess
 from pathlib import Path
 from rich.console import Console
 from rich.panel import Panel
@@ -12,6 +14,7 @@ from prompt_toolkit import PromptSession
 from prompt_toolkit.history import FileHistory
 
 from .core.llm import LLMClient
+from .core.input_validator import validate_command
 
 
 class SimpleShell:
@@ -50,26 +53,40 @@ class SimpleShell:
             return f"LLM Error: {e}"
     
     async def execute_command(self, command: str):
-        """Execute a shell command"""
-        import subprocess
-        
+        """Execute a shell command with security validation."""
+        # SECURITY: Validate command before execution
+        validation = validate_command(command, allow_shell=False)
+        if not validation.is_valid:
+            self.console.print(f"[red]Security: Command blocked - {', '.join(validation.errors)}[/red]")
+            return
+
+        if validation.warnings:
+            for warning in validation.warnings:
+                self.console.print(f"[yellow]⚠ {warning}[/yellow]")
+
         try:
+            # SECURITY: Use shlex.split instead of shell=True
+            args = shlex.split(command)
             result = subprocess.run(
-                command,
-                shell=True,
+                args,
+                shell=False,  # HARDENED: Never use shell=True
                 cwd=self.cwd,
                 capture_output=True,
                 text=True,
                 timeout=30
             )
-            
+
             if result.stdout:
                 self.console.print(result.stdout)
             if result.stderr:
                 self.console.print(f"[red]{result.stderr}[/red]")
-                
+
         except subprocess.TimeoutExpired:
             self.console.print("[red]Command timed out[/red]")
+        except ValueError as e:
+            self.console.print(f"[red]Invalid command syntax: {e}[/red]")
+        except FileNotFoundError:
+            self.console.print(f"[red]Command not found: {command.split()[0]}[/red]")
         except Exception as e:
             self.console.print(f"[red]Error: {e}[/red]")
     

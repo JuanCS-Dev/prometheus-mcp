@@ -382,12 +382,17 @@ INSTRUCTIONS:
         """Show history."""
         # Access prompt_toolkit history if possible
         if self.core._session:
-            # This is a bit hacky as PromptSession history is internal
-            # But we can try to read the file
+            # SECURITY: Read file directly instead of os.system
             history_file = Path.home() / ".qwen_shell_history"
             if history_file.exists():
                 print(f"History from {history_file}:")
-                os.system(f"tail -n 10 {history_file}")
+                try:
+                    with open(history_file, 'r', encoding='utf-8') as f:
+                        lines = f.readlines()
+                        for line in lines[-10:]:  # Last 10 lines
+                            print(line.rstrip())
+                except (IOError, OSError) as e:
+                    print(f"Error reading history: {e}")
         else:
             print("History not available yet.")
 

@@ -48,8 +48,8 @@ AGENT_REGISTRY: Dict[str, AgentInfo] = {
         role="EXECUTOR",
         description="Secure code execution with sandbox",
         capabilities=["bash", "python", "tools"],
-        module_path="qwen_dev_cli.agents.executor_nextgen",
-        class_name="ExecutorAgentNextGen",
+        module_path="qwen_dev_cli.agents.executor",
+        class_name="NextGenExecutorAgent",
     ),
     "architect": AgentInfo(
         name="architect",

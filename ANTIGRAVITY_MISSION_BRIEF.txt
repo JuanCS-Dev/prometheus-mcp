@@ -1,0 +1,103 @@
+╔═══════════════════════════════════════════════════════════════════╗
+║           🚀 ANTIGRAVITY DEBUG MISSION BRIEFING                   ║
+╚═══════════════════════════════════════════════════════════════════╝
+
+AGENT: Gemini 2.0 Flash Thinking (Experimental)
+MISSION: Autonomous debug & fix of Maestro v10.0 Shell
+AUTONOMY LEVEL: Full (approved to modify code)
+EXPECTED DURATION: 90-120 minutes
+
+╔═══════════════════════════════════════════════════════════════════╗
+║                         QUICK START                               ║
+╚═══════════════════════════════════════════════════════════════════╝
+
+1. READ:  PROMPT_ANTIGRAVITY_DEBUG.md (full instructions)
+2. RECON: Understand system architecture (15 min)
+3. DEBUG: Reproduce bug & diagnose (30 min)
+4. FIX:   Apply surgical corrections (30 min)
+5. TEST:  Validate all fixes (20 min)
+6. COMMIT: Document & save work (15 min)
+
+╔═══════════════════════════════════════════════════════════════════╗
+║                      KNOWN ISSUES                                 ║
+╚═══════════════════════════════════════════════════════════════════╝
+
+ISSUE #1: Gemini Streaming Error
+  Symptom: "response.text requires valid Part"
+  File:    qwen_dev_cli/core/providers/gemini.py:~220
+  Status:  🟡 Fix available (needs application)
+
+ISSUE #2: UI Executor Box Gray/Unreadable  
+  Symptom: Border too dim (bright_green → cinza)
+  File:    maestro_v10_integrated.py:~1438
+  Status:  🟡 Fix available (needs application)
+
+ISSUE #3: Text Truncation
+  Symptom: Long output cut off ("echo 1. Ferva...")
+  File:    maestro_v10_integrated.py:~1438
+  Status:  🟡 Fix available (needs expand=False)
+
+╔═══════════════════════════════════════════════════════════════════╗
+║                    SUCCESS CRITERIA                               ║
+╚═══════════════════════════════════════════════════════════════════╝
+
+✅ Maestro starts without errors
+✅ "cria uma receita de miojo" works end-to-end
+✅ Executor box is CYAN NEON (visible)
+✅ Text renders complete (no truncation)
+✅ No "Frame budget exceeded" warnings
+✅ All tests passing
+✅ Commits created with proper messages
+
+╔═══════════════════════════════════════════════════════════════════╗
+║                  PHILOSOPHY (CRITICAL)                            ║
+╚═══════════════════════════════════════════════════════════════════╝
+
+This system follows "CONSTITUIÇÃO VÉRTICE v3.0":
+  - P1: Completeness (zero TODOs, zero placeholders)
+  - P3: Critical Skepticism (don't assume, verify)
+  - P6: Token Efficiency (surgical changes only)
+
+Your changes MUST:
+  ✅ Be minimal (change only what's broken)
+  ✅ Be tested (validate before committing)  
+  ✅ Be documented (explain WHY, not just WHAT)
+
+╔═══════════════════════════════════════════════════════════════════╗
+║                     REPOSITORY INFO                               ║
+╚═══════════════════════════════════════════════════════════════════╝
+
+Location: /media/juan/DATA/projects/GEMINI-CLI-2/qwen-dev-cli/
+Entry:    ./maestro (launches maestro_v10_integrated.py)
+Python:   3.11.13 (pyenv)
+Env:      .env (GEMINI_API_KEY, NEBIUS_API_KEY, etc)
+
+Key Files:
+  • maestro_v10_integrated.py       (Shell + UI)
+  • qwen_dev_cli/core/llm.py        (LLM client + failover)
+  • qwen_dev_cli/core/providers/    (Gemini, Nebius, etc)
+  • qwen_dev_cli/agents/            (Executor, Planner, etc)
+  • qwen_dev_cli/tui/               (Rich UI components)
+
+╔═══════════════════════════════════════════════════════════════════╗
+║                   EMERGENCY CONTACTS                              ║
+╚═══════════════════════════════════════════════════════════════════╝
+
+If completely stuck:
+  1. Check git log (recent fixes documented)
+  2. Read CONSTITUTIONAL_FIX_REPORT.md
+  3. Consult docs/CONSTITUIÇÃO_VÉRTICE_v3.0.md
+  
+Rollback if needed:
+  git reset --hard HEAD~1
+
+╔═══════════════════════════════════════════════════════════════════╗
+║                      LET'S GO! 🚀                                 ║
+╚═══════════════════════════════════════════════════════════════════╝
+
+Next step: Open PROMPT_ANTIGRAVITY_DEBUG.md and begin FASE 1.
+
+Remember: You're a human engineer. Think, test, fix, validate.
+
+Good luck, Antigravity! 💪🤖
+

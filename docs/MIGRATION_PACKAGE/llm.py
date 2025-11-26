@@ -261,7 +261,7 @@ class LLMClient:
                     self._nebius_client = NebiusProvider(api_key=nebius_key)
                     logger.info("Nebius provider initialized")
                 except Exception as e:
-                    logger.warning(f"Nebius init failed: {type(e).__name__}: {e}", exc_info=True)
+                    logger.warning(f"Nebius init failed: {e}")
         return self._nebius_client
 
     @property
@@ -275,7 +275,7 @@ class LLMClient:
                     self._gemini_client = GeminiProvider(api_key=gemini_key)
                     logger.info("Gemini provider initialized")
                 except Exception as e:
-                    logger.warning(f"Gemini init failed: {type(e).__name__}: {e}", exc_info=True)
+                    logger.warning(f"Gemini init failed: {e}")
         return self._gemini_client
 
     @property
@@ -289,7 +289,7 @@ class LLMClient:
                 self._ollama_client = OllamaProvider(base_url=ollama_url, model=ollama_model)
                 logger.info(f"Ollama provider initialized: {ollama_url} / {ollama_model}")
             except Exception as e:
-                logger.warning(f"Ollama init failed: {type(e).__name__}: {e}", exc_info=True)
+                logger.warning(f"Ollama init failed: {e}")
         return self._ollama_client
     
     def _calculate_backoff(self, attempt: int) -> float:
@@ -479,7 +479,7 @@ class LLMClient:
                         input_estimate = sum(len(m.get('content', '')) for m in messages) // 4
                         self.token_callback(input_estimate, chunks_received)
                     except Exception as e:
-                        logger.warning(f"Token callback failed: {type(e).__name__}: {e}")
+                        logger.warning(f"Token callback failed: {e}")
                 
                 if attempt > 0:
                     logger.info(f"✅ Streaming succeeded after {attempt} retries")
@@ -488,12 +488,12 @@ class LLMClient:
                 
             except Exception as e:
                 last_error = e
-                # Log with type info for better debugging
-                logger.warning(f"Provider {provider} failed: {type(e).__name__}: {str(e)[:100]} (attempt {attempt + 1}/{self.max_retries + 1})")
-
+                # SILENT MODE: Apenas log debug para erros intermediários
+                logger.debug(f"Provider {provider} failed: {str(e)[:100]} (attempt {attempt + 1})")
+                
                 if not self._should_retry(e):
-                    # Non-retryable error - log at error level
-                    logger.error(f"Non-retryable {type(e).__name__} - will not retry: {str(e)[:200]}", exc_info=True)
+                    # Não mostrar erro se há fallback disponível
+                    logger.debug(f"Non-retryable error: {type(e).__name__}")
                     if self.metrics:
                         self.metrics.record_failure(provider)
                     if self.circuit_breaker:
@@ -544,7 +544,7 @@ class LLMClient:
                     yield chunk.choices[0].delta.content
                     
         except Exception as e:
-            logger.error(f"HuggingFace provider error: {type(e).__name__}: {e}", exc_info=True)
+            logger.error(f"HF Error: {str(e)}")
             raise
     
     async def _stream_gemini(
@@ -562,7 +562,7 @@ class LLMClient:
             ):
                 yield chunk
         except Exception as e:
-            logger.error(f"Gemini provider error: {type(e).__name__}: {e}", exc_info=True)
+            logger.error(f"Gemini Error: {str(e)}")
             raise
     
     async def _stream_nebius(
@@ -580,7 +580,7 @@ class LLMClient:
             ):
                 yield chunk
         except Exception as e:
-            logger.error(f"Nebius provider error: {type(e).__name__}: {e}", exc_info=True)
+            logger.error(f"Nebius Error: {str(e)}")
             raise
     
     async def _stream_ollama(
@@ -598,7 +598,7 @@ class LLMClient:
             ):
                 yield chunk
         except Exception as e:
-            logger.error(f"Ollama provider error: {type(e).__name__}: {e}", exc_info=True)
+            logger.error(f"Ollama Error: {str(e)}")
             raise
     
     async def generate(

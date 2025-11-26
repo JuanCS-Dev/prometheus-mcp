@@ -8,6 +8,7 @@ Philosophy:
 - Consistent styling
 - Accessible by default
 - Performant (60 FPS target)
+- SCALABLE (Registry-based architecture)
 
 Components Implemented:
 ✅ message.py - Message boxes with typing effect
@@ -19,14 +20,31 @@ Components Implemented:
 ✅ pills.py - Context pills (Cursor @ mentions)
 ✅ toast.py - Notification toasts (VSCode-style)
 ✅ autocomplete.py - Context-aware autocomplete
+✅ block_renderers.py - Scalable block rendering (NEW)
+✅ streaming_v2.py - Scalable streaming response (NEW)
+
+SCALABLE ARCHITECTURE (v4.0):
+To add a new block type, just create a class:
+
+    from .block_renderers import BlockRenderer, BlockType
+
+    class MyRenderer(BlockRenderer):
+        block_type = BlockType.MY_TYPE
+        pattern = r'^my-pattern'
+        priority = 50
+
+        def render(self, block):
+            return Text(block.content)
+
+Auto-registered, auto-detected, auto-rendered!
 
 Created: 2025-11-18 20:05 UTC
-Updated: 2025-11-19 00:45 UTC
-Status: Phase 3 Complete - Advanced Components
+Updated: 2025-11-25 (Scalable Architecture v4.0)
+Status: Phase 4 Complete - Scalable Streaming
 """
 
-__version__ = "3.0.0"
-__status__ = "Phase 3 Complete - Advanced Components"
+__version__ = "4.0.0"
+__status__ = "Phase 4 Complete - Scalable Streaming"
 
 # Core components
 from ._enums import MessageRole, ProgressStyle
@@ -49,6 +67,18 @@ from .autocomplete import (
     create_completer
 )
 
+# Scalable Streaming Architecture (v4.0)
+from .block_renderers import (
+    BlockType, BlockInfo, BlockRenderer, BlockRendererRegistry,
+    detect_block_type, render_block, list_renderers,
+    # Built-in renderers (for extension)
+    HeadingRenderer, CodeFenceRenderer, TableRenderer,
+    ChecklistRenderer, ToolCallRenderer, StatusBadgeRenderer,
+    DiffBlockRenderer, BlockquoteRenderer, ListRenderer,
+)
+from .streaming_v2 import StreamingResponseV2, StreamingMetrics
+from .block_detector_v2 import BlockDetectorV2
+
 __all__ = [
     # Core
     "MessageBox", "Message", "MessageRole", "create_assistant_message", "create_user_message",
@@ -64,5 +94,14 @@ __all__ = [
     "show_success", "show_error", "show_info", "show_warning", "show_wisdom",
     "create_toast_manager",
     "ContextAwareCompleter", "SmartAutoSuggest", "CompletionItem", "CompletionType",
-    "create_completer"
+    "create_completer",
+
+    # Scalable Streaming (v4.0)
+    "BlockType", "BlockInfo", "BlockRenderer", "BlockRendererRegistry",
+    "detect_block_type", "render_block", "list_renderers",
+    "StreamingResponseV2", "StreamingMetrics", "BlockDetectorV2",
+    # Built-in renderers
+    "HeadingRenderer", "CodeFenceRenderer", "TableRenderer",
+    "ChecklistRenderer", "ToolCallRenderer", "StatusBadgeRenderer",
+    "DiffBlockRenderer", "BlockquoteRenderer", "ListRenderer",
 ]

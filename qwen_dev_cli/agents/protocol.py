@@ -73,6 +73,78 @@ class TaskStatus(Enum):
     CANCELLED = "cancelled"
 
 
+class StreamingChunkType(Enum):
+    """
+    Standard types for streaming chunks from agents.
+
+    CRITICAL: All agents MUST use these types when yielding streaming chunks.
+    This ensures compatibility with the UI rendering pipeline.
+
+    Usage:
+        yield StreamingChunk(type=StreamingChunkType.THINKING, data="token")
+        yield StreamingChunk(type=StreamingChunkType.STATUS, data="Loading...")
+        yield StreamingChunk(type=StreamingChunkType.RESULT, data=final_result)
+    """
+    THINKING = "thinking"      # LLM tokens being generated (display as-is)
+    STATUS = "status"          # Status messages (display with newline)
+    COMMAND = "command"        # Command to execute (syntax highlight)
+    EXECUTING = "executing"    # Currently executing (show spinner)
+    RESULT = "result"          # Final result (format appropriately)
+    ERROR = "error"            # Error message (display in red)
+    VERDICT = "verdict"        # Governance verdict (JusticaAgent)
+    REASONING = "reasoning"    # Reasoning steps (collapse in UI)
+    METRICS = "metrics"        # Performance metrics (table format)
+
+
+@dataclass
+class StreamingChunk:
+    """
+    Standardized streaming chunk for UI rendering.
+
+    All agents SHOULD yield StreamingChunk instances instead of raw dicts.
+    The AgentManager._normalize_streaming_chunk() handles legacy dict formats,
+    but using StreamingChunk ensures type safety and IDE support.
+
+    Examples:
+        # Good - Type-safe
+        yield StreamingChunk(type=StreamingChunkType.THINKING, data="Hello")
+
+        # Legacy (still works but discouraged)
+        yield {"type": "thinking", "data": "Hello"}
+
+    Note:
+        The 'content' key is DEPRECATED. Use 'data' for all chunk payloads.
+    """
+    type: StreamingChunkType
+    data: Any
+    metadata: Dict[str, Any] = field(default_factory=dict)
+
+    def to_dict(self) -> Dict[str, Any]:
+        """Convert to legacy dict format."""
+        return {
+            "type": self.type.value,
+            "data": self.data,
+            **({"metadata": self.metadata} if self.metadata else {})
+        }
+
+    def __str__(self) -> str:
+        """String representation for display."""
+        if self.type == StreamingChunkType.THINKING:
+            return str(self.data)
+        elif self.type == StreamingChunkType.STATUS:
+            return f"{self.data}\n"
+        elif self.type == StreamingChunkType.ERROR:
+            return f"❌ {self.data}\n"
+        elif self.type == StreamingChunkType.RESULT:
+            if hasattr(self.data, 'to_markdown'):
+                return self.data.to_markdown()
+            elif hasattr(self.data, 'data'):
+                return str(self.data.data)
+            return str(self.data)
+        else:
+            return str(self.data)
+
+
 @dataclass
 class AgentIdentity:
     """Identity of an agent in the system."""
@@ -541,6 +613,8 @@ __all__ = [
     'MessageType',
     'AgentRole',
     'TaskStatus',
+    'StreamingChunkType',
+    'StreamingChunk',
     'AgentIdentity',
     'MessageEnvelope',
     'ExecutionStep',
