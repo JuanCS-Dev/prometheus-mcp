@@ -79,6 +79,12 @@ from .block_renderers import (
 from .streaming_v2 import StreamingResponseV2, StreamingMetrics
 from .block_detector_v2 import BlockDetectorV2
 
+# Task Tracking (Claude Code style)
+from .todo_tracker import (
+    TodoTracker, TaskStatus, Task,
+    get_tracker, todo_add, todo_complete, todo_start, todo_render,
+)
+
 __all__ = [
     # Core
     "MessageBox", "Message", "MessageRole", "create_assistant_message", "create_user_message",
@@ -104,4 +110,8 @@ __all__ = [
     "HeadingRenderer", "CodeFenceRenderer", "TableRenderer",
     "ChecklistRenderer", "ToolCallRenderer", "StatusBadgeRenderer",
     "DiffBlockRenderer", "BlockquoteRenderer", "ListRenderer",
+
+    # Task Tracking (Claude Code style)
+    "TodoTracker", "TaskStatus", "Task",
+    "get_tracker", "todo_add", "todo_complete", "todo_start", "todo_render",
 ]
