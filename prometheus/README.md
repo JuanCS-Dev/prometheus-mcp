@@ -8,10 +8,12 @@
 [![Gemini 2.0](https://img.shields.io/badge/LLM-Gemini%202.0%20Flash-orange.svg)](https://ai.google.dev/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 [![Hackathon](https://img.shields.io/badge/Hackathon-Blaxel%20Choice-purple.svg)](https://blaxel.ai)
+[![Tests](https://img.shields.io/badge/Tests-30%2F30%20Passing-brightgreen.svg)](#-validated-test-results)
+[![Deployed](https://img.shields.io/badge/Blaxel-Deployed-success.svg)](https://blaxel.ai)
 
 *A self-evolving AI agent combining 6 cutting-edge research breakthroughs from November 2025*
 
-[Features](#-features) • [Architecture](#-architecture) • [Quick Start](#-quick-start) • [How It Works](#-how-it-works) • [API Reference](#-api-reference) • [Research](#-research-foundation)
+[Features](#-features) • [Architecture](#-architecture) • [Quick Start](#-quick-start) • [How It Works](#-how-it-works) • [Test Results](#-validated-test-results) • [API Reference](#-api-reference) • [Research](#-research-foundation)
 
 </div>
 
@@ -550,6 +552,292 @@ PROMETHEUS is built on peer-reviewed research from November 2025:
 | **Reflection** | [Reflexion (arXiv:2303.11366)](https://arxiv.org/abs/2303.11366) | Self-reflection improves task performance |
 | **Tool Creation** | [AutoTools (arXiv:2405.16533)](https://arxiv.org/abs/2405.16533) | LLMs can create their own tools |
 | **Multi-Agent** | [Anthropic Research](https://anthropic.com/engineering/multi-agent-research-system) | 90.2% improvement with orchestrator pattern |
+
+---
+
+## 🧪 Validated Test Results
+
+> **Operação Terra Arrasada** - Stress Test Results from Blaxel Deployment (Nov 2025)
+
+### Executive Summary
+
+| Metric | Result |
+|--------|--------|
+| **Total Requests** | 30 |
+| **Success Rate** | **100%** |
+| **Avg Response Time** | 23.7s |
+| **Total Duration** | 2.5 min |
+| **Platform** | Blaxel Cloud |
+
+### Results by Subsystem
+
+| Subsystem | Tests | Success | Avg Time | Status |
+|-----------|-------|---------|----------|--------|
+| **Tool Factory** | 6 | 6 | 25.7s | ✅ 100% |
+| **Sandbox** | 4 | 4 | 23.0s | ✅ 100% |
+| **World Model** | 3 | 3 | 23.3s | ✅ 100% |
+| **Reasoning** | 2 | 2 | 23.0s | ✅ 100% |
+| **Memory** | 3 | 3 | 22.2s | ✅ 100% |
+| **Reflection** | 2 | 2 | 17.6s | ✅ 100% |
+| **Evolution** | 3 | 3 | 23.2s | ✅ 100% |
+| **Benchmark** | 2 | 2 | 36.5s | ✅ 100% |
+| **Integration** | 5 | 5 | 20.9s | ✅ 100% |
+
+### Sample Test Outputs
+
+#### 🔧 Tool Factory: Mandelbrot Generator
+
+```
+Prompt: "Write a Python script to generate a Mandelbrot fractal using only stdlib"
+
+🔥 PROMETHEUS: Starting task execution...
+
+📚 Retrieving relevant context from memory...
+  → Found 3 relevant past experiences
+
+🌍 Simulating potential approaches...
+
+🔧 Checking available tools...
+
+⚡ Executing task...
+
+📝 Output:
+----------------------------------------
+def mandelbrot(c, max_iter=100):
+    z = 0
+    for n in range(max_iter):
+        if abs(z) > 2:
+            return n
+        z = z*z + c
+    return max_iter
+...
+```
+*Duration: 19.8s | Status: ✅ OK*
+
+---
+
+#### 🏃 Sandbox: Prime Sieve
+
+```
+Prompt: "Implement Sieve of Eratosthenes to find primes up to 100"
+
+🔥 PROMETHEUS: Starting task execution...
+
+📚 Retrieving relevant context from memory...
+  → Found 3 relevant past experiences
+
+🌍 Simulating potential approaches...
+
+🔧 Checking available tools...
+
+⚡ Executing task...
+
+📝 Output:
+----------------------------------------
+def sieve_of_eratosthenes(limit):
+    sieve = [True] * (limit + 1)
+    sieve[0] = sieve[1] = False
+    for i in range(2, int(limit**0.5) + 1):
+        if sieve[i]:
+            for j in range(i*i, limit + 1, i):
+                sieve[j] = False
+    return [i for i, is_prime in enumerate(sieve) if is_prime]
+
+# Result: 25 primes up to 100
+```
+*Duration: 25.4s | Status: ✅ OK*
+
+---
+
+#### 🌍 World Model: Disaster Recovery Planning
+
+```
+Prompt: "Plan a 3-step database recovery strategy for a crashed production server"
+
+🔥 PROMETHEUS: Starting task execution...
+
+📚 Retrieving relevant context from memory...
+  → Found 3 relevant past experiences
+
+🌍 Simulating potential approaches...
+  → Best approach: 50% predicted success
+
+🔧 Checking available tools...
+
+⚡ Executing task...
+
+📝 Output:
+----------------------------------------
+**3-Step Database Recovery Strategy:**
+
+1. **Immediate Assessment** (0-15 min)
+   - Identify failure point via logs
+   - Check backup integrity
+   - Notify stakeholders
+
+2. **Recovery Execution** (15-60 min)
+   - Restore from latest backup
+   - Apply transaction logs
+   - Validate data integrity
+
+3. **Post-Recovery** (1-2 hours)
+   - Performance monitoring
+   - Root cause analysis
+   - Update runbooks
+```
+*Duration: 22.9s | Status: ✅ OK*
+
+---
+
+#### 🧠 Memory: Pattern Recognition
+
+```
+Prompt: "What pattern do you see in: 2, 4, 8, 16, 32? What comes next?"
+
+🔥 PROMETHEUS: Starting task execution...
+
+📚 Retrieving relevant context from memory...
+  → Found 3 relevant past experiences
+
+🌍 Simulating potential approaches...
+  → Best approach: 42% predicted success
+
+📝 Output:
+----------------------------------------
+Pattern: Powers of 2 (geometric sequence, ratio = 2)
+Formula: a_n = 2^n where n starts at 1
+
+2¹ = 2
+2² = 4
+2³ = 8
+2⁴ = 16
+2⁵ = 32
+2⁶ = **64** ← Next number
+```
+*Duration: 25.2s | Status: ✅ OK*
+
+---
+
+#### 🪞 Reflection: Code Review
+
+```
+Prompt: "Review: 'def fib(n): return fib(n-1)+fib(n-2) if n>1 else n'. What's the issue?"
+
+🔥 PROMETHEUS: Starting task execution...
+
+📚 Retrieving relevant context from memory...
+  → Found 3 relevant past experiences
+
+🌍 Simulating potential approaches...
+  → Best approach: 85% predicted success
+
+📝 Output:
+----------------------------------------
+**Critical Issue: Exponential Time Complexity O(2^n)**
+
+The recursive implementation recalculates the same values repeatedly.
+For fib(50), this would take ~14 billion operations.
+
+**Fix with memoization:**
+```python
+from functools import lru_cache
+
+@lru_cache(maxsize=None)
+def fib(n):
+    return fib(n-1) + fib(n-2) if n > 1 else n
+```
+Now O(n) time, O(n) space.
+```
+*Duration: 13.3s | Status: ✅ OK*
+
+---
+
+#### 🧬 Evolution: Self-Challenge Generation
+
+```
+Prompt: "Generate a coding challenge about string manipulation. Then solve it."
+
+🔥 PROMETHEUS: Starting task execution...
+
+📚 Retrieving relevant context from memory...
+  → Found 3 relevant past experiences
+
+🌍 Simulating potential approaches...
+  → Best approach: 50% predicted success
+
+📝 Output:
+----------------------------------------
+**Challenge:** Reverse words in a sentence while keeping word order.
+Input: "Hello World"
+Output: "olleH dlroW"
+
+**Solution:**
+```python
+def reverse_words(s):
+    return ' '.join(word[::-1] for word in s.split())
+
+# Test
+print(reverse_words("Hello World"))  # "olleH dlroW"
+```
+```
+*Duration: 23.8s | Status: ✅ OK*
+
+---
+
+#### 🔗 Integration: Full Pipeline (JSON to CSV)
+
+```
+Prompt: "Convert JSON to CSV: {'name': 'Alice', 'age': 30}. Show output."
+
+🔥 PROMETHEUS: Starting task execution...
+
+📚 Retrieving relevant context from memory...
+  → Found 3 relevant past experiences
+
+🌍 Simulating potential approaches...
+  → Best approach: 50% predicted success
+
+📝 Output:
+----------------------------------------
+```python
+import csv
+import io
+
+data = {'name': 'Alice', 'age': 30}
+
+output = io.StringIO()
+writer = csv.DictWriter(output, fieldnames=data.keys())
+writer.writeheader()
+writer.writerow(data)
+
+print(output.getvalue())
+```
+
+**Output:**
+```csv
+name,age
+Alice,30
+```
+```
+*Duration: 23.0s | Status: ✅ OK*
+
+---
+
+### Test Configuration
+
+```yaml
+# Stress Test Settings
+platform: Blaxel Cloud
+concurrency: 5 workers
+total_requests: 30
+timeout_per_request: 180s
+test_scenarios: 25 unique
+categories: 9
+```
+
+### Full Test Report
+
+See [STRESS_TEST_REPORT.md](../tests/prometheus/STRESS_TEST_REPORT.md) for complete results.
 
 ---
 

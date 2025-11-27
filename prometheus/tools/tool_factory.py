@@ -251,21 +251,22 @@ def function_name(...):
         for i, (inp, exp) in enumerate(zip(inputs, expected)):
             # Build test code
             if isinstance(inp, dict) and "input" in inp:
-                call_arg = repr(inp["input"])
+                # Single input wrapped in dict
+                call_code = f"result = {spec.name}({repr(inp['input'])})"
             elif isinstance(inp, dict):
-                call_arg = ", ".join(f"{k}={repr(v)}" for k, v in inp.items())
+                # Multiple kwargs
+                kwargs_str = ", ".join(f"{k}={repr(v)}" for k, v in inp.items())
+                call_code = f"result = {spec.name}({kwargs_str})"
             else:
-                call_arg = repr(inp)
+                # Single positional arg
+                call_code = f"result = {spec.name}({repr(inp)})"
 
             test_code = f"""
 {spec.code}
 
 # Test execution
 try:
-    if isinstance({call_arg}, dict):
-        result = {spec.name}(**{call_arg})
-    else:
-        result = {spec.name}({call_arg})
+    {call_code}
 
     expected = {repr(exp)}
     passed = result == expected

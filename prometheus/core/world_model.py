@@ -442,19 +442,39 @@ Each plan should be a valid sequence to achieve the goal."""
 
     def _parse_json_response(self, text: str) -> dict:
         """Extract JSON from LLM response."""
-        # Try to find JSON block
-        json_match = re.search(r'\{[^{}]*(?:\{[^{}]*\}[^{}]*)*\}', text, re.DOTALL)
-        if json_match:
-            try:
-                return json.loads(json_match.group())
-            except json.JSONDecodeError:
-                pass
-
-        # Try parsing entire response
+        # Try parsing entire response first
         try:
-            return json.loads(text)
+            return json.loads(text.strip())
         except json.JSONDecodeError:
             pass
+
+        # Try to find JSON block with balanced braces
+        start = text.find('{')
+        if start != -1:
+            depth = 0
+            end = start
+            for i, char in enumerate(text[start:], start):
+                if char == '{':
+                    depth += 1
+                elif char == '}':
+                    depth -= 1
+                    if depth == 0:
+                        end = i + 1
+                        break
+
+            if depth == 0:
+                try:
+                    return json.loads(text[start:end])
+                except json.JSONDecodeError:
+                    pass
+
+        # Try to find code block with JSON
+        code_match = re.search(r'```(?:json)?\s*(\{[\s\S]*?\})\s*```', text)
+        if code_match:
+            try:
+                return json.loads(code_match.group(1))
+            except json.JSONDecodeError:
+                pass
 
         return {}
 

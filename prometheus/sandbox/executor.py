@@ -227,8 +227,9 @@ class SandboxExecutor:
 {func_code}
 
 # Execute function
+import json as _json
 __result__ = {func_name}({call_args})
-print(f"__SANDBOX_RETURN__:{{__import__('json').dumps(__result__)}}")
+print(f"__SANDBOX_RETURN__:{{_json.dumps(__result__)}}")
 """
 
         return await self.execute(execution_code, timeout=timeout, capture_return=True)
