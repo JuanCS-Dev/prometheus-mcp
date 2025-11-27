@@ -1,0 +1,62 @@
+# Blaxel Configuration
+# Juan-Dev-Code - MCP Hackathon Day 30
+#
+# Deploy: bl deploy
+# Run: bl run prometheus "your task"
+
+name = "prometheus"
+type = "agent"
+version = "1.0.0"
+
+[metadata]
+title = "PROMETHEUS: Self-Evolving Meta-Agent"
+description = """
+🔥 The Agent That Builds Itself
+
+Combines 6 cutting-edge AI research breakthroughs (Nov 2025):
+
+• Self-Evolution (Agent0, arXiv:2511.16043)
+  - Improves through practice without external data
+  - +18% math reasoning, +24% general reasoning
+
+• World Model (SimuRA, arXiv:2507.23773)
+  - Simulates actions before execution
+  - +124% task completion rate
+
+• 6-Type Memory (MIRIX, arXiv:2507.07957)
+  - Persistent episodic, semantic, procedural memory
+  - +47% adaptation to new situations
+
+• Tool Factory (AutoTools, arXiv:2405.16533)
+  - Creates new tools automatically on-demand
+  - Self-testing and improvement
+
+• Reflection Engine (Reflexion, arXiv:2303.11366)
+  - Self-critique and continuous improvement
+  - Learn from every interaction
+
+• Multi-Agent Orchestration
+  - Coordinates all subsystems seamlessly
+  - Based on Anthropic's research patterns
+
+Use Cases:
+- Complex code generation and review
+- Multi-step reasoning and analysis
+- Autonomous task execution with learning
+- Research and information synthesis
+"""
+author = "JuanCS Dev"
+tags = ["ai-agent", "self-evolving", "code-generation", "reasoning", "hackathon", "gemini", "nov-2025"]
+
+[entrypoint]
+prod = "python prometheus_entry.py"
+dev = "python -m prometheus.main --interactive"
+
+[env]
+# Set via environment variable or Blaxel secrets
+# GOOGLE_API_KEY = ""
+
+[resources]
+memory = "2Gi"
+cpu = "1"
+timeout = 600

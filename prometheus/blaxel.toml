@@ -1,0 +1,47 @@
+# Blaxel Configuration for PROMETHEUS
+# Deploy: bl deploy --name prometheus
+# Run: bl run prometheus "your task"
+
+name = "prometheus"
+type = "agent"
+version = "1.0.0"
+
+[metadata]
+title = "PROMETHEUS: Self-Evolving Meta-Agent"
+description = """
+🔥 The Agent That Builds Itself
+
+Combines 6 cutting-edge AI research breakthroughs (Nov 2025):
+• Self-Evolution (Agent0) - Improves through practice without external data
+• World Model (SimuRA) - Simulates actions before execution (+124% task completion)
+• 6-Type Memory (MIRIX) - Persistent episodic, semantic, procedural memory
+• Tool Factory (AutoTools) - Creates new tools automatically on-demand
+• Reflection Engine (Reflexion) - Self-critique and continuous improvement
+• Multi-Agent Orchestration - Coordinates all subsystems seamlessly
+
+Use Cases:
+- Complex code generation and review
+- Multi-step reasoning and analysis
+- Autonomous task execution with learning
+- Research and information synthesis
+"""
+author = "JuanCS Dev"
+tags = ["ai-agent", "self-evolving", "code-generation", "reasoning", "hackathon"]
+
+[entrypoint]
+prod = "python -m prometheus.main"
+dev = "python -m prometheus.main --interactive"
+
+[env]
+# API key will be set via Blaxel secrets
+GOOGLE_API_KEY = ""
+
+[resources]
+# Resource requirements
+memory = "2Gi"
+cpu = "1"
+timeout = 600
+
+[secrets]
+# Reference Blaxel secrets
+google_api_key = { env = "GOOGLE_API_KEY" }

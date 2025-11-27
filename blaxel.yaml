@@ -1,0 +1,127 @@
+# Blaxel Multi-Agent Configuration
+# Juan-Dev-Code - MCP Hackathon Day 30
+#
+# Deploy: bl deploy --name juan-code-reviewer
+# Run: bl run juan-code-reviewer "Review https://github.com/owner/repo/pull/123"
+#
+# Blaxel Choice Award: $2,500 Cash
+
+name: juan-code-reviewer
+version: 2.0.0
+description: |
+  Multi-Agent Code Review System powered by Gemini 2.0
+
+  ARCHITECTURE (Supervisor Pattern):
+  ┌───────────────────────────────────────┐
+  │          SUPERVISOR AGENT             │
+  │       (Orchestrates & Synthesizes)    │
+  └───────────────┬───────────────────────┘
+                  │
+    ┌─────────────┼─────────────┬─────────────┐
+    ▼             ▼             ▼             ▼
+  Research    Security    Performance    Style
+   Agent       Agent        Agent        Agent
+
+  Features:
+  - 4 specialized AI agents working in parallel
+  - OWASP Top 10 security scanning
+  - Performance bottleneck detection
+  - Code quality scoring (0-100)
+  - GitHub PR review support
+  - Sandbox execution for safe code analysis
+
+# Runtime configuration
+runtime:
+  python: "3.11"
+
+# Type definition
+type: agent
+
+# Environment variables (secrets managed by Blaxel)
+environment:
+  - GOOGLE_API_KEY
+  - GEMINI_API_KEY
+
+# Python dependencies
+dependencies:
+  - google-generativeai>=0.8.0
+  - httpx>=0.27.0
+  - pydantic>=2.0.0
+
+# Agent entrypoint
+entrypoint: blaxel_agent:agent
+
+# Resource limits (higher for multi-agent processing)
+resources:
+  memory: 4096  # 4GB RAM for parallel agents
+  timeout: 600  # 10 minutes max for complex reviews
+  cpu: 2.0
+
+# Tool definitions for Blaxel UI
+tools:
+  - name: review_code
+    description: Review code snippet using multi-agent system
+    parameters:
+      code:
+        type: string
+        description: The code to review
+        required: true
+      language:
+        type: string
+        description: Programming language (python, javascript, etc.)
+        required: false
+        default: "python"
+
+  - name: review_file
+    description: Review a file from the filesystem
+    parameters:
+      path:
+        type: string
+        description: Path to the file to review
+        required: true
+
+  - name: review_pr
+    description: Review a GitHub Pull Request
+    parameters:
+      pr_url:
+        type: string
+        description: GitHub PR URL (e.g., https://github.com/owner/repo/pull/123)
+        required: true
+
+# Metadata for Blaxel marketplace
+metadata:
+  author: JuanCS Dev
+  repository: https://github.com/juancs/juan-dev-code
+  license: MIT
+  tags:
+    - code-review
+    - multi-agent
+    - security
+    - performance
+    - gemini
+    - hackathon
+  category: Development Tools
+  innovation:
+    - "Multi-agent architecture with 4 specialized AI agents"
+    - "Parallel execution for fast code analysis"
+    - "Comprehensive security scanning (OWASP Top 10)"
+    - "Performance bottleneck detection with Big-O analysis"
+    - "GitHub PR integration with sandbox execution"
+
+# Health check configuration
+health:
+  endpoint: /health
+  interval: 60
+  timeout: 10
+
+# Scaling configuration (optimized for $250 budget)
+scaling:
+  min_instances: 0
+  max_instances: 3
+  scale_down_delay: 300  # 5 minutes
+
+# Triggers for HTTP endpoints
+triggers:
+  - type: http
+    path: /review
+    auth: api-key
