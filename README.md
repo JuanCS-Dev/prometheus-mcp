@@ -41,6 +41,7 @@ PROMETHEUS is not just a bot; it's a complete ecosystem covering all Hackathon t
     *   **Core**: `jdev_cli/core/mcp.py` implements the full MCP spec.
     *   **Server**: `jdev_cli/cli_mcp.py` acts as a compliant MCP server.
     *   **Client**: The TUI connects to any MCP server (Blaxel, Local, etc.).
+    *   *[📸 ASSET NEEDED: MCP Diagram showing Client <-> Server communication]*
 
 2.  **CLI (Command Line Interface)**:
     *   **Tool**: `jdev` is a Rust-inspired Python CLI.
@@ -50,6 +51,7 @@ PROMETHEUS is not just a bot; it's a complete ecosystem covering all Hackathon t
 3.  **SHELL (Textual TUI)**:
     *   **Interface**: A Matrix-style TUI built with `Textual`.
     *   **Features**: Real-time streaming, syntax highlighting, and keyboard-first navigation.
+    *   *[📸 ASSET NEEDED: Shell Screenshot showing the Matrix-style TUI]*
 
 4.  **AGENT (Blaxel + Gemini)**:
     *   **Brain**: Serverless agents on Blaxel.
