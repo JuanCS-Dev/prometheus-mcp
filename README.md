@@ -33,6 +33,28 @@ PROMETHEUS is a **Self-Evolving Cognitive Architecture** built on the **Model Co
     *   **SimuRA World Model**: Monte Carlo Tree Search (MCTS) to simulate 3 future steps before acting.
     *   **Agent0 Evolution**: A co-evolution loop where a *Curriculum Agent* trains an *Executor Agent*.
 
+### 📦 The 4 Pillars (Hackathon Complete Coverage)
+
+PROMETHEUS is not just a bot; it's a complete ecosystem covering all Hackathon tracks:
+
+1.  **MCP (Model Context Protocol)**:
+    *   **Core**: `jdev_cli/core/mcp.py` implements the full MCP spec.
+    *   **Server**: `jdev_cli/cli_mcp.py` acts as a compliant MCP server.
+    *   **Client**: The TUI connects to any MCP server (Blaxel, Local, etc.).
+
+2.  **CLI (Command Line Interface)**:
+    *   **Tool**: `jdev` is a Rust-inspired Python CLI.
+    *   **Install**: `pip install .` (Standard)
+    *   **NPM Plus**: `npm install -g prometheus-cli` (Coming soon - JS Wrapper)
+
+3.  **SHELL (Textual TUI)**:
+    *   **Interface**: A Matrix-style TUI built with `Textual`.
+    *   **Features**: Real-time streaming, syntax highlighting, and keyboard-first navigation.
+
+4.  **AGENT (Blaxel + Gemini)**:
+    *   **Brain**: Serverless agents on Blaxel.
+    *   **Evolution**: Self-improving code via `Agent0`.
+
 ---
 
 ## 🛠️ The Tech Stack (Sponsor Flex)
@@ -117,27 +139,6 @@ python main.py
 > /prometheus evolve --iterations 10
 ```
 
-### 📦 The 4 Pillars (Hackathon Complete Coverage)
-
-PROMETHEUS is not just a bot; it's a complete ecosystem covering all Hackathon tracks:
-
-1.  **MCP (Model Context Protocol)**:
-    *   **Core**: `jdev_cli/core/mcp.py` implements the full MCP spec.
-    *   **Server**: `jdev_cli/cli_mcp.py` acts as a compliant MCP server.
-    *   **Client**: The TUI connects to any MCP server (Blaxel, Local, etc.).
-
-2.  **CLI (Command Line Interface)**:
-    *   **Tool**: `jdev` is a Rust-inspired Python CLI.
-    *   **Install**: `pip install .` (Standard)
-    *   **NPM Plus**: `npm install -g prometheus-cli` (Coming soon - JS Wrapper)
-
-3.  **SHELL (Textual TUI)**:
-    *   **Interface**: A Matrix-style TUI built with `Textual`.
-    *   **Features**: Real-time streaming, syntax highlighting, and keyboard-first navigation.
-
-4.  **AGENT (Blaxel + Gemini)**:
-    *   **Brain**: Serverless agents on Blaxel.
-    *   **Evolution**: Self-improving code via `Agent0`.
 
 ---
 
