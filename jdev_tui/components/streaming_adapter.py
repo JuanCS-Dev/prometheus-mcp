@@ -151,8 +151,6 @@ class StreamingResponseWidget(Static):
         """
         import time
         import re
-        import logging
-        logging.warning(f"[ECHO_DEBUG] StreamingResponseWidget.append_chunk: {repr(chunk[:50])}...")
 
         # Sanitizar Rich markup que o LLM pode ter gerado erroneamente
         # Remove [bold], [italic], [dim], [/], [#hexcode], [color name] tags

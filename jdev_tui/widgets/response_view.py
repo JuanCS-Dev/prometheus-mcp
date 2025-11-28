@@ -153,10 +153,6 @@ class ResponseView(VerticalScroll):
 
     def append_chunk(self, chunk: str) -> None:
         """Append streaming chunk. Optimized for 60fps."""
-        # DEBUG: Echo detection
-        import logging
-        logging.warning(f"[ECHO_DEBUG] ResponseView.append_chunk called: {repr(chunk[:50])}...")
-
         self.current_response += chunk
 
         if self._response_widget:
