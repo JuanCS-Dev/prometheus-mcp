@@ -515,19 +515,19 @@ def create_ui() -> tuple[gr.Blocks, str, str]:
                 )
 
             # COLUMN 2: WORKSPACE (Chat + Input)
-            with gr.Column(scale=3):
+            with gr.Column(scale=3, elem_classes="gap-0"):
                 # Chat (Gradio 6: buttons instead of show_copy_button)
                 chatbot = gr.Chatbot(
                     label="Dev Session",
                     height=400,
                     render_markdown=True,
                     avatar_images=(None, None),
-                    elem_classes="cyber-glass",
+                    elem_classes="cyber-glass mb-2", # Add margin bottom to separate from input
                     buttons=["copy"],  # Gradio 6
                 )
                 
                 # Input Area
-                with gr.Group(elem_classes="mb-4 relative"):
+                with gr.Group(elem_classes="mb-0 relative"):
                     msg_input = gr.Textbox(
                         placeholder="> Aguardando comando do Mestre...",
                         show_label=False,
@@ -537,16 +537,16 @@ def create_ui() -> tuple[gr.Blocks, str, str]:
                         autofocus=True,
                     )
                 
+                # Terminal Logs (HTML) - Moved below input as requested
+                log_display = gr.HTML(
+                    value=render_terminal_logs(_monitor.logs[-8:]),
+                    elem_classes="h-32 overflow-hidden bg-black/50 rounded border border-gray-800 terminal-log mb-4 mt-0"
+                )
+                
                 # Docker Progress Bar
                 progress_html = gr.HTML(
                     value=render_docker_progress(0, "Ready"),
                     elem_classes="docker-progress-container"
-                )
-
-                # Terminal Logs (HTML)
-                log_display = gr.HTML(
-                    value=render_terminal_logs(_monitor.logs[-8:]),
-                    elem_classes="h-32 overflow-hidden bg-black/50 rounded border border-gray-800 terminal-log"
                 )
 
             # COLUMN 3: TELEMETRY

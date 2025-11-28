@@ -117,8 +117,5 @@ uploads/
 maestro.log
 streaming-fix-package.tar.gz
 
-# Temporary Scripts
-mega_test_e2e.sh
-create-streaming-package.sh
-deploy.sh
-run_mega_test.py
+# Scripts are now in scripts/ directory and should be tracked
+logs/
