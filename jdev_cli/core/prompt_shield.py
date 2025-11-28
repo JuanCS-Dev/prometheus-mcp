@@ -308,7 +308,7 @@ class PromptShield:
     @lru_cache(maxsize=CACHE_SIZE)
     def _get_content_hash(self, content: str) -> str:
         """Get hash of content for caching."""
-        return hashlib.md5(content.encode()).hexdigest()
+        return hashlib.md5(content.encode(), usedforsecurity=False).hexdigest()
 
     def analyze(self, content: str, source: str = "user") -> ShieldResult:
         """
