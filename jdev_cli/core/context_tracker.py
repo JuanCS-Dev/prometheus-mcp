@@ -23,12 +23,11 @@ from __future__ import annotations
 import os
 import re
 import time
-from typing import Any, Callable, Dict, List, Optional, Set, Tuple, Union
+from typing import Any, Dict, List, Optional, Tuple
 from pathlib import Path
 from dataclasses import dataclass, field
-from enum import Enum, auto
+from enum import Enum
 from collections import deque
-from functools import lru_cache
 import logging
 
 logger = logging.getLogger(__name__)
@@ -526,7 +525,7 @@ class ContextTracker:
         if not recent:
             return ["No recent files found. Please specify a file path."]
 
-        suggestions = [f"Did you mean one of these?"]
+        suggestions = ["Did you mean one of these?"]
         for i, item in enumerate(recent, 1):
             name = Path(item.value).name if ctx_type == ContextType.FILE else item.value
             suggestions.append(f"  {i}. {name}")

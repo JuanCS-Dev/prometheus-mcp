@@ -21,8 +21,7 @@ Philosophy:
 Created: 2025-11-18 21:44 UTC
 """
 
-import re
-from typing import List, Optional, Callable, Dict, Set
+from typing import List, Optional, Callable, Dict
 from dataclasses import dataclass, field
 from enum import Enum
 from datetime import datetime
@@ -97,7 +96,7 @@ class Command:
     enabled: bool = True
     last_used: Optional[datetime] = None
     use_count: int = 0
-    
+
     @property
     def search_text(self) -> str:
         """Get combined text for searching."""
@@ -107,7 +106,7 @@ class Command:
             self.category.value.lower(),
         ] + [k.lower() for k in self.keywords]
         return " ".join(parts)
-    
+
     @property
     def display_title(self) -> Text:
         """Get formatted title with category icon."""
@@ -115,12 +114,12 @@ class Command:
         text = Text()
         text.append(f"{config['icon']} ", style=config['color'])
         text.append(self.title, style=PRESET_STYLES.EMPHASIS)
-        
+
         if self.keybinding:
             text.append(f"  [{self.keybinding}]", style=PRESET_STYLES.TERTIARY)
-        
+
         return text
-    
+
     def mark_used(self):
         """Mark command as used (for recency tracking)."""
         self.last_used = datetime.now()
@@ -144,11 +143,11 @@ class FuzzyMatcher:
         score = matcher.score("file open", "fo")  # High score
         score = matcher.score("file open", "fop")  # Very high score
     """
-    
+
     def __init__(self):
         """Initialize matcher."""
         pass
-    
+
     def score(self, text: str, query: str) -> float:
         """
         Calculate fuzzy match score.
@@ -162,48 +161,48 @@ class FuzzyMatcher:
         """
         if not query:
             return 1.0
-        
+
         text = text.lower()
         query = query.lower()
-        
+
         # Quick exact match check
         if query in text:
             # Bonus for exact substring
             position_score = 1.0 - (text.index(query) / len(text))
             return 0.8 + (0.2 * position_score)
-        
+
         # Fuzzy matching
         text_idx = 0
         query_idx = 0
         matches = []
-        
+
         while query_idx < len(query) and text_idx < len(text):
             if text[text_idx] == query[query_idx]:
                 matches.append(text_idx)
                 query_idx += 1
             text_idx += 1
-        
+
         # Not all query characters found
         if query_idx < len(query):
             return 0.0
-        
+
         # Calculate score based on match positions
         if not matches:
             return 0.0
-        
+
         # Base score: how much of query matched
         base_score = len(matches) / len(text)
-        
+
         # Position bonus: earlier matches better
         position_score = 1.0 - (matches[0] / len(text))
-        
+
         # Consecutive bonus: adjacent matches better
         consecutive_count = 0
         for i in range(1, len(matches)):
             if matches[i] == matches[i-1] + 1:
                 consecutive_count += 1
         consecutive_score = consecutive_count / max(len(matches) - 1, 1)
-        
+
         # Word start bonus: matches at word boundaries
         word_start_count = 0
         words = text.split()
@@ -212,12 +211,12 @@ class FuzzyMatcher:
         for word in words:
             word_positions.append(pos)
             pos += len(word) + 1
-        
+
         for match_pos in matches:
             if match_pos in word_positions:
                 word_start_count += 1
         word_start_score = word_start_count / len(matches)
-        
+
         # Weighted combination
         final_score = (
             base_score * 0.3 +
@@ -225,9 +224,9 @@ class FuzzyMatcher:
             consecutive_score * 0.3 +
             word_start_score * 0.2
         )
-        
+
         return min(final_score, 1.0)
-    
+
     def matches(self, text: str, query: str, threshold: float = 0.3) -> bool:
         """
         Check if text matches query.
@@ -263,13 +262,13 @@ class CommandPalette:
         # Execute
         palette.execute_command("file.open")
     """
-    
+
     def __init__(self):
         """Initialize command palette."""
         self.commands: Dict[str, Command] = {}
         self.matcher = FuzzyMatcher()
         self.recent_limit = 5
-    
+
     def add_command(self, command: Command) -> None:
         """
         Add command to palette.
@@ -278,7 +277,7 @@ class CommandPalette:
             command: Command to add
         """
         self.commands[command.id] = command
-    
+
     def add_commands(self, commands: List[Command]) -> None:
         """
         Add multiple commands.
@@ -288,7 +287,7 @@ class CommandPalette:
         """
         for cmd in commands:
             self.add_command(cmd)
-    
+
     def get_command(self, command_id: str) -> Optional[Command]:
         """
         Get command by ID.
@@ -300,7 +299,7 @@ class CommandPalette:
             Command if found, None otherwise
         """
         return self.commands.get(command_id)
-    
+
     def search(
         self,
         query: str,
@@ -326,25 +325,25 @@ class CommandPalette:
                 return self.get_recent_commands(limit)
             else:
                 return list(self.commands.values())[:limit]
-        
+
         # Filter by category if specified
         candidates = self.commands.values()
         if category:
             candidates = [c for c in candidates if c.category == category]
-        
+
         # Score all commands
         scored = []
         for cmd in candidates:
             if not cmd.enabled:
                 continue
-            
+
             score = self.matcher.score(cmd.search_text, query)
             if score > 0.0:
                 scored.append((score, cmd))
-        
+
         # Sort by score (descending)
         scored.sort(key=lambda x: x[0], reverse=True)
-        
+
         # Boost recent commands
         if include_recent:
             recent_ids = {cmd.id for cmd in self.get_recent_commands()}
@@ -355,10 +354,10 @@ class CommandPalette:
                 boosted.append((score, cmd))
             scored = boosted
             scored.sort(key=lambda x: x[0], reverse=True)
-        
+
         # Return top results
         return [cmd for score, cmd in scored[:limit]]
-    
+
     def get_recent_commands(self, limit: int = 5) -> List[Command]:
         """
         Get recently used commands.
@@ -372,7 +371,7 @@ class CommandPalette:
         recent = [cmd for cmd in self.commands.values() if cmd.last_used]
         recent.sort(key=lambda c: c.last_used, reverse=True)
         return recent[:limit]
-    
+
     def get_popular_commands(self, limit: int = 5) -> List[Command]:
         """
         Get most used commands.
@@ -386,7 +385,7 @@ class CommandPalette:
         popular = [cmd for cmd in self.commands.values() if cmd.use_count > 0]
         popular.sort(key=lambda c: c.use_count, reverse=True)
         return popular[:limit]
-    
+
     def execute_command(self, command_id: str) -> bool:
         """
         Execute command by ID.
@@ -400,10 +399,10 @@ class CommandPalette:
         cmd = self.get_command(command_id)
         if not cmd or not cmd.enabled:
             return False
-        
+
         # Mark as used
         cmd.mark_used()
-        
+
         # Execute action
         if cmd.action:
             try:
@@ -411,9 +410,9 @@ class CommandPalette:
                 return True
             except Exception:
                 return False
-        
+
         return True
-    
+
     def render_search_results(
         self,
         query: str,
@@ -432,16 +431,16 @@ class CommandPalette:
             Rich Panel with results
         """
         results = self.search(query, limit=limit)
-        
+
         if not results:
             # No results
             content = Text()
             content.append("No commands found", style=PRESET_STYLES.TERTIARY)
-            
+
             # Show biblical verse for encouragement
             verse = get_random_verse(60)
             content.append(f"\n\n{verse}", style=PRESET_STYLES.DIM)
-            
+
             return Panel(
                 Align.center(content),
                 title="[bold]Command Palette[/bold]",
@@ -449,23 +448,23 @@ class CommandPalette:
                 border_style=COLORS['border_muted'],
                 padding=(1, 2),
             )
-        
+
         # Build results table
         table = Table.grid(padding=(0, 1))
         table.add_column("", style=PRESET_STYLES.TERTIARY, width=2)  # Selection indicator
         table.add_column("Command", style=PRESET_STYLES.PRIMARY)
         table.add_column("Description", style=PRESET_STYLES.SECONDARY)
-        
+
         for idx, cmd in enumerate(results):
             # Selection indicator
             indicator = "▶" if idx == selected_index else " "
-            
+
             # Command title with highlighting
             title = cmd.display_title
-            
+
             # Description
             desc = Text(cmd.description, style=PRESET_STYLES.TERTIARY)
-            
+
             # Add row with highlighting if selected
             if idx == selected_index:
                 table.add_row(
@@ -476,12 +475,12 @@ class CommandPalette:
                 )
             else:
                 table.add_row(indicator, title, desc)
-        
+
         # Query display
         query_text = Text()
         query_text.append("Search: ", style=PRESET_STYLES.SECONDARY)
         query_text.append(query or "(type to search)", style=PRESET_STYLES.EMPHASIS if query else PRESET_STYLES.DIM)
-        
+
         return Panel(
             table,
             title="[bold]⌘ Command Palette[/bold]",
@@ -520,7 +519,7 @@ DEFAULT_COMMANDS = [
         category=CommandCategory.FILE,
         keywords=["directory", "folder", "ls"],
     ),
-    
+
     # Search commands
     Command(
         id="search.files",
@@ -538,7 +537,7 @@ DEFAULT_COMMANDS = [
         keywords=["grep", "find", "text"],
         keybinding="Ctrl+Shift+F",
     ),
-    
+
     # Git commands
     Command(
         id="git.status",
@@ -561,7 +560,7 @@ DEFAULT_COMMANDS = [
         category=CommandCategory.GIT,
         keywords=["save", "checkpoint"],
     ),
-    
+
     # Tools
     Command(
         id="tools.terminal",
@@ -571,7 +570,7 @@ DEFAULT_COMMANDS = [
         keywords=["shell", "bash"],
         keybinding="Ctrl+`",
     ),
-    
+
     # View
     Command(
         id="view.metrics",
@@ -580,7 +579,7 @@ DEFAULT_COMMANDS = [
         category=CommandCategory.VIEW,
         keywords=["constitutional", "lei", "hri", "stats"],
     ),
-    
+
     # Help
     Command(
         id="help.commands",
@@ -612,10 +611,10 @@ def create_default_palette() -> CommandPalette:
 if __name__ == "__main__":
     console = Console()
     palette = create_default_palette()
-    
+
     # Demo searches
     queries = ["", "open", "git", "search", "xyz"]
-    
+
     for query in queries:
         console.print(palette.render_search_results(query, selected_index=0))
         console.print()

@@ -23,7 +23,7 @@ def hf_client():
 
 class TestHFBasicGeneration:
     """Test basic generation capabilities"""
-    
+
     @pytest.mark.asyncio
     async def test_simple_completion(self, hf_client):
         """Most basic case: simple text completion"""
@@ -32,7 +32,7 @@ class TestHFBasicGeneration:
             response += chunk
         assert response
         assert len(response) > 0
-    
+
     @pytest.mark.asyncio
     async def test_empty_prompt(self, hf_client):
         """Edge: empty prompt should handle gracefully"""
@@ -44,7 +44,7 @@ class TestHFBasicGeneration:
             assert True
         except ValueError:
             pass  # Expected
-    
+
     @pytest.mark.asyncio
     async def test_very_long_prompt(self, hf_client):
         """Edge: very long prompt"""
@@ -53,7 +53,7 @@ class TestHFBasicGeneration:
         async for chunk in hf_client.stream_chat(long_prompt, provider="hf", max_tokens=50):
             response += chunk
         assert response
-    
+
     @pytest.mark.asyncio
     async def test_special_characters(self, hf_client):
         """Edge: special characters and unicode"""
@@ -62,7 +62,7 @@ class TestHFBasicGeneration:
         async for chunk in hf_client.stream_chat(prompt, provider="hf"):
             response += chunk
         assert response
-    
+
     @pytest.mark.asyncio
     async def test_code_generation(self, hf_client):
         """Real use: generate Python code"""
@@ -76,7 +76,7 @@ class TestHFBasicGeneration:
 
 class TestHFTemperature:
     """Test temperature parameter effects"""
-    
+
     @pytest.mark.asyncio
     async def test_temperature_low(self, hf_client):
         """Deterministic output with low temp"""
@@ -85,7 +85,7 @@ class TestHFTemperature:
         async for chunk in hf_client.stream_chat(prompt, provider="hf", temperature=0.1):
             response += chunk
         assert response
-    
+
     @pytest.mark.asyncio
     async def test_temperature_high(self, hf_client):
         """Creative output with high temp"""
@@ -98,7 +98,7 @@ class TestHFTemperature:
 
 class TestHFMaxTokens:
     """Test max_tokens parameter"""
-    
+
     @pytest.mark.asyncio
     async def test_short_max_tokens(self, hf_client):
         """Force very short response"""
@@ -112,7 +112,7 @@ class TestHFMaxTokens:
         assert response
         # Should be short
         assert len(response) < 200
-    
+
     @pytest.mark.asyncio
     async def test_long_max_tokens(self, hf_client):
         """Allow longer response"""
@@ -128,7 +128,7 @@ class TestHFMaxTokens:
 
 class TestHFSystemInstructions:
     """Test system instructions"""
-    
+
     @pytest.mark.asyncio
     async def test_system_instruction_code(self, hf_client):
         """System instruction for code"""
@@ -144,7 +144,7 @@ class TestHFSystemInstructions:
 
 class TestHFErrorHandling:
     """Test error conditions"""
-    
+
     @pytest.mark.asyncio
     async def test_timeout_handling(self, hf_client):
         """Test timeout handling"""
@@ -164,7 +164,7 @@ class TestHFErrorHandling:
 
 class TestHFRealWorldScenarios:
     """Test real-world usage patterns"""
-    
+
     @pytest.mark.asyncio
     async def test_code_explanation(self, hf_client):
         """Real: explain code"""
@@ -174,7 +174,7 @@ class TestHFRealWorldScenarios:
             response += chunk
         assert response
         assert len(response) > 20
-    
+
     @pytest.mark.asyncio
     async def test_git_command_generation(self, hf_client):
         """Real: generate git command"""
@@ -186,7 +186,7 @@ class TestHFRealWorldScenarios:
             response += chunk
         assert response
         assert "git" in response.lower()
-    
+
     @pytest.mark.asyncio
     async def test_error_diagnosis(self, hf_client):
         """Real: diagnose error"""
@@ -200,7 +200,7 @@ class TestHFRealWorldScenarios:
 
 class TestHFStreaming:
     """Test streaming behavior"""
-    
+
     @pytest.mark.asyncio
     async def test_streaming_basic(self, hf_client):
         """Test basic streaming"""
@@ -210,7 +210,7 @@ class TestHFStreaming:
         assert len(chunks) > 0
         full_response = "".join(chunks)
         assert len(full_response) > 0
-    
+
     @pytest.mark.asyncio
     async def test_streaming_interruption(self, hf_client):
         """Edge: interrupt streaming"""
@@ -224,22 +224,22 @@ class TestHFStreaming:
 
 class TestHFConcurrency:
     """Test concurrent requests"""
-    
+
     @pytest.mark.asyncio
     async def test_concurrent_requests(self, hf_client):
         """Real: multiple concurrent requests"""
         prompts = ["Say 'one'", "Say 'two'", "Say 'three'"]
-        
+
         async def generate(prompt):
             response = ""
             async for chunk in hf_client.stream_chat(prompt, provider="hf"):
                 response += chunk
             return response
-        
+
         responses = await asyncio.gather(*[generate(p) for p in prompts])
         assert len(responses) == 3
         assert all(r for r in responses)
-    
+
     @pytest.mark.asyncio
     async def test_rapid_fire_requests(self, hf_client):
         """Edge: rapid successive requests"""
@@ -249,14 +249,14 @@ class TestHFConcurrency:
             async for chunk in hf_client.stream_chat(f"Say {i}", provider="hf"):
                 response += chunk
             responses.append(response)
-        
+
         assert len(responses) == 3
         assert all(r for r in responses)
 
 
 class TestHFEdgeCases:
     """Extreme edge cases"""
-    
+
     @pytest.mark.asyncio
     async def test_emoji_prompt(self, hf_client):
         """Edge: emoji prompt"""
@@ -264,7 +264,7 @@ class TestHFEdgeCases:
         async for chunk in hf_client.stream_chat("🔥🚀 What?", provider="hf"):
             response += chunk
         assert response
-    
+
     @pytest.mark.asyncio
     async def test_mixed_languages(self, hf_client):
         """Edge: multiple languages"""
@@ -277,28 +277,28 @@ class TestHFEdgeCases:
 
 class TestHFResilience:
     """Test resilience patterns"""
-    
+
     @pytest.mark.asyncio
     async def test_circuit_breaker_active(self, hf_client):
         """Test circuit breaker is active"""
         assert hf_client.circuit_breaker is not None
         assert hf_client.circuit_breaker.state.value == "closed"
-    
+
     @pytest.mark.asyncio
     async def test_rate_limiter_active(self, hf_client):
         """Test rate limiter is active"""
         assert hf_client.rate_limiter is not None
-    
+
     @pytest.mark.asyncio
     async def test_metrics_tracking(self, hf_client):
         """Test metrics are tracked"""
         assert hf_client.metrics is not None
-        
+
         # Make a request
         response = ""
         async for chunk in hf_client.stream_chat("Test", provider="hf"):
             response += chunk
-        
+
         # Check metrics updated
         stats = hf_client.metrics.get_stats()
         assert stats["total_requests"] > 0

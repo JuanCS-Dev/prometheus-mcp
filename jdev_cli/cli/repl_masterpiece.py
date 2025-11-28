@@ -39,13 +39,9 @@ from prompt_toolkit.patch_stdout import patch_stdout
 from prompt_toolkit.styles import Style
 from rich.console import Console
 from rich.panel import Panel
-from rich.table import Table
-from rich.markdown import Markdown
 from rich.progress import Progress, SpinnerColumn, TextColumn
-from rich.live import Live
-from rich.text import Text
 from rich.syntax import Syntax
-from typing import Dict, Optional, List
+from typing import Dict, Optional
 import time
 from pathlib import Path
 
@@ -60,7 +56,6 @@ from jdev_cli.ui.command_palette import CommandCategory
 
 # Phase 2: Integration Coordinator
 from jdev_cli.core.integration_coordinator import Coordinator
-from jdev_cli.core.integration_types import EventType
 
 # Setup clean logging
 from jdev_cli.core.logging_setup import setup_logging
@@ -86,7 +81,6 @@ from jdev_cli.agents.security import SecurityAgent
 # TUI Components (já implementados!)
 from jdev_cli.tui.animations import LoadingAnimation, Animator
 from jdev_cli.tui.components.enhanced_progress import TokenMetrics
-from jdev_cli.streaming.renderer import ReactiveRenderer
 from jdev_cli.tui.minimal_output import MinimalOutput, StreamingMinimal
 
 console = Console()
@@ -112,28 +106,28 @@ class SmartCompleter(Completer):
         """
         pattern = pattern.lower()
         text = text.lower()
-        
+
         # Exact prefix match (highest priority)
         if text.startswith(pattern):
             return 1000 + len(pattern)
-        
+
         # Contains match
         if pattern in text:
             return 500 + len(pattern)
-        
+
         # Fuzzy match (all chars present in order)
         score = 0
         pattern_idx = 0
-        
+
         for i, char in enumerate(text):
             if pattern_idx < len(pattern) and char == pattern[pattern_idx]:
                 score += (100 - i)  # Earlier matches score higher
                 pattern_idx += 1
-        
+
         # All chars matched?
         if pattern_idx == len(pattern):
             return score
-        
+
         return 0
 
     def get_completions(self, document, complete_event):
@@ -141,7 +135,7 @@ class SmartCompleter(Completer):
         words = text.split()
         if not words:
             return
-        
+
         word = words[-1]
         if not word.startswith('/'):
             return
@@ -149,27 +143,27 @@ class SmartCompleter(Completer):
         # Remove leading '/'
         query = word[1:].lower()
         all_items = {**self.commands, **self.tools}
-        
+
         # Score all commands
         matches = []
         for cmd_name, cmd_meta in all_items.items():
             cmd_key = cmd_name[1:]  # Remove '/'
             score = self._fuzzy_match(query, cmd_key)
-            
+
             if score > 0:
                 desc = cmd_meta.get('description') or cmd_meta.get('desc', '')
                 example = cmd_meta.get('example', '')
-                
+
                 # Rich display with icon and description
                 display_text = f"{cmd_meta['icon']} {cmd_name:14} {desc}"
                 if example:
                     display_text += f" • [dim]{example}[/dim]"
-                
+
                 matches.append((score, cmd_name, display_text))
-        
+
         # Sort by score (descending)
         matches.sort(reverse=True, key=lambda x: x[0])
-        
+
         # Yield top 10 matches
         for score, cmd_name, display_text in matches[:10]:
             yield Completion(
@@ -190,7 +184,7 @@ class MasterpieceREPL:
         self.running = True
         self.dream_mode = False
         self.current_agent: Optional[str] = None
-        
+
         # State
         self.command_count = 0
         self.session_start = time.time()
@@ -199,15 +193,15 @@ class MasterpieceREPL:
         self.llm_client = LLMClient()
         self.context = ShellContext()
         self.intent_detector = IntentDetector()
-        
+
         # PHASE 2: Integration Coordinator (Central Nervous System)
         self.coordinator = Coordinator(cwd=os.getcwd())
-        
+
         # Register agents (Phase 2.2)
         self._register_agents()
-        
+
         console.print("[dim]✨ Integration coordinator initialized[/dim]")
-        
+
         # TUI enhancements ✨ (já implementados!)
         try:
             self.loading_animation = LoadingAnimation(style="dots", speed=0.08)
@@ -220,7 +214,7 @@ class MasterpieceREPL:
             self.animator = None
             self.token_metrics = None
             self.minimal_output = None
-        
+
         # Output settings (Nov 2025 best practices)
         self.output_mode = "auto"  # auto, full, minimal, summary
         self.last_response = ""  # Store for /expand command
@@ -239,36 +233,33 @@ class MasterpieceREPL:
         # Commands
         self.commands = self._load_commands()
         self.session = self._create_session()
-    
+
     def _format_agent_output(self, agent_name: str, response, intent_type) -> str:
         """Format agent output beautifully (human-readable).
         
         Boris Cherny: "Code is read 10x more than written. So is output."
         """
-        from rich.text import Text
-        from rich.panel import Panel
-        from rich import box
-        
+
         # Handle errors
         if not response.success:
             return f"❌ **{agent_name} Failed**\n\n{response.error}"
-        
+
         # Special formatting for ReviewerAgent v3.0
         if agent_name == "ReviewerAgent" and isinstance(response.data, dict):
             # Extract report (agent wraps it in 'report' key)
             data = response.data.get('report', response.data)
-            
+
             # Header
             score = data.get('score', 0)
             approved = data.get('approved', False)
             metrics = data.get('metrics', [])
-            
+
             lines = [
                 "# 🔍 CODE REVIEW COMPLETE (v3.0 - McCabe Analysis)\n",
                 f"**Score:** {score}/100",
                 f"**Status:** {'✅ APPROVED for merge' if approved else '❌ CHANGES REQUIRED'}\n",
             ]
-            
+
             # Function Metrics
             if metrics:
                 lines.append("## 📊 Function Complexity Analysis\n")
@@ -277,7 +268,7 @@ class MasterpieceREPL:
                 if len(metrics) > 10:
                     lines.append(f"  ... and {len(metrics) - 10} more functions")
                 lines.append("")
-            
+
             # Issues (new structure)
             issues = data.get('issues', [])
             if issues:
@@ -285,7 +276,7 @@ class MasterpieceREPL:
                 critical = [i for i in issues if i.get('severity') == 'CRITICAL']
                 high = [i for i in issues if i.get('severity') == 'HIGH']
                 medium = [i for i in issues if i.get('severity') == 'MEDIUM']
-                
+
                 if critical:
                     lines.append("## 🚨 CRITICAL Issues\n")
                     for issue in critical:
@@ -294,50 +285,50 @@ class MasterpieceREPL:
                         if issue.get('suggestion'):
                             lines.append(f"  💡 *{issue.get('suggestion')}*")
                     lines.append("")
-                
+
                 if high:
                     lines.append("## ⚠️ HIGH Priority\n")
                     for issue in high:
                         lines.append(f"- **{issue.get('file')}:{issue.get('line')}** - {issue.get('message')}")
                     lines.append("")
-                
+
                 if medium:
                     lines.append("## 📝 Medium Priority\n")
                     for issue in medium:
                         lines.append(f"- {issue.get('file')}:{issue.get('line')} - {issue.get('message')}")
                     lines.append("")
-            
+
             # Summary
             summary = data.get('summary', '')
             if summary:
                 lines.append("## Summary\n")
                 lines.append(summary)
                 lines.append("")
-            
+
             # Next Steps
             next_steps = data.get('next_steps', [])
             if next_steps:
                 lines.append("## 🎯 Next Steps\n")
                 for step in next_steps:
                     lines.append(f"- {step}")
-            
+
             return "\n".join(lines)
-        
+
         # Generic formatting for other agents
         if isinstance(response.data, dict):
             # Try to extract meaningful info
             summary = response.data.get('summary', response.data.get('result', ''))
             if summary:
                 return f"**{agent_name} Result:**\n\n{summary}"
-            
+
             # Fallback: format dict nicely
             import json
             formatted = json.dumps(response.data, indent=2)
             return f"**{agent_name} Result:**\n\n```json\n{formatted}\n```"
-        
+
         # Plain string output
         return str(response.data)
-    
+
     def _register_agents(self):
         """Register all agents with coordinator (Phase 2.2).
         
@@ -345,7 +336,7 @@ class MasterpieceREPL:
         """
         from jdev_cli.core.integration_types import IntentType, AgentResponse
         from jdev_cli.agents.base import AgentTask
-        
+
         # Agent adapter: convert execute(AgentTask) → invoke(request, context)
         async def make_agent_adapter(agent_class, intent_type):
             """Create adapter for agent."""
@@ -354,37 +345,37 @@ class MasterpieceREPL:
                 llm_client=self.llm_client,
                 mcp_client=None  # Optional for now
             )
-            
+
             async def adapter_invoke(request: str, context: dict) -> AgentResponse:
                 """Adapt agent.execute() to coordinator protocol."""
                 import re
-                
+
                 # Extract file paths from request (e.g., "review file.py")
                 file_matches = re.findall(r'[\w\-./]+\.[\w]+', request)
-                
+
                 # Enrich context with extracted files
                 enriched_context = dict(context) if context else {}
                 if file_matches:
                     enriched_context['files'] = file_matches
                     enriched_context['target_files'] = file_matches  # Agent might use this
-                
+
                 # Create AgentTask from request
                 task = AgentTask(
                     request=request,
                     context=enriched_context,
                     session_id="shell_session"
                 )
-                
+
                 # Execute agent
                 response = await agent_instance.execute(task)
-                
+
                 # Format output beautifully (Boris Cherny: UX matters)
                 output = self._format_agent_output(
                     agent_class.__name__,
                     response,
                     intent_type
                 )
-                
+
                 return {
                     "success": response.success,
                     "output": output,
@@ -392,25 +383,25 @@ class MasterpieceREPL:
                     "execution_time_ms": 0.0,
                     "tokens_used": None
                 }
-            
+
             return adapter_invoke
-        
+
         # Register ReviewerAgent only (Phase 2.2 - incremental)
         try:
             reviewer_adapter = asyncio.run(make_agent_adapter(ReviewerAgent, IntentType.REVIEW))
-            
+
             # Wrap in a class that has invoke method (protocol compliance)
             class AgentWrapper:
                 def __init__(self, invoke_func):
                     self.invoke = invoke_func
-            
+
             self.coordinator.register_agent(
                 IntentType.REVIEW,
                 AgentWrapper(reviewer_adapter)
             )
-            
+
             console.print("[dim]  → ReviewerAgent registered[/dim]")
-            
+
             # Register RefactorerAgent
             refactorer_adapter = asyncio.run(make_agent_adapter(RefactorerAgent, IntentType.REFACTOR))
             self.coordinator.register_agent(
@@ -418,7 +409,7 @@ class MasterpieceREPL:
                 AgentWrapper(refactorer_adapter)
             )
             console.print("[dim]  → RefactorerAgent registered[/dim]")
-            
+
         except Exception as e:
             console.print(f"[yellow]⚠️  Agent registration failed: {e}[/yellow]")
 
@@ -467,7 +458,7 @@ class MasterpieceREPL:
                 "category": CommandCategory.SYSTEM,
                 "handler": self._cmd_mode
             },
-            
+
             # Agents
             "/architect": {
                 "icon": "🏗️",
@@ -540,13 +531,13 @@ class MasterpieceREPL:
     def _create_session(self) -> PromptSession:
         """Create session with clean, modern prompt."""
         history_file = Path.home() / '.qwen-dev-history'
-        
+
         # Clean style - let Rich handle the visuals
         clean_style = Style.from_dict({
             '': '#00d4aa',                      # Default text color (teal)
             'placeholder': '#666666 italic',    # Placeholder
         })
-        
+
         return PromptSession(
             message=[('class:prompt', '⚡ › ')],  # Clean prompt symbol
             history=FileHistory(str(history_file)),
@@ -599,12 +590,12 @@ class MasterpieceREPL:
         """Generate beautiful prompt with neon box (max-code style)."""
         # Max-code style: > | prompt text with border
         # Neon gradient: green → yellow
-        
+
         prefix = []
-        
+
         if self.dream_mode:
             prefix.append(('ansimagenta bold', '💭 '))
-        
+
         if self.current_agent:
             prefix.append(('ansiyellow bold', f'{self.current_agent} '))
 
@@ -619,28 +610,28 @@ class MasterpieceREPL:
     def _cmd_help(self, _):
         """Show MINIMAL help (Nov 2025)."""
         console.print("\n[bold cyan]Commands[/bold cyan]")
-        
+
         # Group by category
         categories = {
             'system': [],
             'agent': []
         }
-        
+
         for cmd, meta in self.commands.items():
             cat = meta['category'].value
             if cat in categories:
                 categories[cat].append((cmd, meta))
-        
+
         # Render compact (two columns)
         for cat_name, cat_key in [('System', 'system'), ('Agents', 'agent')]:
             if cat_key in categories and categories[cat_key]:
                 console.print(f"\n[dim]{cat_name}:[/dim]")
                 items = sorted(categories[cat_key])
-                
+
                 # Single column (cleaner for longer descriptions)
                 for cmd, meta in items:
                     console.print(f"  {meta['icon']} [cyan]{cmd:14}[/cyan] [dim]{meta['description']}[/dim]")
-        
+
         console.print("\n[dim]💡 Ctrl+P palette • Ctrl+O expand • Tab autocomplete • Natural chat[/dim]\n")
 
     def _cmd_exit(self, _):
@@ -648,24 +639,24 @@ class MasterpieceREPL:
         duration = int(time.time() - self.session_start)
         minutes = duration // 60
         seconds = duration % 60
-        
+
         console.print("\n[bold cyan]Session Summary:[/bold cyan]")
         console.print(f"  • Commands executed: [green]{self.command_count}[/green]")
         console.print(f"  • Duration: [green]{minutes}m {seconds}s[/green]")
         console.print("\n[bold yellow]👋 Goodbye! Keep coding! ✨[/bold yellow]")
         console.print("[dim]Soli Deo Gloria 🙏[/dim]\n")
-        
+
         # Cleanup to avoid "Unclosed client session" warnings
         self._cleanup()
-        
+
         self.running = False
-    
+
     def _cleanup(self):
         """Cleanup aiohttp sessions silently."""
         import warnings
         warnings.filterwarnings('ignore', message='.*Unclosed.*')
         warnings.filterwarnings('ignore', message='.*unclosed.*')
-    
+
     def __del__(self):
         """Destructor - cleanup warnings."""
         self._cleanup()
@@ -675,26 +666,26 @@ class MasterpieceREPL:
         if not self.last_response:
             console.print("[yellow]No previous response to expand[/yellow]\n")
             return
-        
+
         console.print("\n[bold cyan]📖 Full Response[/bold cyan]")
         console.print("─" * 60)
         console.print(self.last_response, style="white")
         console.print("─" * 60)
         console.print(f"[dim]{len(self.last_response.split())} words • {len(self.last_response)} chars[/dim]\n")
-    
+
     def _cmd_mode(self, args: str):
         """Change output mode."""
         modes = ['auto', 'full', 'minimal', 'summary']
-        
+
         if not args or args not in modes:
             console.print(f"[yellow]Current mode: {self.output_mode}[/yellow]")
             console.print(f"[dim]Available: {', '.join(modes)}[/dim]")
-            console.print(f"[dim]Usage: /mode <mode>[/dim]\n")
+            console.print("[dim]Usage: /mode <mode>[/dim]\n")
             return
-        
+
         self.output_mode = args
         console.print(f"[green]✓ Output mode: {args}[/green]\n")
-    
+
     def _cmd_clear(self, _):
         """Clear with feedback."""
         console.clear()
@@ -703,7 +694,7 @@ class MasterpieceREPL:
     def _cmd_status(self, _):
         """Show session status."""
         duration = int(time.time() - self.session_start)
-        
+
         panel = Panel.fit(
             f"""[bold]Session Status[/bold]
 
@@ -741,18 +732,18 @@ class MasterpieceREPL:
         # Se mencionar path, adiciona contexto do projeto
         import re
         import os
-        
+
         project_context = ""
         path_match = re.search(r'["\']?(/[\w\-/.]+)["\']?', message)
-        
+
         if path_match:
             project_path = path_match.group(1)
             if os.path.exists(project_path):
                 console.print(f"[dim]📁 Analyzing project at {project_path}...[/dim]")
-                
+
                 # Build context from project
                 context_parts = [f"Project Path: {project_path}"]
-                
+
                 # README
                 for readme_name in ['README.md', 'readme.md', 'README']:
                     readme_path = os.path.join(project_path, readme_name)
@@ -765,7 +756,7 @@ class MasterpieceREPL:
                         except (IOError, OSError) as e:
                             logger.debug(f"Could not read {readme_path}: {e}")
                             pass
-                
+
                 # pyproject.toml ou package.json
                 for config_file in ['pyproject.toml', 'package.json', 'setup.py']:
                     config_path = os.path.join(project_path, config_file)
@@ -793,16 +784,16 @@ class MasterpieceREPL:
                 except (subprocess.TimeoutExpired, OSError) as e:
                     logger.debug(f"Could not get project structure: {e}")
                     pass
-                
+
                 project_context = "\n".join(context_parts)
-                
+
                 # Prepend context to message
                 message = f"{project_context}\n\n{message}"
 
         # Get agent (normalize name)
         # Intent detector returns: architect, refactorer, testing, reviewer, documentation, explorer, planner
         # Agents are: ArchitectAgent, RefactorerAgent, TestingAgent, ReviewerAgent, DocumentationAgent, ExplorerAgent, PlannerAgent
-        
+
         if agent_name not in self._agents:
             agent_map = {
                 "architect": ArchitectAgent,
@@ -823,10 +814,10 @@ class MasterpieceREPL:
                 "security": SecurityAgent,
                 "sec": SecurityAgent,
             }
-            
+
             # Show loading with smooth animation
             spinner_frames = ["⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"]
-            
+
             with Progress(
                 SpinnerColumn(spinner_name="dots", style="cyan"),
                 TextColumn(f"[bold cyan]✨ Loading {agent_name} agent..."),
@@ -834,7 +825,7 @@ class MasterpieceREPL:
                 transient=True
             ) as progress:
                 task = progress.add_task("load", total=None)
-                
+
                 # Initialize agent with required dependencies
                 try:
                     # Try without args first (some agents don't need them)
@@ -845,11 +836,11 @@ class MasterpieceREPL:
                         llm_client=self.llm_client,
                         mcp_client=None  # We don't use MCP in shell mode
                     )
-                
+
                 await asyncio.sleep(0.3)  # Smooth loading feel
 
         self.current_agent = agent_name
-        
+
         icon_map = {
             "architect": "🏗️",
             "refactorer": "♻️",
@@ -875,26 +866,26 @@ class MasterpieceREPL:
 
         # Stream response
         await self._stream_response(message, system=f"You are the {agent_name} agent.")
-        
+
         self.current_agent = None
 
     async def _stream_response(self, message: str, system: Optional[str] = None):
         """Stream with MINIMAL OUTPUT (Nov 2025 style)."""
         console.print("[dim]" + "─" * 60 + "[/dim]")
-        
+
         buffer = []
         word_count = 0
         char_count = 0
         start_time = time.time()
-        
+
         # Initialize streaming minimal
         streamer = StreamingMinimal() if self.minimal_output else None
-        
+
         # Initialize metrics
         if self.token_metrics:
             self.token_metrics.input_tokens = len(message.split())
             self.token_metrics.output_tokens = 0
-        
+
         try:
             async for chunk in self.llm_client.stream_chat(
                 prompt=message,
@@ -904,40 +895,40 @@ class MasterpieceREPL:
             ):
                 buffer.append(chunk)
                 char_count += len(chunk)
-                
+
                 # Streaming minimal mode
                 if streamer:
                     streamer.add_chunk(chunk)
-                    
+
                     # Only show if under threshold
                     if not streamer.should_truncate:
                         console.print(chunk, end="", style="white")
                 else:
                     console.print(chunk, end="", style="white")
-                
+
                 # Count words
                 if ' ' in chunk or '\n' in chunk:
                     word_count += len(chunk.split())
-                    
+
                     # Update metrics
                     if self.token_metrics:
                         self.token_metrics.output_tokens = word_count
                         elapsed = time.time() - start_time
                         if elapsed > 0:
                             self.token_metrics.tokens_per_second = word_count / elapsed
-                
+
                 sys.stdout.flush()
-            
+
             # Store full response for /expand
             full_response = ''.join(buffer)
             self.last_response = full_response
-            
+
             # Enhanced stats (minimal style)
             duration = time.time() - start_time
             wps = int(word_count / duration) if duration > 0 else 0
-            
+
             console.print()
-            
+
             # Compact stats (Nov 2025 style)
             console.print()
             console.print("─" * 60)
@@ -947,7 +938,7 @@ class MasterpieceREPL:
                 stats_parts.append(cost)
             console.print(f"[dim green]{' • '.join(stats_parts)}[/dim green]")
             console.print()
-            
+
         except Exception as e:
             console.print(f"\n[red]❌ Error: {e}[/red]")
             console.print("[yellow]💡 Tip: Check connection[/yellow]\n")
@@ -976,14 +967,14 @@ class MasterpieceREPL:
                 except Exception as e:
                     console.print(f"\n[red]❌ Error: {e}[/red]")
                     console.print("[yellow]💡 Tip: Type /help for usage[/yellow]\n")
-            
+
             elif cmd in ['/read', '/write', '/edit', '/run', '/git']:
                 asyncio.run(self._process_tool(cmd, args))
-            
+
             else:
                 console.print(f"\n[red]❌ Unknown command: {cmd}[/red]")
                 console.print("[yellow]💡 Type /help to see available commands[/yellow]\n")
-        
+
         else:
             # Natural language
             asyncio.run(self._process_natural(user_input))
@@ -995,11 +986,11 @@ class MasterpieceREPL:
                 if not args:
                     console.print("[yellow]Usage: /read <file>[/yellow]\n")
                     return
-                
+
                 console.print(f"[dim]📖 Reading {args}...[/dim]")
                 result = await self.file_read.execute(path=args)
                 content = str(result.content) if hasattr(result, 'content') else str(result)
-                
+
                 # Detect language for syntax highlighting
                 ext = Path(args).suffix.lstrip('.')
                 lang_map = {
@@ -1008,51 +999,51 @@ class MasterpieceREPL:
                     'md': 'markdown', 'sh': 'bash'
                 }
                 language = lang_map.get(ext, 'text')
-                
+
                 if language != 'text':
                     syntax = Syntax(content, language, theme="monokai", line_numbers=True)
                     console.print(Panel(syntax, title=f"📖 {args}", border_style="green"))
                 else:
                     console.print(Panel(content, title=f"📖 {args}", border_style="green"))
-                
+
                 self.context.remember_file(args, content, "read")
                 console.print(f"[dim]✓ Read {len(content)} characters[/dim]\n")
-                
+
             elif tool == '/write':
                 parts = args.split(maxsplit=1)
                 if len(parts) < 2:
                     console.print("[yellow]Usage: /write <file> <content>[/yellow]\n")
                     return
-                
+
                 path, content = parts
                 console.print(f"[dim]✍️  Writing to {path}...[/dim]")
                 await self.file_write.execute(path=path, content=content)
                 console.print(f"[green]✓ Written {len(content)} characters to {path}[/green]\n")
-                
+
             elif tool == '/edit':
                 console.print("[yellow]💡 Edit mode coming soon! Use /write for now.[/yellow]\n")
-                
+
             elif tool == '/run':
                 if not args:
                     console.print("[yellow]Usage: /run <command>[/yellow]\n")
                     return
-                
+
                 console.print(f"[dim]⚡ Running: {args}[/dim]")
                 result = await self.bash_tool.execute(command=args)
                 output = result.output if hasattr(result, 'output') else str(result)
-                
+
                 console.print(Panel(
                     output if output else "[dim]No output[/dim]",
                     title="⚡ Output",
                     border_style="green"
                 ))
                 console.print(f"[dim]✓ Completed in {result.duration if hasattr(result, 'duration') else '?'}s[/dim]\n")
-                
+
             elif tool == '/git':
                 if not args:
                     console.print("[yellow]Usage: /git status | diff[/yellow]\n")
                     return
-                
+
                 if 'status' in args:
                     console.print("[dim]🌿 Git status...[/dim]")
                     result = await self.git_status.execute()
@@ -1062,10 +1053,10 @@ class MasterpieceREPL:
                 else:
                     console.print("[yellow]Usage: /git status | diff[/yellow]\n")
                     return
-                
+
                 console.print(Panel(str(result), title="🌿 Git", border_style="green"))
                 console.print("[dim]✓ Git operation complete[/dim]\n")
-                
+
         except Exception as e:
             console.print(f"\n[red]❌ Error: {e}[/red]")
             console.print("[yellow]💡 Check file permissions and path[/yellow]\n")
@@ -1080,7 +1071,7 @@ class MasterpieceREPL:
 
         # PHASE 2: Try coordinator first (agent auto-routing)
         coordinator_response = await self.coordinator.process_message(message)
-        
+
         if coordinator_response:
             # Agent handled the message
             console.print(f"\n{coordinator_response}\n")
@@ -1088,7 +1079,7 @@ class MasterpieceREPL:
 
         # Smart tool detection (fallback if no agent)
         msg_lower = message.lower()
-        
+
         # File operations
         if any(kw in msg_lower for kw in ['read', 'show', 'open', 'cat']):
             import re
@@ -1096,14 +1087,14 @@ class MasterpieceREPL:
             if match:
                 await self._process_tool('/read', match.group(0))
                 return
-        
+
         # Bash execution
         if any(kw in msg_lower for kw in ['run', 'execute', 'bash']):
             import re
             cmd = re.sub(r'^.*(run|execute|bash)\s+', '', message, flags=re.IGNORECASE)
             await self._process_tool('/run', cmd)
             return
-        
+
         # Git operations
         if 'git' in msg_lower:
             if 'status' in msg_lower:
@@ -1115,7 +1106,7 @@ class MasterpieceREPL:
 
         # FALLBACK: Old agent detection (kept for compatibility)
         should_use_agent, detected_agent = self.intent_detector.should_use_agent(message)
-        
+
         if should_use_agent and detected_agent:
             # Auto-route para agent apropriado
             icon_map = {
@@ -1137,17 +1128,17 @@ class MasterpieceREPL:
         # Chat mode with streaming
         if self.dream_mode:
             message = f"[CRITICAL ANALYSIS MODE] {message}"
-        
+
         await self._stream_response(message)
 
     def _show_palette(self):
         """Show command palette."""
         console.print("\n[bold cyan]📋 Commands[/bold cyan]\n")
-        
+
         # Minimal single column
         for cmd, meta in sorted(self.commands.items()):
             console.print(f"  {meta['icon']} [cyan]{cmd:14}[/cyan] [dim]{meta['description']}[/dim]")
-        
+
         console.print("\n[dim]Tab autocomplete • /help details[/dim]\n")
 
     def run(self):
@@ -1161,20 +1152,20 @@ class MasterpieceREPL:
             try:
                 with patch_stdout():
                     user_input = self.session.prompt()
-                
+
                 if user_input is None:
                     continue
-                
+
                 self._process_command(user_input)
 
             except KeyboardInterrupt:
                 console.print("\n[dim]💡 Press Ctrl+C again or type /exit to quit[/dim]\n")
                 continue
-            
+
             except EOFError:
                 self._cmd_exit("")
                 break
-            
+
             except Exception as e:
                 console.print(f"\n[red]❌ Unexpected error: {e}[/red]")
                 console.print("[yellow]💡 Please report this if it persists[/yellow]\n")
@@ -1183,12 +1174,12 @@ class MasterpieceREPL:
 def start_masterpiece_repl():
     """Entry point."""
     import warnings
-    
+
     # Suppress aiohttp cleanup warnings
     warnings.filterwarnings('ignore', category=ResourceWarning)
     warnings.filterwarnings('ignore', message='.*Unclosed.*')
     warnings.filterwarnings('ignore', message='.*unclosed.*')
-    
+
     try:
         repl = MasterpieceREPL()
         repl.run()

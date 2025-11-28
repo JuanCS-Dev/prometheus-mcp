@@ -3,9 +3,8 @@
 import subprocess
 from typing import Optional
 
-from .base import Tool, ToolResult, ToolCategory
+from .base import ToolResult, ToolCategory
 from .validated import ValidatedTool
-from ..core.validation import Required, TypeCheck
 
 
 class GitStatusTool(ValidatedTool):
@@ -46,13 +45,13 @@ class GitStatusTool(ValidatedTool):
                 text=True,
                 timeout=5
             )
-            
+
             if result.returncode != 0:
                 return ToolResult(
                     success=False,
                     error="Not a git repository or git not available"
                 )
-            
+
             lines = result.stdout.split('\n') if result.stdout else []
 
             modified = []
@@ -73,7 +72,7 @@ class GitStatusTool(ValidatedTool):
                     modified.append(filename)
                 if status == '??':
                     untracked.append(filename)
-            
+
             return ToolResult(
                 success=True,
                 data={
@@ -87,14 +86,14 @@ class GitStatusTool(ValidatedTool):
                     "total_changes": len(modified) + len(untracked) + len(staged)
                 }
             )
-            
+
         except Exception as e:
             return ToolResult(success=False, error=str(e))
 
 
 class GitDiffTool(ValidatedTool):
     """Get git diff of changes."""
-    
+
     def __init__(self):
         super().__init__()
         self.category = ToolCategory.GIT
@@ -120,7 +119,7 @@ class GitDiffTool(ValidatedTool):
         """Validate parameters."""
         return {}
 
-    
+
     async def _execute_validated(self, path: str = ".", file: Optional[str] = None, staged: bool = False) -> ToolResult:
         """Get git diff."""
         try:
@@ -131,20 +130,20 @@ class GitDiffTool(ValidatedTool):
 
             if file:
                 cmd.append(file)
-            
+
             result = subprocess.run(
                 cmd,
                 capture_output=True,
                 text=True,
                 timeout=10
             )
-            
+
             if result.returncode != 0:
                 return ToolResult(
                     success=False,
                     error=result.stderr or "Git diff failed"
                 )
-            
+
             return ToolResult(
                 success=True,
                 data={"diff": result.stdout, "has_changes": bool(result.stdout.strip())},
@@ -154,6 +153,6 @@ class GitDiffTool(ValidatedTool):
                     "has_changes": bool(result.stdout.strip())
                 }
             )
-            
+
         except Exception as e:
             return ToolResult(success=False, error=str(e))

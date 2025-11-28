@@ -14,7 +14,6 @@ The co-evolution loop enables the agent to:
 
 from dataclasses import dataclass, field
 from typing import List, Dict, Optional, Any, AsyncIterator
-from datetime import datetime
 import asyncio
 
 from ..agents.curriculum_agent import (

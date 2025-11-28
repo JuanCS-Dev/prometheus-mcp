@@ -7,16 +7,13 @@ This module provides a base class that automatically validates
 tool inputs using our validation system before execution.
 """
 
-from typing import Dict, Any, Optional
+from typing import Dict, Any
 from abc import ABC, abstractmethod
 
 from .base import Tool, ToolResult
 from ..core.validation import (
     Validator,
-    ValidationResultImpl,
-    Required,
-    TypeCheck,
-    validate_file_path
+    ValidationResultImpl
 )
 from ..core.errors import ValidationError as ErrorValidationError
 
@@ -32,7 +29,7 @@ class ValidatedTool(Tool, ABC):
     The base class will automatically validate inputs before
     calling _execute_validated().
     """
-    
+
     def get_validators(self) -> Dict[str, Validator]:
         """
         Return validators for each parameter.
@@ -47,7 +44,7 @@ class ValidatedTool(Tool, ABC):
             }
         """
         return {}
-    
+
     async def execute(self, **kwargs) -> ToolResult:
         """
         Execute tool with validation.
@@ -57,7 +54,7 @@ class ValidatedTool(Tool, ABC):
         """
         # Validate inputs
         validation_result = self._validate_inputs(kwargs)
-        
+
         if not validation_result.valid:
             # Return validation errors
             error_msg = "\n".join(validation_result.errors)
@@ -69,12 +66,12 @@ class ValidatedTool(Tool, ABC):
                     'validation_warnings': validation_result.warnings
                 }
             )
-        
+
         # Show warnings if any
         if validation_result.warnings:
             # Could log or display warnings here
             pass
-        
+
         # Execute the actual tool logic
         try:
             return await self._execute_validated(**kwargs)
@@ -90,7 +87,7 @@ class ValidatedTool(Tool, ABC):
                 error=f"Execution failed: {e}",
                 metadata={'error_type': 'execution', 'exception': type(e).__name__}
             )
-    
+
     @abstractmethod
     async def _execute_validated(self, **kwargs) -> ToolResult:
         """
@@ -100,7 +97,7 @@ class ValidatedTool(Tool, ABC):
         All inputs are guaranteed to be valid when this is called.
         """
         raise NotImplementedError(f"{self.__class__.__name__}._execute_validated() not implemented")
-    
+
     def _validate_inputs(self, inputs: Dict[str, Any]) -> ValidationResultImpl:
         """
         Validate inputs against defined validators.
@@ -113,20 +110,20 @@ class ValidatedTool(Tool, ABC):
         """
         result = ValidationResultImpl.success()
         validators = self.get_validators()
-        
+
         for param_name, validator in validators.items():
             value = inputs.get(param_name)
-            
+
             # Validate this parameter
             param_result = validator.validate(value)
-            
+
             if not param_result.valid:
                 for error in param_result.errors:
                     result.add_error(f"{param_name}: {error}")
-            
+
             for warning in param_result.warnings:
                 result.add_warning(f"{param_name}: {warning}")
-        
+
         return result
 
 
@@ -155,18 +152,18 @@ def validate_tool_inputs(
             raise ValidationError(result.errors[0])
     """
     result = ValidationResultImpl.success()
-    
+
     for param_name, validator in validators.items():
         value = inputs.get(param_name)
         param_result = validator.validate(value)
-        
+
         if not param_result.valid:
             for error in param_result.errors:
                 result.add_error(f"{param_name}: {error}")
-        
+
         for warning in param_result.warnings:
             result.add_warning(f"{param_name}: {warning}")
-    
+
     return result
 
 

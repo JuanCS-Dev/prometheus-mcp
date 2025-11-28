@@ -267,7 +267,7 @@ class TestPlannerBasic:
         )
 
         planner = PlannerAgent(llm_client, MagicMock())
-        
+
         # Reset execution count to 0 for test
         planner.execution_count = 0
         initial_count = planner.execution_count

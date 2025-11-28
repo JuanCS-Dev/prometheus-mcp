@@ -13,16 +13,14 @@ Features:
 
 from dataclasses import dataclass
 from enum import Enum
-from typing import List, Optional, Dict
+from typing import List, Dict
 from datetime import datetime
 
 from rich.console import RenderableType
 from rich.panel import Panel
-from rich.progress import Progress, BarColumn, TextColumn
-from rich.table import Table
 from rich.text import Text
 from textual.widgets import Static
-from textual.containers import Horizontal, Vertical
+from textual.containers import Horizontal
 
 from jdev_cli.tui.theme import COLORS
 
@@ -54,7 +52,7 @@ class LEIMetric:
     value: float  # 0.0 to 1.0
     total_issues: int
     issues_by_type: Dict[str, int]
-    
+
     @property
     def level(self) -> MetricLevel:
         """Determine quality level"""
@@ -68,12 +66,12 @@ class LEIMetric:
             return MetricLevel.POOR
         else:
             return MetricLevel.CRITICAL
-    
+
     @property
     def color(self) -> str:
         """Get color for current level"""
         return METRIC_COLORS[self.level]
-    
+
     @property
     def label(self) -> str:
         """Get text label"""
@@ -106,7 +104,7 @@ class HRIMetric:
     """
     value: int  # 0 to 100
     factors: Dict[str, int]  # Individual factor scores
-    
+
     @property
     def level(self) -> MetricLevel:
         """Determine quality level"""
@@ -120,12 +118,12 @@ class HRIMetric:
             return MetricLevel.POOR
         else:
             return MetricLevel.CRITICAL
-    
+
     @property
     def color(self) -> str:
         """Get color for current level"""
         return METRIC_COLORS[self.level]
-    
+
     @property
     def label(self) -> str:
         """Get text label"""
@@ -156,7 +154,7 @@ class SafetyStatus:
     warnings: List[str]
     errors: List[str]
     last_check: datetime
-    
+
     @property
     def level(self) -> MetricLevel:
         """Determine safety level"""
@@ -170,12 +168,12 @@ class SafetyStatus:
             return MetricLevel.POOR
         else:
             return MetricLevel.CRITICAL
-    
+
     @property
     def color(self) -> str:
         """Get color for safety level"""
         return METRIC_COLORS[self.level]
-    
+
     @property
     def icon(self) -> str:
         """Get icon for safety status"""
@@ -223,18 +221,18 @@ class LEIMeter(Static):
     │ • Placeholders: 0            │
     └──────────────────────────────┘
     """
-    
+
     def __init__(self, metric: LEIMetric):
         super().__init__()
         self.metric = metric
-    
+
     def render(self) -> RenderableType:
         """Render the LEI meter"""
         content = Text()
-        
+
         # Title
         content.append("💎 Lazy Engineering Index\n\n", style=f"bold {COLORS['accent_purple']}")
-        
+
         # Progress bar (inverted: less = better)
         bar_width = 30
         filled = int((1.0 - self.metric.value) * bar_width)
@@ -242,12 +240,12 @@ class LEIMeter(Static):
         content.append(bar, style=self.metric.color)
         content.append(f" {self.metric.value:.2f}\n", style=f"bold {self.metric.color}")
         content.append(f"{self.metric.label}\n\n", style=self.metric.color)
-        
+
         # Issues breakdown
         content.append(f"Issues: {self.metric.total_issues}\n", style=COLORS['text_secondary'])
         for issue_type, count in self.metric.issues_by_type.items():
             content.append(f"• {issue_type}: {count}\n", style=COLORS['text_tertiary'])
-        
+
         return Panel(
             content,
             border_style=self.metric.color,
@@ -272,18 +270,18 @@ class HRIGauge(Static):
     │ • Documentation: 100         │
     └──────────────────────────────┘
     """
-    
+
     def __init__(self, metric: HRIMetric):
         super().__init__()
         self.metric = metric
-    
+
     def render(self) -> RenderableType:
         """Render the HRI gauge"""
         content = Text()
-        
+
         # Title
         content.append("📖 Readability Index\n\n", style=f"bold {COLORS['accent_blue']}")
-        
+
         # Progress bar
         bar_width = 30
         filled = int((self.metric.value / 100.0) * bar_width)
@@ -291,12 +289,12 @@ class HRIGauge(Static):
         content.append(bar, style=self.metric.color)
         content.append(f" {self.metric.value}/100\n", style=f"bold {self.metric.color}")
         content.append(f"{self.metric.label}\n\n", style=self.metric.color)
-        
+
         # Factors breakdown
         content.append("Factors:\n", style=COLORS['text_secondary'])
         for factor, score in self.metric.factors.items():
             content.append(f"• {factor}: {score}\n", style=COLORS['text_tertiary'])
-        
+
         return Panel(
             content,
             border_style=self.metric.color,
@@ -320,48 +318,48 @@ class SafetyPanel(Static):
     │ Last check: 2 min ago        │
     └──────────────────────────────┘
     """
-    
+
     def __init__(self, status: SafetyStatus):
         super().__init__()
         self.status = status
-    
+
     def render(self) -> RenderableType:
         """Render the safety panel"""
         content = Text()
-        
+
         # Title
         content.append("🛡️ Safety Status\n\n", style=f"bold {COLORS['accent_green']}")
-        
+
         # Status icon + text
         content.append(f"{self.status.icon} ", style=f"bold {self.status.color}")
         status_text = "Safe" if self.status.safe else "Issues Detected"
         content.append(f"{status_text}\n\n", style=f"bold {self.status.color}")
-        
+
         # Counts
         content.append(f"Warnings: {len(self.status.warnings)}\n", style=COLORS['text_secondary'])
         content.append(f"Errors: {len(self.status.errors)}\n\n", style=COLORS['text_secondary'])
-        
+
         # Recent issues (max 3)
         if self.status.warnings:
             content.append("Recent Warnings:\n", style=COLORS['accent_yellow'])
             for warning in self.status.warnings[:3]:
                 content.append(f"• {warning}\n", style=COLORS['text_tertiary'])
-        
+
         if self.status.errors:
             content.append("\nErrors:\n", style=COLORS['accent_red'])
             for error in self.status.errors[:3]:
                 content.append(f"• {error}\n", style=COLORS['text_tertiary'])
-        
+
         # Last check
         time_ago = self._format_time_ago(self.status.last_check)
         content.append(f"\nLast check: {time_ago}", style=COLORS['text_tertiary'])
-        
+
         return Panel(
             content,
             border_style=self.status.color,
             padding=(1, 2)
         )
-    
+
     def _format_time_ago(self, dt: datetime) -> str:
         """Format datetime as 'X min ago'"""
         delta = datetime.now() - dt
@@ -392,19 +390,19 @@ class CPIChart(Static):
     │ Current CPI: 98.5/100        │
     └──────────────────────────────┘
     """
-    
+
     def __init__(self, data_points: List[CPIDataPoint], window_hours: int = 24):
         super().__init__()
         self.data_points = data_points
         self.window_hours = window_hours
-    
+
     def render(self) -> RenderableType:
         """Render the CPI chart"""
         content = Text()
-        
+
         # Title
         content.append(f"📈 CPI Trend ({self.window_hours}h)\n\n", style=f"bold {COLORS['accent_purple']}")
-        
+
         if not self.data_points:
             content.append("No data yet", style=COLORS['text_tertiary'])
         else:
@@ -412,42 +410,42 @@ class CPIChart(Static):
             lei_sparkline = self._generate_sparkline([dp.lei for dp in self.data_points], inverted=True)
             hri_sparkline = self._generate_sparkline([dp.hri / 100.0 for dp in self.data_points])
             safety_sparkline = self._generate_sparkline([dp.safety_score for dp in self.data_points])
-            
+
             # Display sparklines
             content.append("LEI:   ", style=COLORS['text_secondary'])
             content.append(lei_sparkline, style=COLORS['accent_green'])
             content.append("\n")
-            
+
             content.append("HRI:   ", style=COLORS['text_secondary'])
             content.append(hri_sparkline, style=COLORS['accent_blue'])
             content.append("\n")
-            
+
             content.append("Safe:  ", style=COLORS['text_secondary'])
             content.append(safety_sparkline, style=COLORS['accent_green'])
             content.append("\n\n")
-            
+
             # Current CPI score
             current_cpi = self._calculate_cpi(self.data_points[-1])
             cpi_color = self._get_cpi_color(current_cpi)
-            content.append(f"Current CPI: ", style=COLORS['text_secondary'])
+            content.append("Current CPI: ", style=COLORS['text_secondary'])
             content.append(f"{current_cpi:.1f}/100", style=f"bold {cpi_color}")
-        
+
         return Panel(
             content,
             border_style=COLORS['border_emphasis'],
             padding=(1, 2)
         )
-    
+
     def _generate_sparkline(self, values: List[float], inverted: bool = False) -> str:
         """Generate a sparkline from values (0.0 to 1.0)"""
         if not values:
             return "░" * 20
-        
+
         # Sparkline characters (8 levels)
         chars = "▁▂▃▄▅▆▇█"
         if inverted:
             chars = chars[::-1]
-        
+
         # Normalize and convert to chars
         sparkline = ""
         for value in values[-20:]:  # Last 20 data points
@@ -455,13 +453,13 @@ class CPIChart(Static):
                 value = 1.0 - value
             char_index = min(int(value * len(chars)), len(chars) - 1)
             sparkline += chars[char_index]
-        
+
         # Pad if needed
         while len(sparkline) < 20:
             sparkline += "░"
-        
+
         return sparkline
-    
+
     def _calculate_cpi(self, dp: CPIDataPoint) -> float:
         """
         Calculate Constitutional Performance Index
@@ -470,7 +468,7 @@ class CPIChart(Static):
         Range: 0 to 100
         """
         return ((1.0 - dp.lei) * 30.0 + (dp.hri / 100.0) * 40.0 + dp.safety_score * 30.0)
-    
+
     def _get_cpi_color(self, cpi: float) -> str:
         """Get color for CPI score"""
         if cpi >= 90:
@@ -496,7 +494,7 @@ class MetricsDashboard(Horizontal):
     │ CPI Chart (full width)          │
     └─────────────────────────────────┘
     """
-    
+
     def __init__(
         self,
         lei: LEIMetric,
@@ -509,7 +507,7 @@ class MetricsDashboard(Horizontal):
         self.hri = hri
         self.safety = safety
         self.cpi_data = cpi_data
-    
+
     def compose(self):
         """Compose the dashboard layout"""
         yield LEIMeter(self.lei)
@@ -526,7 +524,7 @@ def create_demo_metrics() -> tuple:
         total_issues=0,
         issues_by_type={}
     )
-    
+
     hri = HRIMetric(
         value=100,
         factors={
@@ -535,14 +533,14 @@ def create_demo_metrics() -> tuple:
             "Documentation": 100
         }
     )
-    
+
     safety = SafetyStatus(
         safe=True,
         warnings=[],
         errors=[],
         last_check=datetime.now()
     )
-    
+
     cpi_data = [
         CPIDataPoint(
             timestamp=datetime.now(),
@@ -551,7 +549,7 @@ def create_demo_metrics() -> tuple:
             safety_score=1.0
         )
     ]
-    
+
     return lei, hri, safety, cpi_data
 
 

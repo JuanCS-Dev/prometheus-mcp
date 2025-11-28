@@ -11,7 +11,7 @@ Tests:
 - Shell injection resistance
 """
 import pytest
-from hypothesis import given, strategies as st, settings, assume, example
+from hypothesis import given, strategies as st, settings
 
 from jdev_tui.core.safe_executor import (
     SafeCommandExecutor,
@@ -272,7 +272,7 @@ class TestBoundaryConditions:
         command = f"echo {inner}"
 
         allowed, reason = executor.is_command_allowed(command)
-        assert allowed is False, f"Nested substitution should be blocked"
+        assert allowed is False, "Nested substitution should be blocked"
 
 
 # =============================================================================

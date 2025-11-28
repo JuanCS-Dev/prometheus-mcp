@@ -33,10 +33,9 @@ import time
 import statistics
 import tracemalloc
 import psutil
-from typing import List, Dict, Any
-from unittest.mock import Mock, AsyncMock, patch
+from typing import List
+from unittest.mock import Mock, AsyncMock
 from dataclasses import dataclass
-from datetime import datetime
 
 from jdev_cli.maestro_governance import MaestroGovernance
 from jdev_cli.core.governance_pipeline import GovernancePipeline
@@ -483,7 +482,7 @@ async def test_stress_memory_leak_check(mock_governance, mock_agent):
     memory_end = memory_samples[-1]
     memory_growth = memory_end - memory_start
 
-    print(f"\nMemory Analysis:")
+    print("\nMemory Analysis:")
     print(f"  Start:   {memory_start:.2f} MB")
     print(f"  End:     {memory_end:.2f} MB")
     print(f"  Growth:  {memory_growth:.2f} MB ({(memory_growth/memory_start)*100:.1f}%)")
@@ -572,7 +571,7 @@ async def test_comparison_with_vs_without_governance(mock_governance, mock_agent
     overhead_latency_p95 = result_with.latency_p95_ms - result_without.latency_p95_ms
     overhead_percentage = (overhead_latency_p50 / result_without.latency_p50_ms) * 100 if result_without.latency_p50_ms > 0 else 0
 
-    print(f"\nOVERHEAD ANALYSIS:")
+    print("\nOVERHEAD ANALYSIS:")
     print(f"  p50 overhead: +{overhead_latency_p50:.3f}ms ({overhead_percentage:.1f}%)")
     print(f"  p95 overhead: +{overhead_latency_p95:.3f}ms")
     print(f"  Throughput ratio: {result_without.throughput_ops_per_sec / result_with.throughput_ops_per_sec:.2f}x")

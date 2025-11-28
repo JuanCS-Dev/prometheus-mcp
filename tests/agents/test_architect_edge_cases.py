@@ -176,7 +176,7 @@ class TestArchitectRealWorldScenarios:
         assert response.data["decision"] == "VETOED"
         # Check reasoning contains risk keywords
         reasoning_lower = response.reasoning.lower()
-        assert ("downtime" in reasoning_lower or "data loss" in reasoning_lower or 
+        assert ("downtime" in reasoning_lower or "data loss" in reasoning_lower or
                 "breaks" in reasoning_lower or "migration" in reasoning_lower)
 
     @pytest.mark.asyncio

@@ -11,7 +11,6 @@ Tests cover:
 
 Based on pytest + hypothesis patterns from Anthropic's Claude Code.
 """
-import pytest
 from rich.panel import Panel
 from rich.text import Text
 from rich.markdown import Markdown
@@ -21,9 +20,7 @@ from jdev_tui.core.output_formatter import (
     OutputFormatter,
     Colors,
     Icons,
-    TruncationConfig,
     TruncatedContent,
-    SmartTruncator,
     TRUNCATOR,
     TRUNCATION_CONFIG,
     response_panel,

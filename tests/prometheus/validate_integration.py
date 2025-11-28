@@ -9,7 +9,7 @@ Run: python tests/prometheus/validate_integration.py
 import asyncio
 import os
 import sys
-from typing import Dict, Any, List, Tuple
+from typing import Dict, Any, List
 from datetime import datetime
 
 # Add project root to path
@@ -292,11 +292,6 @@ class PrometheusIntegrationValidator:
                 ))
 
             # Check prometheus_components.py
-            from gradio_ui.prometheus_components import (
-                render_memory_panel,
-                render_world_model_preview,
-                render_evolution_progress,
-            )
 
             self.results.append(ValidationResult(
                 "gradio:components",

@@ -15,7 +15,7 @@ from rich.prompt import Confirm
 
 # Lazy import for heavy TUI component (saves ~85ms startup time)
 if TYPE_CHECKING:
-    from ..tui.components.diff import DiffViewer, DiffMode
+    pass
 
 from ..core.types import FilePath
 
@@ -38,7 +38,7 @@ class PreviewMixin:
     
     The mixin wraps execute() to show preview and ask confirmation.
     """
-    
+
     def __init__(self, *args, enable_preview: bool = True, **kwargs):
         """
         Initialize preview mixin.
@@ -50,17 +50,17 @@ class PreviewMixin:
         self.enable_preview = enable_preview
         self.console = Console()
         # DiffViewer will be created when needed
-        
+
         # Undo stack (simple implementation)
         self._undo_stack: list[Tuple[FilePath, str]] = []
-    
+
     def _get_file_content_safe(self, path: FilePath) -> str:
         """Safely read file content, return empty string if not exists."""
         try:
             return Path(path).read_text(encoding='utf-8')
         except (FileNotFoundError, PermissionError):
             return ""
-    
+
     def _show_preview(
         self,
         path: FilePath,
@@ -82,18 +82,18 @@ class PreviewMixin:
         """
         if not self.enable_preview:
             return True
-        
+
         # Show diff
         self.console.print()
         self.console.print(Panel(
             f"[bold cyan]{operation.upper()}:[/bold cyan] {path}",
             style="cyan"
         ))
-        
+
         if old_content == new_content:
             self.console.print("[yellow]⚠️  No changes detected[/yellow]")
             return Confirm.ask("Proceed anyway?", default=False)
-        
+
         # Render diff (create viewer on demand) - lazy loaded
         DiffViewer, DiffMode = _get_diff_viewer()
         diff_viewer = DiffViewer()
@@ -104,33 +104,33 @@ class PreviewMixin:
             new_label=f"{path} (proposed)",
             mode=DiffMode.UNIFIED
         )
-        
+
         # Ask confirmation
         self.console.print()
         confirmed = Confirm.ask(
             f"[bold]Apply changes to {path}?[/bold]",
             default=True
         )
-        
+
         return confirmed
-    
+
     def _backup_for_undo(self, path: FilePath) -> None:
         """Backup file content for undo."""
         try:
             content = self._get_file_content_safe(path)
             self._undo_stack.append((path, content))
-            
+
             # Keep only last 10 operations
             if len(self._undo_stack) > 10:
                 self._undo_stack.pop(0)
         except Exception:
             # Don't fail on backup errors
             pass
-    
+
     def can_undo(self) -> bool:
         """Check if undo is available."""
         return len(self._undo_stack) > 0
-    
+
     def undo_last(self) -> Optional[str]:
         """
         Undo last file modification.
@@ -140,9 +140,9 @@ class PreviewMixin:
         """
         if not self._undo_stack:
             return None
-        
+
         path, old_content = self._undo_stack.pop()
-        
+
         try:
             Path(path).write_text(old_content, encoding='utf-8')
             return f"✓ Reverted changes to {path}"
@@ -157,7 +157,7 @@ class PreviewableWriteTool(PreviewMixin):
     This is a standalone tool that can replace WriteFileTool
     or be used as a reference implementation.
     """
-    
+
     def execute(
         self,
         path: str,
@@ -176,10 +176,10 @@ class PreviewableWriteTool(PreviewMixin):
             Result dict with success status
         """
         self.enable_preview = preview
-        
+
         # Get current content
         old_content = self._get_file_content_safe(path)
-        
+
         # Show preview and get confirmation
         if not self._show_preview(path, old_content, content, "write"):
             return {
@@ -187,16 +187,16 @@ class PreviewableWriteTool(PreviewMixin):
                 "message": "Operation cancelled by user",
                 "path": path
             }
-        
+
         # Backup for undo
         if Path(path).exists():
             self._backup_for_undo(path)
-        
+
         # Write file
         try:
             Path(path).parent.mkdir(parents=True, exist_ok=True)
             Path(path).write_text(content, encoding='utf-8')
-            
+
             return {
                 "success": True,
                 "message": f"✓ Written {len(content)} bytes to {path}",

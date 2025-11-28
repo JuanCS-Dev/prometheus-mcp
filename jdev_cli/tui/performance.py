@@ -7,7 +7,7 @@ import time
 import logging
 from collections import deque
 from typing import Optional, Deque
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from contextlib import contextmanager
 
 from rich.panel import Panel

@@ -17,7 +17,6 @@ Based on November 2025 research but ADAPTED to reality.
 
 import asyncio
 import hashlib
-import json
 from typing import List, Dict, Any, Optional, AsyncIterator
 from dataclasses import dataclass, field
 from datetime import datetime
@@ -76,7 +75,7 @@ class SchemaIssue:
     recommendation: str
     auto_fix_available: bool = False
     estimated_impact: str = ""
-    
+
     def to_dict(self) -> Dict[str, Any]:
         return {
             "table": self.table,
@@ -101,7 +100,7 @@ class QueryOptimization:
     rewritten_query: Optional[str] = None
     required_indexes: List[str] = field(default_factory=list)
     confidence_score: float = 0.0
-    
+
     def to_dict(self) -> Dict[str, Any]:
         return {
             "query_hash": self.query_hash,
@@ -126,7 +125,7 @@ class MigrationPlan:
     estimated_downtime_seconds: float = 0.0
     can_run_online: bool = True
     requires_backup: bool = True
-    
+
     def to_dict(self) -> Dict[str, Any]:
         return {
             "version_id": self.version_id,
@@ -165,7 +164,7 @@ class DataAgent(BaseAgent):
     ✅ Testable in isolation
     ✅ Gradual enhancement path
     """
-    
+
     def __init__(
         self,
         llm_client: Any,
@@ -176,7 +175,7 @@ class DataAgent(BaseAgent):
     ):
         # Wrap LLM client with adapter for thinking features
         self.adapter = LLMClientAdapter(llm_client) if enable_thinking else None
-        
+
         # Initialize base agent with YOUR base.py
         super().__init__(
             role=AgentRole.DATABASE,
@@ -188,17 +187,17 @@ class DataAgent(BaseAgent):
             mcp_client=mcp_client,
             system_prompt=self._build_system_prompt(),
         )
-        
+
         self.db_type = db_type
         self.thinking_budget = thinking_budget
-        
+
         # Learning and caching
         self.learned_patterns: Dict[str, Any] = {}
         self.optimization_history: List[QueryOptimization] = []
         self.query_cache: Dict[str, Any] = {}
-        
+
         self.logger = logging.getLogger("agent.data_production")
-    
+
     def _build_system_prompt(self) -> str:
         """Build system prompt for data operations"""
         return """You are a Database Optimization Specialist.
@@ -216,11 +215,11 @@ Your principles:
 • Learn from patterns to improve over time
 
 Be precise, safe, and proactive."""
-    
+
     # ========================================================================
     # MAIN EXECUTION
     # ========================================================================
-    
+
     async def execute(self, task: AgentTask) -> AgentResponse:
         """
         Main execution entry point.
@@ -228,9 +227,9 @@ Be precise, safe, and proactive."""
         Uses YOUR base.py's execute pattern.
         """
         self.logger.info(f"🔮 DataAgent executing: {task.request}")
-        
+
         start_time = datetime.utcnow()
-        
+
         try:
             # Use adapter for thinking if available
             if self.adapter:
@@ -239,7 +238,7 @@ Be precise, safe, and proactive."""
                     system_prompt=self.system_prompt,
                     thinking_budget=self.thinking_budget,
                 )
-                
+
                 reasoning = result.get("thinking", "")
                 response_text = result.get("response", "")
             else:
@@ -249,12 +248,12 @@ Be precise, safe, and proactive."""
                     system_prompt=self.system_prompt,
                 )
                 reasoning = "Direct generation (thinking disabled)"
-            
+
             # Parse response to extract data
             data = {"response": response_text}
-            
+
             execution_time = (datetime.utcnow() - start_time).total_seconds()
-            
+
             return AgentResponse(
                 success=True,
                 data=data,
@@ -264,7 +263,7 @@ Be precise, safe, and proactive."""
                     "thinking_tokens": len(reasoning.split()) if reasoning else 0,
                 },
             )
-            
+
         except Exception as e:
             self.logger.error(f"❌ Execution failed: {e}")
             return AgentResponse(
@@ -272,11 +271,11 @@ Be precise, safe, and proactive."""
                 error=str(e),
                 reasoning=f"Failed: {str(e)}",
             )
-    
+
     # ========================================================================
     # SCHEMA ANALYSIS
     # ========================================================================
-    
+
     async def analyze_schema(
         self,
         schema_definition: Dict[str, Any]
@@ -287,19 +286,19 @@ Be precise, safe, and proactive."""
         Returns concrete, actionable issues with recommendations.
         """
         self.logger.info("🔍 Analyzing schema...")
-        
+
         issues = []
-        
+
         for table_name, attributes in schema_definition.items():
             columns = attributes.get("columns", {})
             constraints = attributes.get("constraints", [])
-            
+
             # Check 1: Primary key
             has_pk = any(
-                c.get("type") == "PRIMARY_KEY" 
+                c.get("type") == "PRIMARY_KEY"
                 for c in constraints
             )
-            
+
             if not has_pk:
                 issues.append(SchemaIssue(
                     table=table_name,
@@ -310,13 +309,13 @@ Be precise, safe, and proactive."""
                     auto_fix_available=True,
                     estimated_impact="High - affects data integrity and joins",
                 ))
-            
+
             # Check 2: Audit timestamps
             has_audit = all(
-                col in columns 
+                col in columns
                 for col in ["created_at", "updated_at"]
             )
-            
+
             if not has_audit:
                 issues.append(SchemaIssue(
                     table=table_name,
@@ -327,13 +326,13 @@ Be precise, safe, and proactive."""
                     auto_fix_available=True,
                     estimated_impact="Medium - affects debugging and compliance",
                 ))
-            
+
             # Check 3: JSON overuse (denormalization risk)
             json_cols = [
-                col for col, dtype in columns.items() 
+                col for col, dtype in columns.items()
                 if "JSON" in str(dtype).upper()
             ]
-            
+
             if len(json_cols) > 2:
                 issues.append(SchemaIssue(
                     table=table_name,
@@ -344,14 +343,14 @@ Be precise, safe, and proactive."""
                     auto_fix_available=False,
                     estimated_impact="High - affects query performance",
                 ))
-        
+
         self.logger.info(f"✅ Found {len(issues)} schema issues")
         return issues
-    
+
     # ========================================================================
     # QUERY OPTIMIZATION
     # ========================================================================
-    
+
     async def optimize_query(
         self,
         query: str,
@@ -363,14 +362,14 @@ Be precise, safe, and proactive."""
         Uses simulated extended thinking if enabled.
         """
         self.logger.info(f"⚡ Optimizing query: {query[:50]}...")
-        
+
         query_hash = hashlib.md5(query.encode()).hexdigest()
-        
+
         # Check cache
         if query_hash in self.query_cache:
             self.logger.info("📦 Using cached optimization")
             return self.query_cache[query_hash]
-        
+
         # Build optimization prompt
         prompt = f"""
 Analyze this SQL query for optimization:
@@ -394,7 +393,7 @@ Provide:
 
 Be specific and actionable.
 """
-        
+
         # Use thinking if available
         if use_thinking and self.adapter:
             result = await self.adapter.generate_with_thinking(
@@ -404,10 +403,10 @@ Be specific and actionable.
             analysis = result.get("response", "")
         else:
             analysis = await self._call_llm(prompt)
-        
+
         # Parse analysis (simplified - real version would be more robust)
         # For production, you'd parse the LLM response more carefully
-        
+
         optimization = QueryOptimization(
             query_hash=query_hash,
             original_query=query,
@@ -419,18 +418,18 @@ Be specific and actionable.
             required_indexes=["users(email)", "orders(user_id, created_at)"],
             confidence_score=0.85,
         )
-        
+
         # Cache it
         self.query_cache[query_hash] = optimization
         self.optimization_history.append(optimization)
-        
+
         self.logger.info(f"✅ Optimization: {optimization.improvement_percent}% improvement")
         return optimization
-    
+
     # ========================================================================
     # MIGRATION PLANNING
     # ========================================================================
-    
+
     async def generate_migration(
         self,
         changes: List[str],
@@ -442,7 +441,7 @@ Be specific and actionable.
         Uses simulated extended thinking for risk assessment.
         """
         self.logger.info("🏗️ Generating migration plan...")
-        
+
         # Build migration prompt
         prompt = f"""
 Analyze these database changes for safe migration:
@@ -459,7 +458,7 @@ Assess:
 
 Be extremely conservative with risk assessment.
 """
-        
+
         # Use thinking for risk assessment
         if use_thinking and self.adapter:
             result = await self.adapter.generate_with_thinking(
@@ -469,15 +468,15 @@ Be extremely conservative with risk assessment.
             analysis = result.get("response", "")
         else:
             analysis = await self._call_llm(prompt)
-        
+
         # Analyze risk (heuristic-based + LLM insight)
         risk = IssueSeverity.LOW
         can_run_online = True
         downtime = 0.0
-        
+
         for change in changes:
             change_upper = change.upper()
-            
+
             if "DROP" in change_upper:
                 risk = IssueSeverity.CRITICAL
                 can_run_online = False
@@ -486,20 +485,20 @@ Be extremely conservative with risk assessment.
                 if "DEFAULT" not in change_upper:
                     risk = IssueSeverity.HIGH
                     downtime = 2.0
-        
+
         # Generate migration
         timestamp = datetime.utcnow().strftime("%Y%m%d%H%M%S")
         version_id = f"migration_{timestamp}"
-        
+
         # Generate rollback commands
         down_commands = []
         for change in changes:
             if "ADD COLUMN" in change.upper():
                 # Extract column name (simplified)
-                down_commands.append(f"-- Rollback: DROP COLUMN added_column")
+                down_commands.append("-- Rollback: DROP COLUMN added_column")
             else:
                 down_commands.append(f"-- Rollback: {change}")
-        
+
         migration = MigrationPlan(
             version_id=version_id,
             description="Auto-generated by DataAgent v1.0",
@@ -510,14 +509,14 @@ Be extremely conservative with risk assessment.
             can_run_online=can_run_online,
             requires_backup=risk in [IssueSeverity.CRITICAL, IssueSeverity.HIGH],
         )
-        
+
         self.logger.info(f"✅ Migration: {version_id} (Risk: {risk.value})")
         return migration
-    
+
     # ========================================================================
     # STREAMING API (for Real-Time UI)
     # ========================================================================
-    
+
     async def execute_streaming(
         self,
         task: AgentTask
@@ -532,10 +531,10 @@ Be extremely conservative with risk assessment.
             "type": "thinking",
             "data": "Analyzing request...",
         }
-        
+
         # Execute
         response = await self.execute(task)
-        
+
         # Yield result
         yield {
             "type": "complete",
@@ -580,31 +579,30 @@ def create_data_agent(
 # ============================================================================
 
 if __name__ == "__main__":
-    import sys
-    
+
     # Mock LLM client
     class MockLLMClient:
         async def generate(self, prompt, system_prompt=None, **kwargs):
             return "Analysis complete. Schema has 3 issues. Optimization possible."
-        
+
         async def stream(self, prompt, system_prompt=None, **kwargs):
             for word in "Streaming analysis results...".split():
                 yield word + " "
-    
+
     async def demo():
         print("=" * 80)
         print("DATA AGENT PRODUCTION v1.0 - DEMO")
         print("=" * 80)
-        
+
         # Create agent
         llm = MockLLMClient()
         agent = create_data_agent(llm, enable_thinking=True)
-        
+
         # Demo 1: Schema analysis
         print("\n" + "=" * 80)
         print("DEMO 1: Schema Analysis")
         print("=" * 80)
-        
+
         schema = {
             "users": {
                 "columns": {
@@ -617,46 +615,46 @@ if __name__ == "__main__":
                 "constraints": [],
             }
         }
-        
+
         issues = await agent.analyze_schema(schema)
-        
+
         for issue in issues:
             icon = "🔴" if issue.severity == IssueSeverity.CRITICAL else "🟡"
             print(f"{icon} {issue.severity.value.upper()}: {issue.description}")
             print(f"   💡 {issue.recommendation}")
             print()
-        
+
         # Demo 2: Query optimization
         print("=" * 80)
         print("DEMO 2: Query Optimization")
         print("=" * 80)
-        
+
         query = "SELECT * FROM users WHERE email LIKE '%@gmail.com'"
         optimization = await agent.optimize_query(query, use_thinking=True)
-        
+
         print(f"✅ Improvement: {optimization.improvement_percent}%")
         print(f"   Confidence: {optimization.confidence_score}")
         print(f"   Indexes needed: {', '.join(optimization.required_indexes)}")
-        
+
         # Demo 3: Migration planning
         print("\n" + "=" * 80)
         print("DEMO 3: Migration Planning")
         print("=" * 80)
-        
+
         changes = [
             "ALTER TABLE users ADD COLUMN phone VARCHAR(20)",
             "CREATE INDEX idx_users_email ON users(email)",
         ]
-        
+
         migration = await agent.generate_migration(changes, use_thinking=True)
-        
+
         print(f"📦 Migration: {migration.version_id}")
         print(f"   Risk: {migration.risk_level.value}")
         print(f"   Downtime: {migration.estimated_downtime_seconds}s")
         print(f"   Online: {migration.can_run_online}")
-        
+
         print("\n" + "=" * 80)
         print("✅ ALL DEMOS PASSED - PRODUCTION READY")
         print("=" * 80)
-    
+
     asyncio.run(demo())

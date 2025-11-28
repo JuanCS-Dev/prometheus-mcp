@@ -6,7 +6,7 @@ from typing import Optional
 @dataclass
 class MCPConfig:
     """MCP server configuration."""
-    
+
     enabled: bool = False
     host: str = "localhost"
     port: int = 8765
@@ -15,7 +15,7 @@ class MCPConfig:
     enable_shell: bool = True
     shell_timeout: int = 300
     allowed_commands: Optional[list[str]] = None
-    
+
     @classmethod
     def from_env(cls) -> "MCPConfig":
         """Load config from environment variables."""

@@ -17,18 +17,12 @@ All tests use REAL components, not mocks, to catch integration issues.
 import pytest
 import asyncio
 import time
-import uuid
-from datetime import datetime
-from typing import Dict, Any
-from unittest.mock import Mock, patch, AsyncMock
+from unittest.mock import Mock, AsyncMock
 from concurrent.futures import ThreadPoolExecutor
 
 # Real imports - no mocks
 from jdev_cli.maestro_governance import MaestroGovernance
-from jdev_cli.core.governance_pipeline import GovernancePipeline
-from jdev_cli.agents.justica_agent import JusticaIntegratedAgent
-from jdev_cli.agents.sofia_agent import SofiaIntegratedAgent
-from jdev_cli.agents.base import AgentTask, AgentResponse, BaseAgent, AgentRole, AgentCapability
+from jdev_cli.agents.base import AgentTask, AgentResponse, BaseAgent, AgentRole
 from jdev_cli.core.agent_identity import get_agent_identity, AgentPermission
 from jdev_cli.core.llm import LLMClient
 

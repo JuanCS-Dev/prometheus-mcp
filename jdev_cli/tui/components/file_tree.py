@@ -21,11 +21,10 @@ Philosophy:
 Created: 2025-11-19 00:45 UTC
 """
 
-from typing import List, Optional, Dict, Set, Callable
+from typing import List, Optional, Dict, Set
 from dataclasses import dataclass, field
 from pathlib import Path
 from enum import Enum
-import os
 import logging
 
 logger = logging.getLogger(__name__)
@@ -37,7 +36,6 @@ from rich.panel import Panel
 from rich import box
 
 from ..theme import COLORS
-from ..styles import PRESET_STYLES
 
 
 class FileType(Enum):
@@ -79,7 +77,7 @@ class FileNode:
     git_status: Optional[GitStatus] = None
     size: Optional[int] = None
     depth: int = 0
-    
+
     def __post_init__(self, is_directory: Optional[bool] = None) -> None:
         # Allow is_directory as alias for is_dir
         if is_directory is not None:
@@ -88,23 +86,23 @@ class FileNode:
         if self.is_dir and not self.children:
             # Lazy loading - children will be loaded when expanded
             self.children = []
-    
+
     def toggle_expand(self) -> None:
         """Toggle expand/collapse state."""
         if self.is_dir:
             self.expanded = not self.expanded
-    
+
     def add_child(self, node: 'FileNode') -> None:
         """Add child node."""
         if self.is_dir:
             self.children.append(node)
             self.children.sort(key=lambda n: (not n.is_dir, n.name.lower()))
-    
+
     def get_icon(self) -> str:
         """Get icon for file/directory."""
         if self.is_dir:
             return "📂" if self.expanded else "📁"
-        
+
         icons = {
             FileType.PYTHON: "🐍",
             FileType.JAVASCRIPT: "📜",
@@ -119,14 +117,14 @@ class FileNode:
             FileType.BINARY: "📦",
             FileType.UNKNOWN: "❓"
         }
-        
+
         return icons.get(self.type, "📄")
-    
+
     def get_git_indicator(self) -> Optional[str]:
         """Get git status indicator."""
         if self.git_status is None or self.git_status == GitStatus.CLEAN:
             return None
-        
+
         indicators = {
             GitStatus.UNTRACKED: "?",
             GitStatus.MODIFIED: "M",
@@ -134,7 +132,7 @@ class FileNode:
             GitStatus.DELETED: "D",
             GitStatus.RENAMED: "R"
         }
-        
+
         return indicators.get(self.git_status, "")
 
 
@@ -142,9 +140,9 @@ def detect_file_type(path: Path) -> FileType:
     """Detect file type from path."""
     if path.is_dir():
         return FileType.DIRECTORY
-    
+
     suffix = path.suffix.lower()
-    
+
     type_map = {
         '.py': FileType.PYTHON,
         '.js': FileType.JAVASCRIPT,
@@ -167,7 +165,7 @@ def detect_file_type(path: Path) -> FileType:
         '.txt': FileType.TEXT,
         '.log': FileType.TEXT
     }
-    
+
     return type_map.get(suffix, FileType.UNKNOWN)
 
 
@@ -183,7 +181,7 @@ class FileTree:
     - Keyboard navigation
     - Click to open/close
     """
-    
+
     def __init__(
         self,
         root_path: Path,
@@ -197,32 +195,32 @@ class FileTree:
         self.max_depth = max_depth
         self.show_hidden = show_hidden
         self.git_aware = git_aware
-        
+
         self.root_node: Optional[FileNode] = None
         self.selected_node: Optional[FileNode] = None
         self.expanded_paths: Set[str] = set()
         self.git_status_cache: Dict[str, GitStatus] = {}
-        
+
         # Filters
         self.ignore_patterns = {
             '__pycache__', '.git', '.venv', 'venv', 'node_modules',
             '.pytest_cache', '.mypy_cache', 'dist', 'build', '.eggs'
         }
-    
+
     def build_tree(self) -> FileNode:
         """Build file tree from root path."""
         self.root_node = self._build_node(self.root_path, depth=0)
-        
+
         if self.git_aware:
             self._load_git_status()
-        
+
         return self.root_node
-    
+
     def _build_node(self, path: Path, depth: int) -> FileNode:
         """Build node recursively."""
         is_dir = path.is_dir()
         file_type = detect_file_type(path)
-        
+
         node = FileNode(
             name=path.name or str(path),
             path=path,
@@ -231,7 +229,7 @@ class FileTree:
             depth=depth,
             expanded=str(path) in self.expanded_paths
         )
-        
+
         # Build children for directories
         if is_dir and depth < self.max_depth:
             try:
@@ -239,40 +237,40 @@ class FileTree:
                     # Skip hidden files
                     if not self.show_hidden and child_path.name.startswith('.'):
                         continue
-                    
+
                     # Skip ignored patterns
                     if child_path.name in self.ignore_patterns:
                         continue
-                    
+
                     child_node = self._build_node(child_path, depth + 1)
                     node.add_child(child_node)
             except PermissionError as e:
                 logger.debug(f"Permission denied for {node.path}: {e}")
-        
+
         return node
-    
+
     def _load_git_status(self) -> None:
         """Load git status for files."""
         # Git status detection deferred - requires gitpython dependency
         # For now, just placeholder
         pass
-    
+
     def toggle_node(self, node: FileNode) -> None:
         """Toggle expand/collapse for node."""
         node.toggle_expand()
-        
+
         if node.expanded:
             self.expanded_paths.add(str(node.path))
         else:
             self.expanded_paths.discard(str(node.path))
-    
+
     def render(self) -> Panel:
         """Render file tree as Rich panel."""
         if not self.root_node:
             self.build_tree()
-        
+
         tree = self._render_node_tree(self.root_node)
-        
+
         panel = Panel(
             tree,
             title=f"📁 {self.root_path.name}",
@@ -281,53 +279,53 @@ class FileTree:
             box=box.ROUNDED,
             padding=(1, 1)
         )
-        
+
         return panel
-    
+
     def _render_node_tree(self, node: FileNode) -> Tree:
         """Render node as Rich Tree."""
         # Create label
         label = self._create_node_label(node)
-        
+
         # Create tree
         tree = Tree(label)
-        
+
         # Add children if expanded
         if node.is_dir and node.expanded:
             for child in node.children:
                 child_tree = self._render_node_tree(child)
                 tree.add(child_tree)
-        
+
         return tree
-    
+
     def _create_node_label(self, node: FileNode) -> Text:
         """Create label for node."""
         label = Text()
-        
+
         # Icon
         icon = node.get_icon()
         label.append(f"{icon} ", style=COLORS['secondary'])
-        
+
         # Name
         name_style = f"bold {COLORS['primary']}" if node.is_dir else COLORS['secondary']
         if node == self.selected_node:
             name_style = f"bold {COLORS['accent']}"
-        
+
         label.append(node.name, style=name_style)
-        
+
         # Git status indicator
         git_indicator = node.get_git_indicator()
         if git_indicator:
             git_color = self._get_git_color(node.git_status)
             label.append(f" [{git_indicator}]", style=f"bold {git_color}")
-        
+
         # Size for files
         if not node.is_dir and node.size:
             size_str = self._format_size(node.size)
             label.append(f" ({size_str})", style=f"dim {COLORS['muted']}")
-        
+
         return label
-    
+
     def _get_git_color(self, status: Optional[GitStatus]) -> str:
         """Get color for git status."""
         colors = {
@@ -338,7 +336,7 @@ class FileTree:
             GitStatus.RENAMED: COLORS['accent']
         }
         return colors.get(status, COLORS['muted'])
-    
+
     def _format_size(self, size_bytes: int) -> str:
         """Format file size."""
         size: float = float(size_bytes)
@@ -347,26 +345,26 @@ class FileTree:
                 return f"{size:.1f}{unit}"
             size /= 1024.0
         return f"{size:.1f}TB"
-    
+
     def find_node(self, path: Path) -> Optional[FileNode]:
         """Find node by path."""
         if not self.root_node:
             return None
-        
+
         return self._find_node_recursive(self.root_node, path)
-    
+
     def _find_node_recursive(self, node: FileNode, path: Path) -> Optional[FileNode]:
         """Find node recursively."""
         if node.path == path:
             return node
-        
+
         for child in node.children:
             result = self._find_node_recursive(child, path)
             if result:
                 return result
-        
+
         return None
-    
+
     def refresh(self) -> None:
         """Refresh file tree."""
         self.root_node = None

@@ -2,16 +2,14 @@
 Day 3 - Refactorer Comprehensive Tests (Boris Cherny Standards)
 Tests completos do Refactorer Agent com todos os edge cases.
 """
-import pytest
 from pathlib import Path
-from unittest.mock import Mock, patch
 from jdev_cli.agents.refactorer import RefactorerAgent
-from jdev_cli.agents.base import AgentRole, TaskContext, TaskStatus
+from jdev_cli.agents.base import TaskContext, TaskStatus
 
 
 class TestRefactorerCodeSmells:
     """Tests de detecção de code smells"""
-    
+
     def test_refactorer_detects_long_methods(self):
         """Deve detectar métodos muito longos"""
         agent = RefactorerAgent()
@@ -22,7 +20,7 @@ class TestRefactorerCodeSmells:
         )
         result = agent.execute(context)
         assert result.status == TaskStatus.SUCCESS
-    
+
     def test_refactorer_detects_god_classes(self):
         """Deve detectar God Classes"""
         agent = RefactorerAgent()
@@ -33,7 +31,7 @@ class TestRefactorerCodeSmells:
         )
         result = agent.execute(context)
         assert result.status == TaskStatus.SUCCESS
-    
+
     def test_refactorer_detects_duplicate_code(self):
         """Deve detectar código duplicado"""
         agent = RefactorerAgent()
@@ -44,7 +42,7 @@ class TestRefactorerCodeSmells:
         )
         result = agent.execute(context)
         assert result.status == TaskStatus.SUCCESS
-    
+
     def test_refactorer_detects_deep_nesting(self):
         """Deve detectar aninhamento profundo"""
         agent = RefactorerAgent()
@@ -55,7 +53,7 @@ class TestRefactorerCodeSmells:
         )
         result = agent.execute(context)
         assert result.status == TaskStatus.SUCCESS
-    
+
     def test_refactorer_detects_magic_numbers(self):
         """Deve detectar magic numbers"""
         agent = RefactorerAgent()
@@ -66,7 +64,7 @@ class TestRefactorerCodeSmells:
         )
         result = agent.execute(context)
         assert result.status == TaskStatus.SUCCESS
-    
+
     def test_refactorer_detects_shotgun_surgery(self):
         """Deve detectar shotgun surgery"""
         agent = RefactorerAgent()
@@ -77,7 +75,7 @@ class TestRefactorerCodeSmells:
         )
         result = agent.execute(context)
         assert result.status == TaskStatus.SUCCESS
-    
+
     def test_refactorer_detects_feature_envy(self):
         """Deve detectar feature envy"""
         agent = RefactorerAgent()
@@ -88,7 +86,7 @@ class TestRefactorerCodeSmells:
         )
         result = agent.execute(context)
         assert result.status == TaskStatus.SUCCESS
-    
+
     def test_refactorer_detects_primitive_obsession(self):
         """Deve detectar primitive obsession"""
         agent = RefactorerAgent()
@@ -99,7 +97,7 @@ class TestRefactorerCodeSmells:
         )
         result = agent.execute(context)
         assert result.status == TaskStatus.SUCCESS
-    
+
     def test_refactorer_detects_lazy_class(self):
         """Deve detectar lazy classes"""
         agent = RefactorerAgent()
@@ -110,7 +108,7 @@ class TestRefactorerCodeSmells:
         )
         result = agent.execute(context)
         assert result.status == TaskStatus.SUCCESS
-    
+
     def test_refactorer_detects_data_clumps(self):
         """Deve detectar data clumps"""
         agent = RefactorerAgent()
@@ -125,7 +123,7 @@ class TestRefactorerCodeSmells:
 
 class TestRefactorerRefactoringStrategies:
     """Tests de estratégias de refatoração"""
-    
+
     def test_refactorer_suggests_extract_method(self):
         """Deve sugerir Extract Method"""
         agent = RefactorerAgent()
@@ -136,7 +134,7 @@ class TestRefactorerRefactoringStrategies:
         )
         result = agent.execute(context)
         assert result.status == TaskStatus.SUCCESS
-    
+
     def test_refactorer_suggests_extract_class(self):
         """Deve sugerir Extract Class"""
         agent = RefactorerAgent()
@@ -147,7 +145,7 @@ class TestRefactorerRefactoringStrategies:
         )
         result = agent.execute(context)
         assert result.status == TaskStatus.SUCCESS
-    
+
     def test_refactorer_suggests_introduce_parameter_object(self):
         """Deve sugerir Introduce Parameter Object"""
         agent = RefactorerAgent()
@@ -158,7 +156,7 @@ class TestRefactorerRefactoringStrategies:
         )
         result = agent.execute(context)
         assert result.status == TaskStatus.SUCCESS
-    
+
     def test_refactorer_suggests_replace_conditional_with_polymorphism(self):
         """Deve sugerir Replace Conditional with Polymorphism"""
         agent = RefactorerAgent()
@@ -169,7 +167,7 @@ class TestRefactorerRefactoringStrategies:
         )
         result = agent.execute(context)
         assert result.status == TaskStatus.SUCCESS
-    
+
     def test_refactorer_suggests_introduce_null_object(self):
         """Deve sugerir Introduce Null Object"""
         agent = RefactorerAgent()
@@ -180,7 +178,7 @@ class TestRefactorerRefactoringStrategies:
         )
         result = agent.execute(context)
         assert result.status == TaskStatus.SUCCESS
-    
+
     def test_refactorer_suggests_replace_magic_number(self):
         """Deve sugerir Replace Magic Number with Symbolic Constant"""
         agent = RefactorerAgent()
@@ -191,7 +189,7 @@ class TestRefactorerRefactoringStrategies:
         )
         result = agent.execute(context)
         assert result.status == TaskStatus.SUCCESS
-    
+
     def test_refactorer_suggests_simplify_conditional(self):
         """Deve sugerir Simplify Conditional"""
         agent = RefactorerAgent()
@@ -202,7 +200,7 @@ class TestRefactorerRefactoringStrategies:
         )
         result = agent.execute(context)
         assert result.status == TaskStatus.SUCCESS
-    
+
     def test_refactorer_suggests_consolidate_duplicate_fragments(self):
         """Deve sugerir Consolidate Duplicate Conditional Fragments"""
         agent = RefactorerAgent()
@@ -213,7 +211,7 @@ class TestRefactorerRefactoringStrategies:
         )
         result = agent.execute(context)
         assert result.status == TaskStatus.SUCCESS
-    
+
     def test_refactorer_suggests_decompose_conditional(self):
         """Deve sugerir Decompose Conditional"""
         agent = RefactorerAgent()
@@ -224,7 +222,7 @@ class TestRefactorerRefactoringStrategies:
         )
         result = agent.execute(context)
         assert result.status == TaskStatus.SUCCESS
-    
+
     def test_refactorer_suggests_replace_temp_with_query(self):
         """Deve sugerir Replace Temp with Query"""
         agent = RefactorerAgent()
@@ -239,7 +237,7 @@ class TestRefactorerRefactoringStrategies:
 
 class TestRefactorerTypeSafety:
     """Tests de melhorias em type safety"""
-    
+
     def test_refactorer_adds_missing_type_hints(self):
         """Deve adicionar type hints faltantes"""
         agent = RefactorerAgent()
@@ -250,7 +248,7 @@ class TestRefactorerTypeSafety:
         )
         result = agent.execute(context)
         assert result.status == TaskStatus.SUCCESS
-    
+
     def test_refactorer_replaces_any_with_specific_types(self):
         """Deve substituir Any por tipos específicos"""
         agent = RefactorerAgent()
@@ -261,7 +259,7 @@ class TestRefactorerTypeSafety:
         )
         result = agent.execute(context)
         assert result.status == TaskStatus.SUCCESS
-    
+
     def test_refactorer_introduces_generic_types(self):
         """Deve introduzir tipos genéricos onde apropriado"""
         agent = RefactorerAgent()
@@ -272,7 +270,7 @@ class TestRefactorerTypeSafety:
         )
         result = agent.execute(context)
         assert result.status == TaskStatus.SUCCESS
-    
+
     def test_refactorer_uses_union_types(self):
         """Deve usar Union types corretamente"""
         agent = RefactorerAgent()
@@ -283,7 +281,7 @@ class TestRefactorerTypeSafety:
         )
         result = agent.execute(context)
         assert result.status == TaskStatus.SUCCESS
-    
+
     def test_refactorer_introduces_type_guards(self):
         """Deve introduzir type guards"""
         agent = RefactorerAgent()
@@ -294,7 +292,7 @@ class TestRefactorerTypeSafety:
         )
         result = agent.execute(context)
         assert result.status == TaskStatus.SUCCESS
-    
+
     def test_refactorer_uses_literal_types(self):
         """Deve usar Literal types para constantes"""
         agent = RefactorerAgent()
@@ -305,7 +303,7 @@ class TestRefactorerTypeSafety:
         )
         result = agent.execute(context)
         assert result.status == TaskStatus.SUCCESS
-    
+
     def test_refactorer_uses_protocol_types(self):
         """Deve usar Protocol para duck typing"""
         agent = RefactorerAgent()
@@ -316,7 +314,7 @@ class TestRefactorerTypeSafety:
         )
         result = agent.execute(context)
         assert result.status == TaskStatus.SUCCESS
-    
+
     def test_refactorer_adds_type_aliases(self):
         """Deve adicionar type aliases para clareza"""
         agent = RefactorerAgent()
@@ -331,7 +329,7 @@ class TestRefactorerTypeSafety:
 
 class TestRefactorerErrorHandling:
     """Tests de melhorias em error handling"""
-    
+
     def test_refactorer_adds_specific_exceptions(self):
         """Deve adicionar exceções específicas"""
         agent = RefactorerAgent()
@@ -342,7 +340,7 @@ class TestRefactorerErrorHandling:
         )
         result = agent.execute(context)
         assert result.status == TaskStatus.SUCCESS
-    
+
     def test_refactorer_removes_bare_except(self):
         """Deve remover bare except clauses"""
         agent = RefactorerAgent()
@@ -353,7 +351,7 @@ class TestRefactorerErrorHandling:
         )
         result = agent.execute(context)
         assert result.status == TaskStatus.SUCCESS
-    
+
     def test_refactorer_adds_context_managers(self):
         """Deve adicionar context managers"""
         agent = RefactorerAgent()
@@ -364,7 +362,7 @@ class TestRefactorerErrorHandling:
         )
         result = agent.execute(context)
         assert result.status == TaskStatus.SUCCESS
-    
+
     def test_refactorer_adds_error_messages(self):
         """Deve adicionar mensagens de erro descritivas"""
         agent = RefactorerAgent()
@@ -375,7 +373,7 @@ class TestRefactorerErrorHandling:
         )
         result = agent.execute(context)
         assert result.status == TaskStatus.SUCCESS
-    
+
     def test_refactorer_implements_retry_logic(self):
         """Deve implementar retry logic onde apropriado"""
         agent = RefactorerAgent()
@@ -390,7 +388,7 @@ class TestRefactorerErrorHandling:
 
 class TestRefactorerPerformance:
     """Tests de otimizações de performance"""
-    
+
     def test_refactorer_identifies_n_plus_one(self):
         """Deve identificar N+1 queries"""
         agent = RefactorerAgent()
@@ -401,7 +399,7 @@ class TestRefactorerPerformance:
         )
         result = agent.execute(context)
         assert result.status == TaskStatus.SUCCESS
-    
+
     def test_refactorer_suggests_caching(self):
         """Deve sugerir caching onde apropriado"""
         agent = RefactorerAgent()
@@ -412,7 +410,7 @@ class TestRefactorerPerformance:
         )
         result = agent.execute(context)
         assert result.status == TaskStatus.SUCCESS
-    
+
     def test_refactorer_suggests_lazy_loading(self):
         """Deve sugerir lazy loading"""
         agent = RefactorerAgent()
@@ -423,7 +421,7 @@ class TestRefactorerPerformance:
         )
         result = agent.execute(context)
         assert result.status == TaskStatus.SUCCESS
-    
+
     def test_refactorer_identifies_memory_leaks(self):
         """Deve identificar possíveis memory leaks"""
         agent = RefactorerAgent()
@@ -434,7 +432,7 @@ class TestRefactorerPerformance:
         )
         result = agent.execute(context)
         assert result.status == TaskStatus.SUCCESS
-    
+
     def test_refactorer_suggests_batch_operations(self):
         """Deve sugerir batch operations"""
         agent = RefactorerAgent()
@@ -449,7 +447,7 @@ class TestRefactorerPerformance:
 
 class TestRefactorerDocumentation:
     """Tests de melhorias em documentação"""
-    
+
     def test_refactorer_adds_docstrings(self):
         """Deve adicionar docstrings faltantes"""
         agent = RefactorerAgent()
@@ -460,7 +458,7 @@ class TestRefactorerDocumentation:
         )
         result = agent.execute(context)
         assert result.status == TaskStatus.SUCCESS
-    
+
     def test_refactorer_improves_docstring_quality(self):
         """Deve melhorar qualidade de docstrings"""
         agent = RefactorerAgent()
@@ -471,7 +469,7 @@ class TestRefactorerDocumentation:
         )
         result = agent.execute(context)
         assert result.status == TaskStatus.SUCCESS
-    
+
     def test_refactorer_adds_usage_examples(self):
         """Deve adicionar exemplos de uso"""
         agent = RefactorerAgent()
@@ -482,7 +480,7 @@ class TestRefactorerDocumentation:
         )
         result = agent.execute(context)
         assert result.status == TaskStatus.SUCCESS
-    
+
     def test_refactorer_documents_edge_cases(self):
         """Deve documentar edge cases"""
         agent = RefactorerAgent()
@@ -493,7 +491,7 @@ class TestRefactorerDocumentation:
         )
         result = agent.execute(context)
         assert result.status == TaskStatus.SUCCESS
-    
+
     def test_refactorer_adds_parameter_descriptions(self):
         """Deve adicionar descrições de parâmetros"""
         agent = RefactorerAgent()
@@ -508,7 +506,7 @@ class TestRefactorerDocumentation:
 
 class TestRefactorerCodeOrganization:
     """Tests de organização de código"""
-    
+
     def test_refactorer_suggests_module_split(self):
         """Deve sugerir split de módulos grandes"""
         agent = RefactorerAgent()
@@ -519,7 +517,7 @@ class TestRefactorerCodeOrganization:
         )
         result = agent.execute(context)
         assert result.status == TaskStatus.SUCCESS
-    
+
     def test_refactorer_improves_import_organization(self):
         """Deve melhorar organização de imports"""
         agent = RefactorerAgent()
@@ -530,7 +528,7 @@ class TestRefactorerCodeOrganization:
         )
         result = agent.execute(context)
         assert result.status == TaskStatus.SUCCESS
-    
+
     def test_refactorer_suggests_better_naming(self):
         """Deve sugerir nomes melhores"""
         agent = RefactorerAgent()
@@ -541,7 +539,7 @@ class TestRefactorerCodeOrganization:
         )
         result = agent.execute(context)
         assert result.status == TaskStatus.SUCCESS
-    
+
     def test_refactorer_groups_related_functions(self):
         """Deve agrupar funções relacionadas"""
         agent = RefactorerAgent()
@@ -552,7 +550,7 @@ class TestRefactorerCodeOrganization:
         )
         result = agent.execute(context)
         assert result.status == TaskStatus.SUCCESS
-    
+
     def test_refactorer_suggests_abstraction_layers(self):
         """Deve sugerir camadas de abstração"""
         agent = RefactorerAgent()
@@ -567,7 +565,7 @@ class TestRefactorerCodeOrganization:
 
 class TestRefactorerEdgeCases:
     """Tests de edge cases"""
-    
+
     def test_refactorer_handles_perfect_code(self):
         """Deve tratar código já perfeito"""
         agent = RefactorerAgent()
@@ -578,7 +576,7 @@ class TestRefactorerEdgeCases:
         )
         result = agent.execute(context)
         assert result.status == TaskStatus.SUCCESS
-    
+
     def test_refactorer_handles_legacy_code(self):
         """Deve tratar código legado"""
         agent = RefactorerAgent()
@@ -589,7 +587,7 @@ class TestRefactorerEdgeCases:
         )
         result = agent.execute(context)
         assert result.status == TaskStatus.SUCCESS
-    
+
     def test_refactorer_handles_generated_code(self):
         """Deve tratar código gerado"""
         agent = RefactorerAgent()
@@ -600,7 +598,7 @@ class TestRefactorerEdgeCases:
         )
         result = agent.execute(context)
         assert result.status == TaskStatus.SUCCESS
-    
+
     def test_refactorer_handles_empty_files(self):
         """Deve tratar arquivos vazios"""
         agent = RefactorerAgent()
@@ -611,7 +609,7 @@ class TestRefactorerEdgeCases:
         )
         result = agent.execute(context)
         assert result.status in [TaskStatus.SUCCESS, TaskStatus.FAILED]
-    
+
     def test_refactorer_handles_syntax_errors(self):
         """Deve tratar erros de sintaxe"""
         agent = RefactorerAgent()
@@ -626,7 +624,7 @@ class TestRefactorerEdgeCases:
 
 class TestRefactorerConstitutionalCompliance:
     """Tests de aderência à Constituição"""
-    
+
     def test_refactorer_produces_zero_technical_debt(self):
         """Deve produzir zero technical debt (Artigo VII)"""
         agent = RefactorerAgent()
@@ -637,7 +635,7 @@ class TestRefactorerConstitutionalCompliance:
         )
         result = agent.execute(context)
         assert result.status == TaskStatus.SUCCESS
-    
+
     def test_refactorer_maintains_backward_compatibility(self):
         """Deve manter compatibilidade quando possível"""
         agent = RefactorerAgent()
@@ -648,7 +646,7 @@ class TestRefactorerConstitutionalCompliance:
         )
         result = agent.execute(context)
         assert result.status == TaskStatus.SUCCESS
-    
+
     def test_refactorer_provides_migration_guide(self):
         """Deve prover guia de migração para breaking changes"""
         agent = RefactorerAgent()
@@ -659,7 +657,7 @@ class TestRefactorerConstitutionalCompliance:
         )
         result = agent.execute(context)
         assert result.status == TaskStatus.SUCCESS
-    
+
     def test_refactorer_respects_token_budget(self):
         """Deve respeitar budget de tokens"""
         agent = RefactorerAgent()

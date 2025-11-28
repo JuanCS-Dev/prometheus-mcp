@@ -4,7 +4,7 @@ Réplica pixel-perfect da imagem de referência com glassmorphism neon.
 """
 from __future__ import annotations
 
-from typing import List, Final
+from typing import List
 
 
 def render_tailwind_header() -> str:
@@ -64,11 +64,11 @@ def render_gauge(percentage: float, label: str, max_value: str) -> str:
     - Cores: Cyan por padrão, Orange/Red em warning
     """
     percentage = max(0.0, min(100.0, percentage))
-    
+
     radius = 60
     circumference = 2 * 3.14159 * radius
     offset = circumference - (percentage / 100) * circumference
-    
+
     # Cor dinâmica baseada no percentual
     if percentage >= 90:
         stroke_color = "#EF4444"  # Red
@@ -79,7 +79,7 @@ def render_gauge(percentage: float, label: str, max_value: str) -> str:
     else:
         stroke_color = "#00D9FF"  # Cyan
         glow_color = "rgba(0, 217, 255, 0.8)"
-    
+
     return f"""
     <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; padding: 16px;">
         <div style="position: relative; width: 140px; height: 140px;">
@@ -126,13 +126,13 @@ def render_bar_chart(values: List[float], label: str) -> str:
     - Responsive height baseada em valores
     """
     max_val = max(values) if values else 1.0
-    
+
     bars_html = ""
     for i, val in enumerate(values):
         # Normalizar valor para 0-1
         norm_val = val / max_val if max_val > 0 else 0.5
         height_percent = norm_val * 100
-        
+
         # Cores degradadas cyan
         bars_html += f"""
         <div style="display: flex; align-items: flex-end; justify-content: center; 
@@ -148,7 +148,7 @@ def render_bar_chart(values: List[float], label: str) -> str:
             </div>
         </div>
         """
-    
+
     return f"""
     <div style="display: flex; flex-direction: column; justify-content: flex-end; height: 100%; padding: 12px;">
         <!-- Bars container -->
@@ -187,7 +187,7 @@ def render_dual_gauge(left_val: float, left_label: str, right_val: float, right_
         radius = 18
         circ = 2 * 3.14159 * radius
         off = circ * (1 - val/100)
-        
+
         return f"""
         <div style="display: flex; flex-direction: column; align-items: center; gap: 4px;">
             <div style="position: relative; width: 56px; height: 56px;">
@@ -210,7 +210,7 @@ def render_dual_gauge(left_val: float, left_label: str, right_val: float, right_
             </span>
         </div>
         """
-    
+
     return f"""
     <div style="display: flex; justify-content: space-around; align-items: center; height: 100%; padding: 8px;">
         {mini_gauge_svg(left_val, left_label.upper(), "#00D9FF")}
@@ -233,11 +233,11 @@ def render_terminal_logs(logs: List[str]) -> str:
     - Cursor    -> Cyan pulsante
     """
     log_lines = ""
-    
+
     for log in (logs or [])[-15:]:  # Últimas 15 linhas
         # Extrair nível e cores
         color_class = "text-gray-400"
-        
+
         if "[INFO]" in log:
             color_class = "text-blue-400"
         elif "[SUCCESS]" in log:
@@ -246,7 +246,7 @@ def render_terminal_logs(logs: List[str]) -> str:
             color_class = "text-red-400"
         elif "[WARN]" in log:
             color_class = "text-yellow-400"
-        
+
         # Colorir timestamp separadamente
         parts = log.split(" - ", 1)
         if len(parts) == 2:
@@ -270,7 +270,7 @@ def render_terminal_logs(logs: List[str]) -> str:
                 {log}
             </div>
             """
-    
+
     return f"""
     <div style="background: rgba(0, 0, 0, 0.6); border: 1px solid rgba(0, 217, 255, 0.2); 
                 border-radius: 4px; padding: 8px; font-family: 'Courier New', monospace; 
@@ -373,20 +373,20 @@ def render_memory_status(memory_data: dict) -> str:
     """
     types = ["episodic", "semantic", "procedural", "core", "resource", "vault"]
     active_types = memory_data.get("active_types", [])
-    
+
     grid_html = ""
     for mtype in types:
         is_active = mtype in active_types
         color = "#00D9FF" if is_active else "#4B5563"
         glow = f"box-shadow: 0 0 8px {color};" if is_active else ""
-        
+
         grid_html += f"""
         <div style="display: flex; flex-direction: column; align-items: center; gap: 4px;">
             <div style="width: 12px; height: 12px; border-radius: 50%; background-color: {color}; {glow}"></div>
             <span style="font-size: 9px; color: var(--cyber-muted); font-family: 'Courier New', monospace;">{mtype.upper()}</span>
         </div>
         """
-        
+
     return f"""
     <div style="padding: 8px;">
         <h3 style="font-size: 11px; font-family: 'Courier New', monospace; color: var(--cyber-text); margin-bottom: 8px;">MIRIX MEMORY</h3>
@@ -405,7 +405,7 @@ def render_world_model_status(wm_data: dict) -> str:
     """
     depth = wm_data.get("simulation_depth", 0)
     confidence = wm_data.get("confidence", 0.0)
-    
+
     return f"""
     <div style="padding: 8px;">
         <h3 style="font-size: 11px; font-family: 'Courier New', monospace; color: var(--cyber-text); margin-bottom: 8px;">WORLD MODEL</h3>
@@ -436,7 +436,7 @@ def render_evolution_status(evo_data: dict) -> str:
     """
     generation = evo_data.get("generation", 1)
     mutation_rate = evo_data.get("mutation_rate", 0.0)
-    
+
     return f"""
     <div style="padding: 8px;">
         <h3 style="font-size: 11px; font-family: 'Courier New', monospace; color: var(--cyber-text); margin-bottom: 8px;">EVOLUTION</h3>

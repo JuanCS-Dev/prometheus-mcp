@@ -17,7 +17,7 @@ import random
 import string
 from datetime import datetime
 from typing import Dict, Any, List
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 
 # Add project root to path
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))

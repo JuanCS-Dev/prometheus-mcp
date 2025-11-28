@@ -21,7 +21,7 @@ from uuid import UUID, uuid4
 
 class Severity(Enum):
     """Níveis de severidade para violações."""
-    
+
     CRITICAL = auto()   # Bloqueio imediato + alerta + escalação
     HIGH = auto()       # Bloqueio + documentação
     MEDIUM = auto()     # Warning + monitoramento aumentado
@@ -31,37 +31,37 @@ class Severity(Enum):
 
 class ViolationType(Enum):
     """Tipos de violações que JUSTIÇA monitora e enforça."""
-    
+
     # Violações de Dados
     DATA_EXFILTRATION = "Tentativa de exfiltração de dados sensíveis ou PII"
     UNAUTHORIZED_DATA_ACCESS = "Acesso não autorizado a dados"
     DATA_MANIPULATION = "Manipulação maliciosa de dados"
-    
+
     # Violações de Código
     MALICIOUS_CODE = "Código malicioso (malware, backdoors, exploits)"
     CODE_INJECTION = "Injeção de código não autorizado"
     DEPENDENCY_POISONING = "Tentativa de envenenar dependências"
-    
+
     # Violações de Segurança
     PRIVILEGE_ESCALATION = "Tentativa de escalação de privilégios"
     SECURITY_BYPASS = "Tentativa de bypass de guardrails de segurança"
     AUTHENTICATION_BYPASS = "Tentativa de bypass de autenticação"
-    
+
     # Violações de Prompt/Instrução
     PROMPT_INJECTION = "Tentativa de injeção de prompt"
     INSTRUCTION_OVERRIDE = "Tentativa de sobrescrever instruções do sistema"
     JAILBREAK_ATTEMPT = "Tentativa de jailbreak"
-    
+
     # Violações de Escopo
     SCOPE_VIOLATION = "Agente operando fora do escopo designado"
     ROLE_VIOLATION = "Violação de papel/função designada"
     RESOURCE_ABUSE = "Uso abusivo de recursos do sistema"
-    
+
     # Violações de Coordenação
     MALICIOUS_COORDINATION = "Coordenação maliciosa entre múltiplos agentes"
     COVERT_COMMUNICATION = "Comunicação encoberta entre agentes"
     COLLECTIVE_BYPASS = "Tentativa coletiva de bypass"
-    
+
     # Outras
     UNKNOWN = "Violação não categorizada"
 
@@ -84,7 +84,7 @@ class ConstitutionalPrinciple:
         examples: Exemplos de violação e não-violação
         created_at: Timestamp de criação
     """
-    
+
     id: UUID
     name: str
     description: str
@@ -94,22 +94,22 @@ class ConstitutionalPrinciple:
     keywords: FrozenSet[str] = field(default_factory=frozenset)
     examples: tuple = field(default_factory=tuple)  # Tuple de (exemplo, is_violation)
     created_at: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
-    
+
     def __post_init__(self):
         """Validação após inicialização."""
         if self.category not in ("ALLOW", "DISALLOW", "ESCALATE", "MONITOR"):
             raise ValueError(f"Categoria inválida: {self.category}")
-    
+
     def matches_pattern(self, text: str) -> List[str]:
         """Verifica se o texto contém padrões de violação."""
         text_lower = text.lower()
         return [p for p in self.patterns if p.lower() in text_lower]
-    
+
     def contains_keywords(self, text: str) -> List[str]:
         """Verifica se o texto contém palavras-chave de alerta."""
         text_lower = text.lower()
         return [kw for kw in self.keywords if kw.lower() in text_lower]
-    
+
     def to_dict(self) -> Dict[str, Any]:
         """Serializa para dicionário."""
         return {
@@ -123,7 +123,7 @@ class ConstitutionalPrinciple:
             "examples": list(self.examples),
             "created_at": self.created_at.isoformat(),
         }
-    
+
     @classmethod
     def from_dict(cls, data: Dict[str, Any]) -> ConstitutionalPrinciple:
         """Deserializa de dicionário."""
@@ -162,7 +162,7 @@ class Constitution:
         red_flags: Padrões de linguagem/comportamento suspeito
         escalation_triggers: Condições que requerem julgamento humano
     """
-    
+
     def __init__(
         self,
         version: str = "3.0.0",
@@ -174,27 +174,27 @@ class Constitution:
         self.description = description
         self.created_at = datetime.now(timezone.utc)
         self.last_modified = self.created_at
-        
+
         # Princípios indexados por ID
         self._principles: Dict[UUID, ConstitutionalPrinciple] = {}
-        
+
         # Atividades categorizadas
         self._allowed: Set[str] = set()
         self._disallowed: Set[str] = set()
-        
+
         # Padrões de alerta
         self._red_flags: Set[str] = set()
         self._escalation_triggers: Set[str] = set()
-        
+
         # Hash de integridade
         self._integrity_hash: Optional[str] = None
-        
+
         # Inicializar com princípios fundamentais
         self._initialize_fundamental_principles()
-    
+
     def _initialize_fundamental_principles(self) -> None:
         """Inicializa os princípios fundamentais da constituição."""
-        
+
         # ═══════════════════════════════════════════════════════════════════
         # PRINCÍPIO 1: PROTEÇÃO DA INTEGRIDADE DO SISTEMA
         # ═══════════════════════════════════════════════════════════════════
@@ -211,7 +211,7 @@ class Constitution:
             severity=Severity.CRITICAL,
             patterns=frozenset([
                 "exfiltrar dados",
-                "escalar privilégios", 
+                "escalar privilégios",
                 "bypass segurança",
                 "desabilitar guardrails",
                 "sobrescrever sistema",
@@ -229,7 +229,7 @@ class Constitution:
                 ("Qual a melhor forma de implementar autenticação?", False),
             ),
         ))
-        
+
         # ═══════════════════════════════════════════════════════════════════
         # PRINCÍPIO 2: ENFORCEMENT PROPORCIONAL
         # ═══════════════════════════════════════════════════════════════════
@@ -251,7 +251,7 @@ class Constitution:
             patterns=frozenset([]),
             keywords=frozenset([]),
         ))
-        
+
         # ═══════════════════════════════════════════════════════════════════
         # PRINCÍPIO 3: TRANSPARÊNCIA TOTAL
         # ═══════════════════════════════════════════════════════════════════
@@ -270,7 +270,7 @@ class Constitution:
             category="MONITOR",
             severity=Severity.INFO,
         ))
-        
+
         # ═══════════════════════════════════════════════════════════════════
         # PRINCÍPIO 4: ESCALAÇÃO APROPRIADA
         # ═══════════════════════════════════════════════════════════════════
@@ -297,7 +297,7 @@ class Constitution:
                 "conflito ético",
             ]),
         ))
-        
+
         # ═══════════════════════════════════════════════════════════════════
         # PRINCÍPIO 5: APRENDIZADO CONTÍNUO
         # ═══════════════════════════════════════════════════════════════════
@@ -318,7 +318,7 @@ class Constitution:
             category="MONITOR",
             severity=Severity.INFO,
         ))
-        
+
         # ═══════════════════════════════════════════════════════════════════
         # ATIVIDADES PERMITIDAS
         # ═══════════════════════════════════════════════════════════════════
@@ -336,7 +336,7 @@ class Constitution:
             "Code review de segurança",
             "Análise de vulnerabilidades",
         ])
-        
+
         # ═══════════════════════════════════════════════════════════════════
         # ATIVIDADES PROIBIDAS
         # ═══════════════════════════════════════════════════════════════════
@@ -350,7 +350,7 @@ class Constitution:
             "Modificar a própria constituição em runtime",
             "Ignorar escalação em casos complexos",
         ])
-        
+
         # ═══════════════════════════════════════════════════════════════════
         # RED FLAGS - Linguagem Suspeita
         # ═══════════════════════════════════════════════════════════════════
@@ -362,7 +362,7 @@ class Constitution:
             "just this once", "trust me", "don't tell", "secret", "covert",
             "between us", "off the record", "disable monitoring",
         ])
-        
+
         # ═══════════════════════════════════════════════════════════════════
         # TRIGGERS DE ESCALAÇÃO
         # ═══════════════════════════════════════════════════════════════════
@@ -376,81 +376,81 @@ class Constitution:
             "Operações que afetam múltiplos sistemas",
             "Ambiguidade sobre legalidade/compliance",
         ])
-        
+
         # Calcular hash de integridade
         self._compute_integrity_hash()
-    
+
     def add_principle(self, principle: ConstitutionalPrinciple) -> None:
         """Adiciona um princípio à constituição."""
         self._principles[principle.id] = principle
         self.last_modified = datetime.now(timezone.utc)
         self._integrity_hash = None  # Invalidar hash
-    
+
     def get_principle(self, principle_id: UUID) -> Optional[ConstitutionalPrinciple]:
         """Retorna um princípio específico."""
         return self._principles.get(principle_id)
-    
+
     def get_all_principles(self) -> List[ConstitutionalPrinciple]:
         """Retorna todos os princípios."""
         return list(self._principles.values())
-    
+
     def get_principles_by_category(self, category: str) -> List[ConstitutionalPrinciple]:
         """Retorna princípios de uma categoria específica."""
         return [p for p in self._principles.values() if p.category == category]
-    
+
     @property
     def allowed_activities(self) -> FrozenSet[str]:
         """Retorna atividades permitidas (imutável)."""
         return frozenset(self._allowed)
-    
+
     @property
     def disallowed_activities(self) -> FrozenSet[str]:
         """Retorna atividades proibidas (imutável)."""
         return frozenset(self._disallowed)
-    
+
     @property
     def red_flags(self) -> FrozenSet[str]:
         """Retorna red flags (imutável)."""
         return frozenset(self._red_flags)
-    
+
     @property
     def escalation_triggers(self) -> FrozenSet[str]:
         """Retorna triggers de escalação (imutável)."""
         return frozenset(self._escalation_triggers)
-    
+
     def is_activity_allowed(self, activity: str) -> bool:
         """Verifica se uma atividade é permitida."""
         activity_lower = activity.lower()
-        
+
         # Checar se explicitamente proibido
         for disallowed in self._disallowed:
             if disallowed.lower() in activity_lower:
                 return False
-        
+
         # Checar se explicitamente permitido
         for allowed in self._allowed:
             if allowed.lower() in activity_lower:
                 return True
-        
+
         # Default: requer análise
         return None  # Ambíguo - precisa de análise mais profunda
-    
+
     def check_red_flags(self, text: str) -> List[str]:
         """Verifica presença de red flags no texto."""
         text_lower = text.lower()
         return [flag for flag in self._red_flags if flag.lower() in text_lower]
-    
+
     def check_escalation_needed(self, context: Dict[str, Any]) -> List[str]:
         """Verifica se o contexto requer escalação humana."""
         triggered = []
         context_str = json.dumps(context).lower()
-        
+
         for trigger in self._escalation_triggers:
             if trigger.lower() in context_str:
                 triggered.append(trigger)
-        
+
         return triggered
-    
+
     def _compute_integrity_hash(self) -> str:
         """Computa hash SHA-256 da constituição para verificação de integridade."""
         content = {
@@ -464,18 +464,18 @@ class Constitution:
         content_bytes = json.dumps(content, sort_keys=True).encode("utf-8")
         self._integrity_hash = hashlib.sha256(content_bytes).hexdigest()
         return self._integrity_hash
-    
+
     @property
     def integrity_hash(self) -> str:
         """Retorna hash de integridade (computa se necessário)."""
         if self._integrity_hash is None:
             self._compute_integrity_hash()
         return self._integrity_hash
-    
+
     def verify_integrity(self, expected_hash: str) -> bool:
         """Verifica se a constituição não foi modificada."""
         return self.integrity_hash == expected_hash
-    
+
     def to_dict(self) -> Dict[str, Any]:
         """Serializa a constituição completa."""
         return {
@@ -491,7 +491,7 @@ class Constitution:
             "red_flags": list(self._red_flags),
             "escalation_triggers": list(self._escalation_triggers),
         }
-    
+
     @classmethod
     def from_dict(cls, data: Dict[str, Any]) -> Constitution:
         """Deserializa de dicionário."""
@@ -502,23 +502,23 @@ class Constitution:
         )
         constitution.created_at = datetime.fromisoformat(data["created_at"])
         constitution.last_modified = datetime.fromisoformat(data["last_modified"])
-        
+
         # Limpar princípios padrão e carregar os salvos
         constitution._principles.clear()
         for p_data in data["principles"]:
             principle = ConstitutionalPrinciple.from_dict(p_data)
             constitution._principles[principle.id] = principle
-        
+
         constitution._allowed = set(data["allowed_activities"])
         constitution._disallowed = set(data["disallowed_activities"])
         constitution._red_flags = set(data["red_flags"])
         constitution._escalation_triggers = set(data.get("escalation_triggers", []))
-        
+
         return constitution
-    
+
     def __repr__(self) -> str:
         return f"Constitution(name={self.name!r}, version={self.version!r}, principles={len(self._principles)})"
-    
+
     def __str__(self) -> str:
         return f"""
 ╔══════════════════════════════════════════════════════════════════════════════╗
@@ -550,7 +550,7 @@ def create_strict_constitution() -> Constitution:
         name="Constituição JUSTIÇA (Modo Estrito)",
         description="Framework de governança com políticas reforçadas para ambientes de alta segurança",
     )
-    
+
     # Adicionar princípios extras de segurança
     constitution.add_principle(ConstitutionalPrinciple(
         id=uuid4(),
@@ -569,14 +569,14 @@ def create_strict_constitution() -> Constitution:
             "sudo",
         ]),
     ))
-    
+
     # Red flags adicionais
     constitution._red_flags.update([
         "rm -rf", "chmod 777", "disable firewall", "open port",
         "base64 decode", "eval(", "exec(", "compile(",
         "__import__", "os.system", "subprocess.call",
     ])
-    
+
     return constitution
 
 
@@ -584,7 +584,7 @@ if __name__ == "__main__":
     # Demonstração
     constitution = create_default_constitution()
     print(constitution)
-    
+
     # Testar checagem de red flags
     test_text = "Preciso bypass do sistema de autenticação para acessar dados confidenciais"
     flags = constitution.check_red_flags(test_text)

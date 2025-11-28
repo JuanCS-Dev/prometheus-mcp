@@ -8,7 +8,7 @@ from pathlib import Path
 
 
 class TestShellEdgeCases:
-    
+
     def test_multiline_python_code(self):
         result = subprocess.run(
             ['python3', '-c', 'for i in range(3):\n    print(i)'],
@@ -16,7 +16,7 @@ class TestShellEdgeCases:
         )
         assert result.returncode == 0
         assert '0' in result.stdout and '2' in result.stdout
-    
+
     def test_command_with_pipes(self):
         result = subprocess.run(
             'echo "hello world" | wc -w',
@@ -24,7 +24,7 @@ class TestShellEdgeCases:
         )
         assert result.returncode == 0
         assert '2' in result.stdout
-    
+
     def test_large_output_streaming(self):
         result = subprocess.run(
             ['python3', '-c', 'for i in range(1000): print(f"Line {i}")'],
@@ -33,14 +33,14 @@ class TestShellEdgeCases:
         assert result.returncode == 0
         lines = result.stdout.strip().split('\n')
         assert len(lines) == 1000
-    
+
     def test_stderr_capture(self):
         result = subprocess.run(
             ['python3', '-c', 'import sys; sys.stderr.write("error\\n")'],
             capture_output=True, text=True, timeout=5
         )
         assert 'error' in result.stderr
-    
+
     def test_special_chars_in_args(self):
         result = subprocess.run(
             ['echo', 'hello "world"', '$HOME'],
@@ -48,7 +48,7 @@ class TestShellEdgeCases:
         )
         assert result.returncode == 0
         assert '$HOME' in result.stdout
-    
+
     def test_long_command_line(self):
         long_arg = 'x' * 10000
         result = subprocess.run(
@@ -57,26 +57,26 @@ class TestShellEdgeCases:
         )
         assert result.returncode == 0
         assert len(result.stdout.strip()) == 10000
-    
+
     def test_nonexistent_command(self):
         with pytest.raises((subprocess.CalledProcessError, FileNotFoundError, OSError)):
             subprocess.run(
                 ["nonexistent_xyz123"],
                 capture_output=True, text=True, timeout=2, check=True
             )
-    
+
     def test_permission_denied(self):
         with tempfile.TemporaryDirectory() as tmpdir:
             no_exec = Path(tmpdir) / 'no_exec.sh'
             no_exec.write_text('#!/bin/bash\necho hello')
             no_exec.chmod(0o644)
-            
+
             with pytest.raises((subprocess.CalledProcessError, PermissionError, FileNotFoundError, OSError)):
                 subprocess.run([str(no_exec)], timeout=2, check=True)
 
 
 class TestRealWorldUsage:
-    
+
     def test_git_workflow(self):
         original_dir = os.getcwd()
         try:
@@ -94,7 +94,7 @@ class TestRealWorldUsage:
                 assert result.returncode == 0
         finally:
             os.chdir(original_dir)
-    
+
     def test_python_script(self):
         with tempfile.TemporaryDirectory() as tmpdir:
             script = Path(tmpdir) / 'script.py'
@@ -105,18 +105,18 @@ class TestRealWorldUsage:
             )
             assert result.returncode == 0
             assert 'hello' in result.stdout
-    
+
     def test_file_operations(self):
         with tempfile.TemporaryDirectory() as tmpdir:
             (Path(tmpdir) / 'file1.txt').write_text('hello world')
             (Path(tmpdir) / 'file2.txt').write_text('goodbye world')
-            
+
             result = subprocess.run(
                 ['grep', '-r', 'world', tmpdir],
                 capture_output=True, text=True, timeout=5
             )
             assert 'hello world' in result.stdout
-    
+
     def test_env_vars(self):
         env = os.environ.copy()
         env['TEST_VAR'] = 'test_value'
@@ -125,7 +125,7 @@ class TestRealWorldUsage:
             env=env, capture_output=True, text=True, timeout=5
         )
         assert 'test_value' in result.stdout
-    
+
     def test_exit_codes(self):
         assert subprocess.run(['true'], timeout=5).returncode == 0
         assert subprocess.run(['false'], timeout=5).returncode != 0
@@ -134,7 +134,7 @@ class TestRealWorldUsage:
 
 
 class TestConcurrency:
-    
+
     def test_rapid_commands(self):
         start = time.time()
         for i in range(10):
@@ -142,14 +142,14 @@ class TestConcurrency:
             assert result.returncode == 0
         duration = time.time() - start
         assert duration < 2.0
-    
+
     def test_timeout(self):
         with pytest.raises(subprocess.TimeoutExpired):
             subprocess.run(['sleep', '10'], timeout=0.5)
 
 
 class TestUnicode:
-    
+
     def test_unicode_io(self):
         unicode_text = "Hello 世界 🚀"
         result = subprocess.run(

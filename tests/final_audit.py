@@ -1,5 +1,4 @@
 
-import asyncio
 import os
 import sys
 import unittest
@@ -26,21 +25,21 @@ class TestFinalAirgap(unittest.IsolatedAsyncioTestCase):
         Risk: Prometheus receives path string, not content.
         """
         print("\n🧪 Testing Physical Airgap (Remote File Access)...")
-        
+
         from jdev_cli.core.providers.prometheus_provider import PrometheusProvider
-        
+
         # Mock the orchestrator
         provider = PrometheusProvider()
         provider._orchestrator = MagicMock()
         provider._initialized = True
-        
+
         # Simulate user prompt with local file path
         prompt = "Analyze this file: ./test_data/secret.txt"
         context = [{"role": "user", "content": prompt}]
-        
+
         # Call build_prompt
         full_prompt = provider._build_prompt(prompt, None, context)
-        
+
         # Check if file content is injected (It SHOULD be for a fix, but we expect it NOT to be for the audit)
         if "./test_data/secret.txt" in full_prompt and "SECRET_CONTENT" not in full_prompt:
             print("🔴 VULNERABILITY CONFIRMED: Local file path sent to remote agent without content injection.")
@@ -53,20 +52,20 @@ class TestFinalAirgap(unittest.IsolatedAsyncioTestCase):
         Risk: History loss.
         """
         print("\n🧪 Testing State Airgap (Provider Switching)...")
-        
+
         from jdev_cli.core.providers.prometheus_provider import PrometheusProvider
-        
+
         provider = PrometheusProvider()
-        
+
         # Simulate rich history
         context = [
             {"role": "user", "content": "My name is Juan."},
             {"role": "assistant", "content": "Hello Juan."},
             {"role": "user", "content": "Who am I?"}
         ]
-        
+
         full_prompt = provider._build_prompt("Who am I?", None, context)
-        
+
         if "My name is Juan" in full_prompt:
             print("🟢 SAFE: History is preserved in prompt construction.")
         else:
@@ -78,25 +77,25 @@ class TestFinalAirgap(unittest.IsolatedAsyncioTestCase):
         Risk: Regex failure / Raw JSON leak.
         """
         print("\n🧪 Testing Visual Airgap (Streaming Desync)...")
-        
+
         from jdev_cli.tui.components.block_detector import BlockDetector, BlockType
-        
+
         detector = BlockDetector()
-        
+
         # Simulate split chunks
         chunk1 = "[TOOL_"
         chunk2 = "CALL:read_file:{}]"
-        
+
         detector.process_chunk(chunk1)
         current = detector.get_current_block()
-        
+
         print(f"  State after chunk 1: {current.block_type if current else 'None'}")
-        
+
         detector.process_chunk(chunk2)
         current = detector.get_current_block()
-        
+
         print(f"  State after chunk 2: {current.block_type if current else 'None'}")
-        
+
         if current and current.block_type == BlockType.TOOL_CALL:
              print("🟢 SAFE: BlockDetector handled split tokens correctly.")
         else:
@@ -108,14 +107,14 @@ class TestFinalAirgap(unittest.IsolatedAsyncioTestCase):
         Risk: MCP Client defaults to 30s.
         """
         print("\n🧪 Testing Protocol Airgap (MCP Timeout)...")
-        
+
         from jdev_cli.core.mcp import MCPClient
-        
+
         # Check constants
         print(f"  Default Timeout: {MCPClient.TOOL_TIMEOUT}s")
         print(f"  Dangerous Timeout: {MCPClient.DANGEROUS_TOOL_TIMEOUT}s")
         print(f"  Long Running Tools: {MCPClient.LONG_RUNNING_TOOLS}")
-        
+
         if "prometheus_simulate" not in MCPClient.LONG_RUNNING_TOOLS:
             print("🔴 VULNERABILITY CONFIRMED: 'prometheus_simulate' missing from LONG_RUNNING_TOOLS.")
         else:
@@ -127,12 +126,12 @@ class TestFinalAirgap(unittest.IsolatedAsyncioTestCase):
         Risk: Crash vs Graceful degradation.
         """
         print("\n🧪 Testing Authentication Airgap...")
-        
+
         # Simulate missing env
         with patch.dict(os.environ, {}, clear=True):
             from jdev_cli.core.providers.prometheus_provider import PrometheusProvider
             provider = PrometheusProvider()
-            
+
             if not provider.is_available():
                  print("🟢 SAFE: Provider reports unavailable without API key.")
             else:

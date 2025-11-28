@@ -17,9 +17,7 @@ Refactored: Nov 2025 (2069 -> 80 lines)
 Author: JuanCS Dev
 """
 
-from typing import List
 
-from jdev_cli.tools.base import Tool
 
 # Re-export all tools from parity submodules for backward compatibility
 from jdev_cli.tools.parity import (

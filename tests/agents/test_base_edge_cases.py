@@ -10,7 +10,7 @@ Tests cover:
 """
 
 import pytest
-from unittest.mock import AsyncMock, MagicMock, patch
+from unittest.mock import AsyncMock, MagicMock
 
 from jdev_cli.agents.base import (
     AgentCapability,

@@ -20,21 +20,21 @@ def doc_agent():
     """Create real DocumentationAgent instance with real LLM"""
     # Set API key
     os.environ["GEMINI_API_KEY"] = os.getenv("GOOGLE_API_KEY", "")
-    
+
     # Create real LLM client (it auto-detects Gemini from env)
     llm_client = LLMClient()
-    
+
     # Create MCP client (simple mock for now)
     class SimpleMCP:
         async def call_tool(self, *args, **kwargs):
             return {"result": "ok"}
-    
+
     return DocumentationAgent(llm_client=llm_client, mcp_client=SimpleMCP())
 
 
 class TestRealDocGeneration:
     """Test real documentation generation with LLM"""
-    
+
     def test_generate_function_docs_real(self, doc_agent):
         """Test generating docs for a real Python function"""
         code = '''
@@ -48,11 +48,11 @@ def calculate_fibonacci(n: int) -> int:
             doc_type="function",
             style="google"
         )
-        
+
         assert result["success"]
         assert "fibonacci" in result["documentation"].lower()
         assert "param" in result["documentation"].lower() or "args" in result["documentation"].lower()
-    
+
     def test_generate_class_docs_real(self, doc_agent):
         """Test generating docs for a real Python class"""
         code = '''
@@ -79,11 +79,11 @@ class BinaryTree:
             doc_type="class",
             style="numpy"
         )
-        
+
         assert result["success"]
         assert "binarytree" in result["documentation"].lower()
         assert "insert" in result["documentation"].lower()
-    
+
     def test_generate_module_docs_real(self, doc_agent):
         """Test generating module-level documentation"""
         code = '''
@@ -100,14 +100,14 @@ def validate_email(email):
             doc_type="module",
             style="sphinx"
         )
-        
+
         assert result["success"]
         assert len(result["documentation"]) > 50
 
 
 class TestRealAPIDocGeneration:
     """Test API documentation with real LLM"""
-    
+
     def test_generate_rest_api_docs(self, doc_agent):
         """Test REST API documentation generation"""
         code = '''
@@ -129,7 +129,7 @@ async def get_user(user_id: int):
             code=code,
             api_type="rest"
         )
-        
+
         assert result["success"]
         docs = result["documentation"].lower()
         assert "post" in docs or "create" in docs
@@ -139,7 +139,7 @@ async def get_user(user_id: int):
 
 class TestRealReadmeGeneration:
     """Test README generation with real LLM"""
-    
+
     def test_generate_readme_for_project(self, doc_agent):
         """Test generating README for a real project structure"""
         project_info = {
@@ -153,9 +153,9 @@ class TestRealReadmeGeneration:
                 "Auto-scaling workers"
             ]
         }
-        
+
         result = doc_agent.generate_readme(project_info)
-        
+
         assert result["success"]
         readme = result["documentation"].lower()
         assert "ml-pipeline" in readme or "machine learning" in readme
@@ -165,7 +165,7 @@ class TestRealReadmeGeneration:
 
 class TestRealDockerfileDocumentation:
     """Test Dockerfile documentation with real LLM"""
-    
+
     def test_document_dockerfile(self, doc_agent):
         """Test documenting a real Dockerfile"""
         dockerfile = '''
@@ -182,7 +182,7 @@ CMD ["uvicorn", "main:app", "--host", "0.0.0.0"]
             doc_type="dockerfile",
             style="inline"
         )
-        
+
         assert result["success"]
         assert "python" in result["documentation"].lower()
         assert "port" in result["documentation"].lower() or "8000" in result["documentation"]
@@ -190,7 +190,7 @@ CMD ["uvicorn", "main:app", "--host", "0.0.0.0"]
 
 class TestRealComplexScenarios:
     """Test complex real-world scenarios"""
-    
+
     def test_document_async_context_manager(self, doc_agent):
         """Test documenting complex async code"""
         code = '''
@@ -210,12 +210,12 @@ class DatabaseConnection:
             doc_type="class",
             style="google"
         )
-        
+
         assert result["success"]
         docs = result["documentation"].lower()
         assert "async" in docs or "context" in docs
         assert "database" in docs
-    
+
     def test_document_decorator_pattern(self, doc_agent):
         """Test documenting decorator patterns"""
         code = '''
@@ -238,7 +238,7 @@ def retry(max_attempts=3, delay=1):
             doc_type="function",
             style="numpy"
         )
-        
+
         assert result["success"]
         docs = result["documentation"].lower()
         assert "retry" in docs or "decorator" in docs
@@ -247,7 +247,7 @@ def retry(max_attempts=3, delay=1):
 
 class TestRealEdgeCases:
     """Test edge cases with real LLM"""
-    
+
     def test_empty_code(self, doc_agent):
         """Test handling empty code"""
         result = doc_agent.generate_documentation(
@@ -255,10 +255,10 @@ class TestRealEdgeCases:
             doc_type="function",
             style="google"
         )
-        
+
         assert not result["success"]
         assert "error" in result
-    
+
     def test_malformed_code(self, doc_agent):
         """Test handling malformed code"""
         code = '''
@@ -270,10 +270,10 @@ def broken_function(
             doc_type="function",
             style="google"
         )
-        
+
         # Should still attempt to generate docs
         assert result["success"] or "error" in result
-    
+
     def test_multiple_languages_same_file(self, doc_agent):
         """Test handling mixed-language code"""
         code = '''
@@ -290,14 +290,14 @@ def process_data(data):
             doc_type="function",
             style="google"
         )
-        
+
         assert result["success"]
         assert "sql" in result["documentation"].lower() or "query" in result["documentation"].lower()
 
 
 class TestRealPerformance:
     """Test performance with real LLM calls"""
-    
+
     def test_large_codebase_documentation(self, doc_agent):
         """Test documenting large code blocks"""
         # Generate a large class with many methods
@@ -313,13 +313,13 @@ class DataProcessor:
         return data * {i}
     
 '''
-        
+
         result = doc_agent.generate_documentation(
             code=code,
             doc_type="class",
             style="google"
         )
-        
+
         assert result["success"]
         assert "dataprocessor" in result["documentation"].lower()
 

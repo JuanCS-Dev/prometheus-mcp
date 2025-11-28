@@ -13,10 +13,7 @@ Tests cover:
 Based on Anthropic Claude Code testing standards.
 """
 import pytest
-import asyncio
-import json
-from datetime import datetime
-from unittest.mock import AsyncMock, MagicMock, patch, PropertyMock
+from unittest.mock import AsyncMock, MagicMock, patch
 from dataclasses import asdict
 
 from jdev_cli.agents.executor import (

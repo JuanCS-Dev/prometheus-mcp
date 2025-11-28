@@ -14,7 +14,7 @@ from datetime import datetime
 from typing import Any, Dict, List, Optional, Set, Tuple, TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from .types import ExecutionPlan, AgentPriority
+    pass
 
 
 class PlanValidator:

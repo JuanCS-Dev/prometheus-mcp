@@ -29,7 +29,7 @@ SPACING = {
     'xl': '2rem',        # 32px - Major section gaps
     '2xl': '3rem',       # 48px - Large visual breaks
     '3xl': '4rem',       # 64px - Hero spacing (rare)
-    
+
     # Special values
     'none': '0',         # No spacing
     'auto': 'auto',      # Automatic (for centering)
@@ -90,18 +90,18 @@ def margin(
     if all:
         value = SPACING.get(all, all)
         return f"margin: {value};"
-    
+
     if x or y:
         v_margin = SPACING.get(y, y) if y else '0'
         h_margin = SPACING.get(x, x) if x else '0'
         return f"margin: {v_margin} {h_margin};"
-    
+
     # Individual sides
     t = SPACING.get(top, top) if top else '0'
     r = SPACING.get(right, right) if right else '0'
     b = SPACING.get(bottom, bottom) if bottom else '0'
     l = SPACING.get(left, left) if left else '0'
-    
+
     return f"margin: {t} {r} {b} {l};"
 
 
@@ -182,18 +182,18 @@ def padding(
     if all:
         value = SPACING.get(all, all)
         return f"padding: {value};"
-    
+
     if x or y:
         v_padding = SPACING.get(y, y) if y else '0'
         h_padding = SPACING.get(x, x) if x else '0'
         return f"padding: {v_padding} {h_padding};"
-    
+
     # Individual sides
     t = SPACING.get(top, top) if top else '0'
     r = SPACING.get(right, right) if right else '0'
     b = SPACING.get(bottom, bottom) if bottom else '0'
     l = SPACING.get(left, left) if left else '0'
-    
+
     return f"padding: {t} {r} {b} {l};"
 
 
@@ -269,48 +269,48 @@ def gap_y(size: str) -> str:
 
 class SpacingPresets:
     """Pre-configured spacing patterns for common use cases."""
-    
+
     # Compact (tight spacing)
     COMPACT = {
         'padding': padding(y='xs', x='sm'),    # 8px 12px
         'gap': gap('xs'),                       # 8px
         'margin': margin(bottom='sm'),          # 12px
     }
-    
+
     # Default (comfortable spacing)
     DEFAULT = {
         'padding': padding(y='sm', x='md'),    # 12px 16px
         'gap': gap('sm'),                       # 12px
         'margin': margin(bottom='md'),          # 16px
     }
-    
+
     # Relaxed (generous spacing)
     RELAXED = {
         'padding': padding(y='md', x='lg'),    # 16px 24px
         'gap': gap('md'),                       # 16px
         'margin': margin(bottom='lg'),          # 24px
     }
-    
+
     # Section (major visual breaks)
     SECTION = {
         'padding': padding(y='xl', x='lg'),    # 32px 24px
         'gap': gap('lg'),                       # 24px
         'margin': margin(y='xl'),               # 32px top+bottom
     }
-    
+
     # Card/Panel
     CARD = {
         'padding': padding(all='lg'),           # 24px all sides
         'margin': margin(bottom='md'),          # 16px bottom
         'gap': gap('md'),                       # 16px between elements
     }
-    
+
     # Button
     BUTTON = {
         'padding': padding(y='sm', x='lg'),    # 12px 24px
         'margin': margin(right='sm'),           # 8px right (inline)
     }
-    
+
     # List item
     LIST_ITEM = {
         'padding': padding(y='xs', x='md'),    # 8px 16px
@@ -327,10 +327,10 @@ def validate_spacing():
     print("✅ Spacing System (8px baseline grid):")
     print(f"  - Scale defined: {len(SPACING)} sizes")
     print(f"  - Range: {SPACING_PX['xs']}px → {SPACING_PX['3xl']}px")
-    print(f"  - All values are multiples of 8px")
-    print(f"  - Margin helpers: 10 functions")
-    print(f"  - Padding helpers: 10 functions")
-    print(f"  - Gap helpers: 3 functions")
+    print("  - All values are multiples of 8px")
+    print("  - Margin helpers: 10 functions")
+    print("  - Padding helpers: 10 functions")
+    print("  - Gap helpers: 3 functions")
     print(f"  - Presets: {len([k for k in dir(SpacingPresets) if not k.startswith('_')])}")
 
 

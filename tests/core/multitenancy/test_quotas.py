@@ -4,7 +4,6 @@ Tests for quota management.
 SCALE & SUSTAIN Phase 3.4 validation.
 """
 
-import asyncio
 import pytest
 
 from jdev_core.multitenancy import (
@@ -12,7 +11,6 @@ from jdev_core.multitenancy import (
     TenantTier,
     TenantConfig,
     QuotaManager,
-    Quota,
     QuotaUsage,
     QuotaExceededError,
     tenant_context,

@@ -8,7 +8,7 @@ FEW_SHOT_EXAMPLES = [
         "category": "file_reading",
         "explanation": "Direct file read request"
     },
-    
+
     # Example 2: File search
     {
         "user": "find all TODO comments in python files",
@@ -16,7 +16,7 @@ FEW_SHOT_EXAMPLES = [
         "category": "search",
         "explanation": "Search with file type filter"
     },
-    
+
     # Example 3: File editing
     {
         "user": "replace 'old_name' with 'new_name' in config.py",
@@ -24,7 +24,7 @@ FEW_SHOT_EXAMPLES = [
         "category": "file_writing",
         "explanation": "Search and replace in file"
     },
-    
+
     # Example 4: Multi-step workflow
     {
         "user": "show git status and diff",
@@ -32,7 +32,7 @@ FEW_SHOT_EXAMPLES = [
         "category": "git",
         "explanation": "Sequential tool calls"
     },
-    
+
     # Example 5: Directory operations
     {
         "user": "list files in the src directory",
@@ -40,7 +40,7 @@ FEW_SHOT_EXAMPLES = [
         "category": "terminal",
         "explanation": "Unix-like ls command"
     },
-    
+
     # Example 6: File creation
     {
         "user": "create a new file called test.py with a hello world function",
@@ -48,7 +48,7 @@ FEW_SHOT_EXAMPLES = [
         "category": "file_writing",
         "explanation": "Create file with content"
     },
-    
+
     # Example 7: Shell command for complex operations
     {
         "user": "find all files larger than 10MB",
@@ -56,7 +56,7 @@ FEW_SHOT_EXAMPLES = [
         "category": "execution",
         "explanation": "Use shell when no specific tool exists"
     },
-    
+
     # Example 8: Directory tree
     {
         "user": "show me the project structure",
@@ -64,7 +64,7 @@ FEW_SHOT_EXAMPLES = [
         "category": "search",
         "explanation": "Directory tree visualization"
     },
-    
+
     # Example 9: Safe file deletion
     {
         "user": "delete temp.log",
@@ -72,7 +72,7 @@ FEW_SHOT_EXAMPLES = [
         "category": "file_management",
         "explanation": "Safe deletion (moves to .trash)"
     },
-    
+
     # Example 10: Context query
     {
         "user": "what files have I been working on?",
@@ -80,7 +80,7 @@ FEW_SHOT_EXAMPLES = [
         "category": "context",
         "explanation": "Query session context"
     },
-    
+
     # Example 11: Git workflow
     {
         "user": "stage all changes and show status",
@@ -88,7 +88,7 @@ FEW_SHOT_EXAMPLES = [
         "category": "git",
         "explanation": "Combine shell and tools"
     },
-    
+
     # Example 12: Multiple file reading
     {
         "user": "read main.py and utils.py",
@@ -96,7 +96,7 @@ FEW_SHOT_EXAMPLES = [
         "category": "file_reading",
         "explanation": "Batch file reading"
     },
-    
+
     # Example 13: Directory creation
     {
         "user": "create a folder called tests",
@@ -104,7 +104,7 @@ FEW_SHOT_EXAMPLES = [
         "category": "file_management",
         "explanation": "Directory creation"
     },
-    
+
     # Example 14: Navigate + list
     {
         "user": "go to src and list files",
@@ -112,7 +112,7 @@ FEW_SHOT_EXAMPLES = [
         "category": "terminal",
         "explanation": "Navigation workflow"
     },
-    
+
     # Example 15: Conversational (no tool needed)
     {
         "user": "what does the rm command do?",
@@ -120,7 +120,7 @@ FEW_SHOT_EXAMPLES = [
         "category": "explanation",
         "explanation": "Answer questions directly without tools"
     },
-    
+
     # Example 16: Error recovery pattern
     {
         "user": "read config.yaml",
@@ -132,7 +132,7 @@ FEW_SHOT_EXAMPLES = [
             "recovery": "I see that config.yaml doesn't exist. Let me search for similar files: [{'tool': 'bashcommand', 'args': {'command': 'find . -name \"config.*\" -o -name \"*.yaml\"'}}]"
         }
     },
-    
+
     # Example 17: Complex search and replace
     {
         "user": "in all python files, replace print statements with logging.info",
@@ -140,7 +140,7 @@ FEW_SHOT_EXAMPLES = [
         "category": "search",
         "explanation": "First find occurrences, then user can confirm replacement"
     },
-    
+
     # Example 18: Git commit workflow
     {
         "user": "commit with message 'fix bug'",
@@ -148,7 +148,7 @@ FEW_SHOT_EXAMPLES = [
         "category": "git",
         "explanation": "Combined git operations"
     },
-    
+
     # Example 19: Copy and modify
     {
         "user": "copy main.py to backup.py",
@@ -156,7 +156,7 @@ FEW_SHOT_EXAMPLES = [
         "category": "file_management",
         "explanation": "File copy operation"
     },
-    
+
     # Example 20: Insert at specific line
     {
         "user": "add import logging at the top of utils.py",
@@ -192,7 +192,7 @@ def get_examples_for_context(user_input: str, max_examples: int = 5) -> list:
     """
     # Simple keyword matching for now
     # TODO: Use embeddings for semantic similarity
-    
+
     keywords = {
         "file_reading": ["read", "show", "cat", "display", "view", "content"],
         "file_writing": ["write", "create", "edit", "modify", "replace", "change", "update"],
@@ -203,16 +203,16 @@ def get_examples_for_context(user_input: str, max_examples: int = 5) -> list:
         "terminal": ["ls", "cd", "pwd", "mkdir", "list", "directory"],
         "context": ["context", "session", "history", "what", "working on"],
     }
-    
+
     user_lower = user_input.lower()
-    
+
     # Score each category
     category_scores = {}
     for category, words in keywords.items():
         score = sum(1 for word in words if word in user_lower)
         if score > 0:
             category_scores[category] = score
-    
+
     # Get examples from top categories
     selected = []
     for category in sorted(category_scores, key=category_scores.get, reverse=True):
@@ -221,14 +221,14 @@ def get_examples_for_context(user_input: str, max_examples: int = 5) -> list:
         selected.extend(examples[:remaining])
         if len(selected) >= max_examples:
             break
-    
+
     # If not enough, add random examples
     if len(selected) < max_examples:
         import random
         remaining = max_examples - len(selected)
         pool = [ex for ex in FEW_SHOT_EXAMPLES if ex not in selected]
         selected.extend(random.sample(pool, min(remaining, len(pool))))
-    
+
     return selected[:max_examples]
 
 
@@ -249,7 +249,7 @@ def format_examples_for_prompt(examples: list) -> str:
         if 'explanation' in ex:
             formatted.append(f"// {ex['explanation']}")
         formatted.append("")
-    
+
     return "\n".join(formatted)
 
 
@@ -296,7 +296,7 @@ def get_error_recovery_example(error_msg: str) -> dict:
         Relevant recovery example dict
     """
     error_lower = error_msg.lower()
-    
+
     # Match error patterns
     if "not found" in error_lower or "no such file" in error_lower:
         return ERROR_RECOVERY_EXAMPLES[0]
@@ -306,7 +306,7 @@ def get_error_recovery_example(error_msg: str) -> dict:
         return ERROR_RECOVERY_EXAMPLES[2]
     elif "command not found" in error_lower:
         return ERROR_RECOVERY_EXAMPLES[3]
-    
+
     # Default generic recovery
     return {
         "scenario": "generic",

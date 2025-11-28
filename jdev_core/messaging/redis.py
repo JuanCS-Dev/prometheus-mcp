@@ -14,8 +14,8 @@ import asyncio
 import json
 import time
 import uuid
-from dataclasses import dataclass, field
-from typing import Any, Callable, Dict, List, Optional, Set
+from dataclasses import dataclass
+from typing import Any, Callable, Dict, List, Optional
 
 from .interface import (
     IMessageQueue,

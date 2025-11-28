@@ -25,15 +25,10 @@ import pytest
 import asyncio
 import tempfile
 from pathlib import Path
-from typing import Optional
-from unittest.mock import AsyncMock, MagicMock, patch, Mock
-from dataclasses import dataclass
+from unittest.mock import AsyncMock, MagicMock, patch
 
 from jdev_tui.core.safe_executor import (
     SafeCommandExecutor,
-    SafeExecutionResult,
-    AllowedCommand,
-    CommandCategory,
     get_safe_executor,
 )
 

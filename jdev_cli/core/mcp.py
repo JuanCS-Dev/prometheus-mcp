@@ -20,7 +20,7 @@ from typing import Any, Dict, Optional, TYPE_CHECKING
 import warnings
 
 if TYPE_CHECKING:
-    from jdev_cli.tools.base import ToolRegistry, ToolResult
+    from jdev_cli.tools.base import ToolRegistry
 
 # Import circuit breaker from llm_client
 from jdev_tui.core.llm_client import CircuitBreaker, CircuitBreakerConfig
@@ -167,7 +167,7 @@ class MCPClient:
             duration = time.time() - start_time
             self._record_tool_call(tool_name, False, duration)
             return {
-                'error': f"MCP tools temporarily unavailable (circuit breaker open)",
+                'error': "MCP tools temporarily unavailable (circuit breaker open)",
                 'retry_after': self._circuit_breaker.config.timeout,
                 'fallback': True
             }

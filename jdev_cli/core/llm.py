@@ -30,7 +30,6 @@ warnings.filterwarnings('ignore', message='.*ALTS.*')
 
 from typing import AsyncGenerator, Optional, Dict, Any, List
 from dataclasses import dataclass, field
-from datetime import datetime, timedelta
 from enum import Enum
 from collections import deque
 
@@ -51,37 +50,37 @@ class CircuitState(Enum):
 @dataclass
 class CircuitBreaker:
     """Circuit breaker for API resilience (Gemini strategy)."""
-    
+
     failure_threshold: int = 5
     recovery_timeout: float = 60.0  # seconds
     half_open_max_calls: int = 3
-    
+
     failures: int = 0
     state: CircuitState = CircuitState.CLOSED
     last_failure_time: Optional[float] = None
     half_open_calls: int = 0
-    
+
     def record_success(self) -> None:
         """Record successful call."""
         self.failures = 0
         if self.state == CircuitState.HALF_OPEN:
             self.state = CircuitState.CLOSED
             logger.info("Circuit breaker: CLOSED (recovered)")
-    
+
     def record_failure(self) -> None:
         """Record failed call."""
         self.failures += 1
         self.last_failure_time = time.time()
-        
+
         if self.failures >= self.failure_threshold:
             self.state = CircuitState.OPEN
             logger.error(f"Circuit breaker: OPEN ({self.failures} consecutive failures)")
-    
+
     def can_attempt(self) -> tuple[bool, str]:
         """Check if request can be attempted."""
         if self.state == CircuitState.CLOSED:
             return True, "Circuit closed"
-        
+
         if self.state == CircuitState.OPEN:
             if self.last_failure_time and \
                (time.time() - self.last_failure_time) >= self.recovery_timeout:
@@ -89,26 +88,26 @@ class CircuitBreaker:
                 self.half_open_calls = 0
                 logger.info("Circuit breaker: HALF_OPEN (testing recovery)")
                 return True, "Circuit half-open"
-            return False, f"Circuit open (cooling down)"
-        
+            return False, "Circuit open (cooling down)"
+
         # HALF_OPEN state
         if self.half_open_calls < self.half_open_max_calls:
             self.half_open_calls += 1
             return True, f"Circuit half-open (test {self.half_open_calls}/{self.half_open_max_calls})"
-        
+
         return False, "Circuit half-open limit reached"
 
 
 @dataclass
 class RateLimiter:
     """Token-aware rate limiter (Cursor AI strategy)."""
-    
+
     requests_per_minute: int = 50
     tokens_per_minute: int = 10000
-    
+
     request_times: deque = field(default_factory=deque)
     token_counts: deque = field(default_factory=deque)
-    
+
     def can_proceed(self, estimated_tokens: int = 0) -> tuple[bool, float]:
         """Check if request can proceed.
         
@@ -116,27 +115,27 @@ class RateLimiter:
             Tuple of (can_proceed, wait_seconds)
         """
         now = time.time()
-        
+
         # Clean old entries (> 60s)
         while self.request_times and (now - self.request_times[0]) > 60:
             self.request_times.popleft()
-        
+
         while self.token_counts and (now - self.token_counts[0][0]) > 60:
             self.token_counts.popleft()
-        
+
         # Check request rate
         if len(self.request_times) >= self.requests_per_minute:
             wait_time = 60 - (now - self.request_times[0])
             return False, wait_time
-        
+
         # Check token rate
         total_tokens = sum(count for _, count in self.token_counts)
         if total_tokens + estimated_tokens > self.tokens_per_minute:
             wait_time = 60 - (now - self.token_counts[0][0])
             return False, wait_time
-        
+
         return True, 0.0
-    
+
     def record_request(self, tokens: int = 0) -> None:
         """Record a request."""
         now = time.time()
@@ -148,44 +147,44 @@ class RateLimiter:
 @dataclass
 class RequestMetrics:
     """Telemetry and observability (Codex strategy)."""
-    
+
     total_requests: int = 0
     successful_requests: int = 0
     failed_requests: int = 0
     retried_requests: int = 0
     rate_limited_requests: int = 0
     circuit_breaker_blocks: int = 0
-    
+
     total_latency: float = 0.0
     total_tokens: int = 0
-    
+
     provider_stats: Dict[str, Dict[str, int]] = field(default_factory=dict)
-    
+
     def record_success(self, provider: str, latency: float, tokens: int = 0) -> None:
         """Record successful request."""
         self.total_requests += 1
         self.successful_requests += 1
         self.total_latency += latency
         self.total_tokens += tokens
-        
+
         if provider not in self.provider_stats:
             self.provider_stats[provider] = {"success": 0, "failure": 0}
         self.provider_stats[provider]["success"] += 1
-    
+
     def record_failure(self, provider: str) -> None:
         """Record failed request."""
         self.total_requests += 1
         self.failed_requests += 1
-        
+
         if provider not in self.provider_stats:
             self.provider_stats[provider] = {"success": 0, "failure": 0}
         self.provider_stats[provider]["failure"] += 1
-    
+
     def get_stats(self) -> Dict[str, Any]:
         """Get statistics summary."""
         avg_latency = self.total_latency / max(self.successful_requests, 1)
         success_rate = self.successful_requests / max(self.total_requests, 1) * 100
-        
+
         return {
             "total_requests": self.total_requests,
             "success_rate": f"{success_rate:.1f}%",
@@ -200,7 +199,7 @@ class RequestMetrics:
 
 class LLMClient:
     """Production-grade LLM client with resilience patterns."""
-    
+
     def __init__(
         self,
         max_retries: int = 3,
@@ -222,18 +221,18 @@ class LLMClient:
         self.max_delay = max_delay
         self.timeout = timeout
         self.token_callback = token_callback
-        
+
         # Resilience components
         self.circuit_breaker = CircuitBreaker() if enable_circuit_breaker else None
         self.rate_limiter = RateLimiter() if enable_rate_limiting else None
         self.metrics = RequestMetrics() if enable_telemetry else None
-        
+
         # Lazy providers
         self._hf_client = None
         self._nebius_client = None
         self._gemini_client = None
         self._ollama_client = None
-        
+
         # Provider priority for failover (Gemini first - most powerful)
         # GEMINI FIRST ALWAYS - fastest and best quality
         self.provider_priority = ["gemini", "nebius", "hf", "ollama"]
@@ -291,13 +290,13 @@ class LLMClient:
             except Exception as e:
                 logger.warning(f"Ollama init failed: {type(e).__name__}: {e}", exc_info=True)
         return self._ollama_client
-    
+
     def _calculate_backoff(self, attempt: int) -> float:
         """Calculate exponential backoff with jitter."""
         delay = min(self.base_delay * (2 ** attempt), self.max_delay)
         jitter = random.uniform(0.1, 0.3) * delay
         return delay + jitter
-    
+
     def _should_retry(self, error: Exception) -> bool:
         """Determine if error is retryable."""
         retryable_errors = [
@@ -307,7 +306,7 @@ class LLMClient:
         error_str = str(error).lower()
         return any(err in error_str for err in retryable_errors)
 
-    
+
     async def stream_chat(
         self,
         prompt: str,
@@ -321,11 +320,11 @@ class LLMClient:
         # Validate prompt
         if not prompt or not prompt.strip():
             raise ValueError("Prompt cannot be empty")
-        
+
         max_tokens = max_tokens or config.max_tokens
         temperature = temperature or config.temperature
         provider = provider or self.default_provider
-        
+
         # Build messages
         messages = []
         if context:
@@ -334,7 +333,7 @@ class LLMClient:
                 "content": f"You are a helpful coding assistant. Use this context:\n\n{context}"
             })
         messages.append({"role": "user", "content": prompt})
-        
+
         # Select provider(s)
         if provider == "auto":
             providers_to_try = self._get_failover_providers()
@@ -342,13 +341,13 @@ class LLMClient:
             providers_to_try = [provider]
             if enable_failover:
                 providers_to_try.extend([p for p in self.provider_priority if p != provider])
-        
+
         # Try providers with failover
         last_error = None
         for current_provider in providers_to_try:
             try:
                 logger.info(f"🔌 Attempting provider: {current_provider}")
-                
+
                 async for chunk in self._stream_with_provider(
                     current_provider,
                     messages,
@@ -356,21 +355,21 @@ class LLMClient:
                     temperature
                 ):
                     yield chunk
-                
+
                 return
-                
+
             except Exception as e:
                 last_error = e
                 error_msg = str(e)
-                
+
                 # Check if error is quota/rate limit (429)
                 is_quota_error = "429" in error_msg or "quota" in error_msg.lower()
-                
+
                 if is_quota_error:
                     logger.warning(f"⚠️  Provider {current_provider} quota exceeded (429)")
                 else:
                     logger.error(f"❌ Provider {current_provider} failed: {error_msg[:100]}")
-                
+
                 # Attempt failover if more providers available
                 if providers_to_try.index(current_provider) < len(providers_to_try) - 1:
                     next_provider = providers_to_try[providers_to_try.index(current_provider) + 1]
@@ -379,13 +378,13 @@ class LLMClient:
                 else:
                     logger.error(f"🚨 All {len(providers_to_try)} providers exhausted")
                     break
-        
+
         raise RuntimeError(f"All providers failed. Last error: {last_error}")
-    
+
     def _get_failover_providers(self) -> List[str]:
         """Get list of providers for failover - GEMINI FIRST ALWAYS."""
         available = []
-        
+
         # FORCE GEMINI FIRST (fastest and most powerful)
         if self.gemini_client:
             available.append("gemini")
@@ -396,18 +395,18 @@ class LLMClient:
         # Ollama LAST (slowest)
         if self.ollama_client:
             available.append("ollama")
-        
+
         # Sort by success rate if telemetry enabled
         if self.metrics and self.metrics.provider_stats:
             def success_rate(provider: str) -> float:
                 stats = self.metrics.provider_stats.get(provider, {"success": 0, "failure": 1})
                 total = stats["success"] + stats["failure"]
                 return stats["success"] / max(total, 1)
-            
+
             available.sort(key=success_rate, reverse=True)
-        
+
         return available or ["hf"]
-    
+
     async def _stream_with_provider(
         self,
         provider: str,
@@ -423,7 +422,7 @@ class LLMClient:
                 if self.metrics:
                     self.metrics.circuit_breaker_blocks += 1
                 raise RuntimeError(f"Circuit breaker: {reason}")
-        
+
         # Rate limiting check
         if self.rate_limiter:
             can_proceed, wait_time = self.rate_limiter.can_proceed()
@@ -432,14 +431,14 @@ class LLMClient:
                 if self.metrics:
                     self.metrics.rate_limited_requests += 1
                 await asyncio.sleep(wait_time)
-        
+
         # Stream with retry logic
         last_error = None
         for attempt in range(self.max_retries + 1):
             try:
                 start_time = time.time()
                 chunks_received = 0
-                
+
                 # Select provider stream method
                 if provider == "ollama":
                     if not self.ollama_client:
@@ -457,12 +456,12 @@ class LLMClient:
                     if not self.hf_client:
                         raise RuntimeError("HuggingFace not initialized")
                     stream_gen = self._stream_hf(messages, max_tokens, temperature)
-                
+
                 # Stream chunks
                 async for chunk in stream_gen:
                     chunks_received += 1
                     yield chunk
-                
+
                 # Success
                 latency = time.time() - start_time
                 if self.metrics:
@@ -471,7 +470,7 @@ class LLMClient:
                     self.circuit_breaker.record_success()
                 if self.rate_limiter:
                     self.rate_limiter.record_request(tokens=chunks_received)
-                
+
                 # Callback for token tracking (NEW!)
                 if self.token_callback:
                     try:
@@ -480,12 +479,12 @@ class LLMClient:
                         self.token_callback(input_estimate, chunks_received)
                     except Exception as e:
                         logger.warning(f"Token callback failed: {type(e).__name__}: {e}")
-                
+
                 if attempt > 0:
                     logger.info(f"✅ Streaming succeeded after {attempt} retries")
-                
+
                 return
-                
+
             except Exception as e:
                 last_error = e
                 # Log with type info for better debugging
@@ -499,25 +498,25 @@ class LLMClient:
                     if self.circuit_breaker:
                         self.circuit_breaker.record_failure()
                     raise
-                
+
                 if self.circuit_breaker:
                     self.circuit_breaker.record_failure()
-                
+
                 if attempt >= self.max_retries:
                     if self.metrics:
                         self.metrics.record_failure(provider)
                     break
-                
+
                 delay = self._calculate_backoff(attempt)
                 logger.info(f"🔄 Retrying stream in {delay:.1f}s...")
                 if self.metrics:
                     self.metrics.retried_requests += 1
-                
+
                 await asyncio.sleep(delay)
-        
+
         logger.error(f"❌ All {self.max_retries + 1} stream attempts failed")
         raise last_error
-    
+
     async def _stream_hf(
         self,
         messages: list,
@@ -527,7 +526,7 @@ class LLMClient:
         """Stream from HuggingFace."""
         try:
             loop = asyncio.get_event_loop()
-            
+
             def _generate():
                 return self.hf_client.chat_completion(
                     messages=messages,
@@ -536,17 +535,17 @@ class LLMClient:
                     temperature=temperature,
                     stream=True
                 )
-            
+
             stream = await loop.run_in_executor(None, _generate)
-            
+
             for chunk in stream:
                 if chunk.choices and chunk.choices[0].delta.content:
                     yield chunk.choices[0].delta.content
-                    
+
         except Exception as e:
             logger.error(f"HuggingFace provider error: {type(e).__name__}: {e}", exc_info=True)
             raise
-    
+
     async def _stream_gemini(
         self,
         messages: list,
@@ -564,7 +563,7 @@ class LLMClient:
         except Exception as e:
             logger.error(f"Gemini provider error: {type(e).__name__}: {e}", exc_info=True)
             raise
-    
+
     async def _stream_nebius(
         self,
         messages: list,
@@ -582,7 +581,7 @@ class LLMClient:
         except Exception as e:
             logger.error(f"Nebius provider error: {type(e).__name__}: {e}", exc_info=True)
             raise
-    
+
     async def _stream_ollama(
         self,
         messages: list,
@@ -600,7 +599,7 @@ class LLMClient:
         except Exception as e:
             logger.error(f"Ollama provider error: {type(e).__name__}: {e}", exc_info=True)
             raise
-    
+
     async def generate(
         self,
         prompt: str,
@@ -615,21 +614,21 @@ class LLMClient:
         async for chunk in self.stream_chat(prompt, context, max_tokens, temperature, provider):
             chunks.append(chunk)
         return "".join(chunks)
-    
+
     def validate(self) -> tuple[bool, str]:
         """Validate at least one LLM backend is available."""
         available = []
-        
+
         if self.hf_client:
             available.append("HuggingFace")
         if self.ollama_client:
             available.append("Ollama")
-        
+
         if not available:
             return False, "No LLM backend available"
-        
+
         return True, f"Backends available: {', '.join(available)}"
-    
+
     def get_available_providers(self) -> List[str]:
         """Get list of available providers."""
         providers = []
@@ -639,35 +638,35 @@ class LLMClient:
             providers.append("ollama")
         providers.append("auto")
         return providers
-    
+
     def get_metrics(self) -> Dict[str, Any]:
         """Get telemetry metrics."""
         if not self.metrics:
             return {"telemetry": "disabled"}
-        
+
         stats = self.metrics.get_stats()
-        
+
         if self.circuit_breaker:
             stats["circuit_breaker"] = {
                 "state": self.circuit_breaker.state.value,
                 "failures": self.circuit_breaker.failures
             }
-        
+
         if self.rate_limiter:
             stats["rate_limiter"] = {
                 "requests_last_minute": len(self.rate_limiter.request_times),
                 "tokens_last_minute": sum(count for _, count in self.rate_limiter.token_counts)
             }
-        
+
         return stats
-    
+
     def reset_circuit_breaker(self) -> None:
         """Manually reset circuit breaker."""
         if self.circuit_breaker:
             self.circuit_breaker.failures = 0
             self.circuit_breaker.state = CircuitState.CLOSED
             logger.info("Circuit breaker manually reset")
-    
+
     def reset_metrics(self) -> None:
         """Reset telemetry metrics."""
         if self.metrics:

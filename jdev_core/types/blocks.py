@@ -11,7 +11,7 @@ Author: JuanCS Dev
 Date: 2025-11-26
 """
 
-from enum import Enum, auto
+from enum import Enum
 from dataclasses import dataclass, field
 from typing import Optional, Dict, Any
 

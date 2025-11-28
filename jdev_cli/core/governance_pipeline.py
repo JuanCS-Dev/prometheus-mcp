@@ -38,7 +38,7 @@ from typing import Tuple, Optional, Dict, Any
 from jdev_cli.agents.base import AgentTask, AgentResponse, BaseAgent
 from jdev_cli.agents.justica_agent import JusticaIntegratedAgent
 from jdev_cli.agents.sofia_agent import SofiaIntegratedAgent
-from jdev_cli.core.observability import get_tracer, trace_operation, get_status_code
+from jdev_cli.core.observability import get_tracer, trace_operation
 from jdev_cli.core.agent_identity import enforce_permission, AgentPermission
 
 logger = logging.getLogger(__name__)
@@ -306,7 +306,7 @@ class GovernancePipeline:
                     return False, f"Pipeline error (fail-safe): {str(e)}", traces
 
                 # If not fail-safe, allow but log
-                logger.error(f"Pipeline error but fail-safe disabled - allowing execution")
+                logger.error("Pipeline error but fail-safe disabled - allowing execution")
                 return True, None, traces
 
     async def _run_governance_check(

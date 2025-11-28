@@ -7,10 +7,7 @@ Test DataAgent with real Gemini LLM.
 """
 
 import asyncio
-import sys
 from rich.console import Console
-from rich.panel import Panel
-from rich.markdown import Markdown
 
 from jdev_cli.core.llm import LLMClient
 from jdev_cli.agents.data_agent_production import create_data_agent
@@ -108,7 +105,7 @@ async def main():
     console.print(f"  [bold]Type:[/bold] {optimization.optimization_type.value}")
 
     if optimization.required_indexes:
-        console.print(f"\n  [yellow]Required indexes:[/yellow]")
+        console.print("\n  [yellow]Required indexes:[/yellow]")
         for idx in optimization.required_indexes:
             console.print(f"    • {idx}")
 

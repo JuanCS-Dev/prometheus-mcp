@@ -18,8 +18,7 @@ Based on Anthropic Claude Code testing standards.
 """
 import pytest
 import asyncio
-from unittest.mock import AsyncMock, MagicMock, patch
-from typing import AsyncIterator
+from unittest.mock import AsyncMock, MagicMock
 
 from jdev_cli.agents.base import (
     AgentRole,

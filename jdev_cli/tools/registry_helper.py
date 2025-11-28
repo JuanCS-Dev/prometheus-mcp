@@ -27,7 +27,7 @@ from jdev_cli.core.providers.prometheus_provider import PrometheusProvider
 def get_default_registry() -> ToolRegistry:
     """Create and populate default tool registry."""
     registry = ToolRegistry()
-    
+
     # Initialize Prometheus provider
     try:
         prom_provider = PrometheusProvider()
@@ -43,7 +43,7 @@ def get_default_registry() -> ToolRegistry:
         ]
     except Exception:
         prom_tools = []
-    
+
     tools = [
         ReadFileTool(), WriteFileTool(), EditFileTool(),
         ListDirectoryTool(), DeleteFileTool(),
@@ -56,8 +56,8 @@ def get_default_registry() -> ToolRegistry:
         CdTool(), LsTool(), PwdTool(), MkdirTool(), RmTool(),
         CpTool(), MvTool(), TouchTool(), CatTool(),
     ] + prom_tools
-    
+
     for tool in tools:
         registry.register(tool)
-    
+
     return registry

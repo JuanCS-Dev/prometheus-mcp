@@ -26,10 +26,9 @@ import ast
 import sys
 import io
 import time
-import signal
 import multiprocessing
 import traceback
-from typing import Any, Callable, Dict, List, Optional, Set, Tuple, Union
+from typing import Any, Callable, Dict, List, Optional, Set, Tuple
 from dataclasses import dataclass, field
 from enum import Enum, auto
 from contextlib import redirect_stdout, redirect_stderr

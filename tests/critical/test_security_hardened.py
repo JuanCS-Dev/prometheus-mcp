@@ -15,9 +15,6 @@ Data: 2025-11-25
 
 import pytest
 import os
-import sys
-import tempfile
-from pathlib import Path
 
 
 # =============================================================================
@@ -421,6 +418,6 @@ class TestSecuritySmokeTest:
 
         if dangerous_calls:
             pytest.fail(
-                f"VULNERABILITY: Found eval/exec in non-sandbox core files:\n" +
+                "VULNERABILITY: Found eval/exec in non-sandbox core files:\n" +
                 "\n".join(dangerous_calls)
             )

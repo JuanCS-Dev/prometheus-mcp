@@ -259,7 +259,7 @@ class LSPHandler:
             if sig_help and sig_help.signatures:
                 active_sig = sig_help.signatures[sig_help.active_signature]
 
-                self.console.print(f"\n[bold]Function Signature:[/bold]")
+                self.console.print("\n[bold]Function Signature:[/bold]")
                 self.console.print(f"  [cyan]{active_sig.label}[/cyan]\n")
 
                 if active_sig.documentation:

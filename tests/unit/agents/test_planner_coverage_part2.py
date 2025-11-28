@@ -13,9 +13,7 @@ Based on Anthropic Claude Code testing standards.
 """
 import pytest
 import json
-from datetime import datetime
-from unittest.mock import AsyncMock, MagicMock, patch, call
-from typing import Dict, Any, List
+from unittest.mock import AsyncMock, MagicMock, patch
 
 from jdev_cli.agents.planner import (
     ExecutionMonitor,
@@ -25,11 +23,6 @@ from jdev_cli.agents.planner import (
     PlannerAgent,
     SOPStep,
     ExecutionStage,
-)
-from jdev_cli.agents.base import (
-    AgentRole,
-    AgentCapability,
-    AgentTask,
 )
 
 

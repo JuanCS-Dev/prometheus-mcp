@@ -13,7 +13,7 @@ Based on Anthropic Claude Code testing standards.
 """
 import pytest
 import json
-from unittest.mock import AsyncMock, MagicMock, patch
+from unittest.mock import AsyncMock, MagicMock
 
 from jdev_cli.agents.architect import (
     ARCHITECT_SYSTEM_PROMPT,

@@ -2,16 +2,14 @@
 Day 3 - Planner Comprehensive Tests (Boris Cherny Standards)
 Tests completos do Planner Agent com todos os edge cases.
 """
-import pytest
 from pathlib import Path
-from unittest.mock import Mock, patch
 from jdev_cli.agents.planner import PlannerAgent
-from jdev_cli.agents.base import AgentRole, TaskContext, TaskStatus
+from jdev_cli.agents.base import TaskContext, TaskStatus
 
 
 class TestPlannerImplementationPlanning:
     """Tests de planejamento de implementação"""
-    
+
     def test_planner_creates_step_by_step_plan(self):
         """Deve criar plano step-by-step detalhado"""
         agent = PlannerAgent()
@@ -23,7 +21,7 @@ class TestPlannerImplementationPlanning:
         result = agent.execute(context)
         assert result.status == TaskStatus.SUCCESS
         assert "steps" in result.output
-    
+
     def test_planner_estimates_time_per_step(self):
         """Deve estimar tempo para cada step"""
         agent = PlannerAgent()
@@ -34,7 +32,7 @@ class TestPlannerImplementationPlanning:
         )
         result = agent.execute(context)
         assert "estimated_duration" in result.metadata
-    
+
     def test_planner_identifies_prerequisites(self):
         """Deve identificar pré-requisitos"""
         agent = PlannerAgent()
@@ -45,7 +43,7 @@ class TestPlannerImplementationPlanning:
         )
         result = agent.execute(context)
         assert "prerequisites" in result.output or result.status == TaskStatus.SUCCESS
-    
+
     def test_planner_suggests_test_strategy(self):
         """Deve sugerir estratégia de testes"""
         agent = PlannerAgent()
@@ -56,7 +54,7 @@ class TestPlannerImplementationPlanning:
         )
         result = agent.execute(context)
         assert result.status == TaskStatus.SUCCESS
-    
+
     def test_planner_considers_existing_code(self):
         """Deve considerar código existente"""
         agent = PlannerAgent()
@@ -68,7 +66,7 @@ class TestPlannerImplementationPlanning:
         )
         result = agent.execute(context)
         assert result.status == TaskStatus.SUCCESS
-    
+
     def test_planner_handles_greenfield_project(self):
         """Deve tratar projeto greenfield"""
         agent = PlannerAgent()
@@ -79,7 +77,7 @@ class TestPlannerImplementationPlanning:
         )
         result = agent.execute(context)
         assert result.status == TaskStatus.SUCCESS
-    
+
     def test_planner_handles_legacy_codebase(self):
         """Deve tratar codebase legado"""
         agent = PlannerAgent()
@@ -90,7 +88,7 @@ class TestPlannerImplementationPlanning:
         )
         result = agent.execute(context)
         assert result.status == TaskStatus.SUCCESS
-    
+
     def test_planner_prioritizes_critical_tasks(self):
         """Deve priorizar tarefas críticas"""
         agent = PlannerAgent()
@@ -101,7 +99,7 @@ class TestPlannerImplementationPlanning:
         )
         result = agent.execute(context)
         assert result.status == TaskStatus.SUCCESS
-    
+
     def test_planner_separates_concerns(self):
         """Deve separar concerns no plano"""
         agent = PlannerAgent()
@@ -112,7 +110,7 @@ class TestPlannerImplementationPlanning:
         )
         result = agent.execute(context)
         assert result.status == TaskStatus.SUCCESS
-    
+
     def test_planner_includes_rollback_strategy(self):
         """Deve incluir estratégia de rollback"""
         agent = PlannerAgent()
@@ -127,7 +125,7 @@ class TestPlannerImplementationPlanning:
 
 class TestPlannerRiskAssessment:
     """Tests de avaliação de riscos"""
-    
+
     def test_planner_identifies_high_risk_areas(self):
         """Deve identificar áreas de alto risco"""
         agent = PlannerAgent()
@@ -138,7 +136,7 @@ class TestPlannerRiskAssessment:
         )
         result = agent.execute(context)
         assert result.status in [TaskStatus.SUCCESS, TaskStatus.FAILED]
-    
+
     def test_planner_suggests_mitigation_strategies(self):
         """Deve sugerir estratégias de mitigação"""
         agent = PlannerAgent()
@@ -149,7 +147,7 @@ class TestPlannerRiskAssessment:
         )
         result = agent.execute(context)
         assert result.status in [TaskStatus.SUCCESS, TaskStatus.FAILED]
-    
+
     def test_planner_recommends_incremental_approach(self):
         """Deve recomendar abordagem incremental para mudanças grandes"""
         agent = PlannerAgent()
@@ -160,7 +158,7 @@ class TestPlannerRiskAssessment:
         )
         result = agent.execute(context)
         assert result.status in [TaskStatus.SUCCESS, TaskStatus.FAILED]
-    
+
     def test_planner_flags_breaking_changes(self):
         """Deve marcar breaking changes"""
         agent = PlannerAgent()
@@ -171,7 +169,7 @@ class TestPlannerRiskAssessment:
         )
         result = agent.execute(context)
         assert result.status in [TaskStatus.SUCCESS, TaskStatus.FAILED]
-    
+
     def test_planner_assesses_technical_debt_impact(self):
         """Deve avaliar impacto em technical debt"""
         agent = PlannerAgent()
@@ -182,7 +180,7 @@ class TestPlannerRiskAssessment:
         )
         result = agent.execute(context)
         assert result.status in [TaskStatus.SUCCESS, TaskStatus.FAILED]
-    
+
     def test_planner_considers_performance_impact(self):
         """Deve considerar impacto em performance"""
         agent = PlannerAgent()
@@ -193,7 +191,7 @@ class TestPlannerRiskAssessment:
         )
         result = agent.execute(context)
         assert result.status in [TaskStatus.SUCCESS, TaskStatus.FAILED]
-    
+
     def test_planner_evaluates_scalability(self):
         """Deve avaliar escalabilidade"""
         agent = PlannerAgent()
@@ -204,7 +202,7 @@ class TestPlannerRiskAssessment:
         )
         result = agent.execute(context)
         assert result.status in [TaskStatus.SUCCESS, TaskStatus.FAILED]
-    
+
     def test_planner_checks_dependency_risks(self):
         """Deve verificar riscos de dependências"""
         agent = PlannerAgent()
@@ -215,7 +213,7 @@ class TestPlannerRiskAssessment:
         )
         result = agent.execute(context)
         assert result.status in [TaskStatus.SUCCESS, TaskStatus.FAILED]
-    
+
     def test_planner_warns_about_complexity(self):
         """Deve avisar sobre complexidade excessiva"""
         agent = PlannerAgent()
@@ -226,7 +224,7 @@ class TestPlannerRiskAssessment:
         )
         result = agent.execute(context)
         assert result.status in [TaskStatus.SUCCESS, TaskStatus.FAILED]
-    
+
     def test_planner_suggests_proof_of_concept(self):
         """Deve sugerir PoC para ideias incertas"""
         agent = PlannerAgent()
@@ -241,7 +239,7 @@ class TestPlannerRiskAssessment:
 
 class TestPlannerResourcePlanning:
     """Tests de planejamento de recursos"""
-    
+
     def test_planner_estimates_development_time(self):
         """Deve estimar tempo de desenvolvimento"""
         agent = PlannerAgent()
@@ -252,7 +250,7 @@ class TestPlannerResourcePlanning:
         )
         result = agent.execute(context)
         assert result.status == TaskStatus.SUCCESS
-    
+
     def test_planner_identifies_skill_requirements(self):
         """Deve identificar skills necessários"""
         agent = PlannerAgent()
@@ -263,7 +261,7 @@ class TestPlannerResourcePlanning:
         )
         result = agent.execute(context)
         assert result.status == TaskStatus.SUCCESS
-    
+
     def test_planner_suggests_tools_needed(self):
         """Deve sugerir ferramentas necessárias"""
         agent = PlannerAgent()
@@ -274,7 +272,7 @@ class TestPlannerResourcePlanning:
         )
         result = agent.execute(context)
         assert result.status == TaskStatus.SUCCESS
-    
+
     def test_planner_estimates_infrastructure_needs(self):
         """Deve estimar necessidades de infraestrutura"""
         agent = PlannerAgent()
@@ -285,7 +283,7 @@ class TestPlannerResourcePlanning:
         )
         result = agent.execute(context)
         assert result.status == TaskStatus.SUCCESS
-    
+
     def test_planner_considers_budget_constraints(self):
         """Deve considerar constraints de orçamento"""
         agent = PlannerAgent()
@@ -301,7 +299,7 @@ class TestPlannerResourcePlanning:
 
 class TestPlannerDependencyManagement:
     """Tests de gerenciamento de dependências"""
-    
+
     def test_planner_maps_task_dependencies(self):
         """Deve mapear dependências entre tarefas"""
         agent = PlannerAgent()
@@ -312,7 +310,7 @@ class TestPlannerDependencyManagement:
         )
         result = agent.execute(context)
         assert result.status == TaskStatus.SUCCESS
-    
+
     def test_planner_suggests_parallel_tasks(self):
         """Deve sugerir tarefas paralelas"""
         agent = PlannerAgent()
@@ -323,7 +321,7 @@ class TestPlannerDependencyManagement:
         )
         result = agent.execute(context)
         assert result.status == TaskStatus.SUCCESS
-    
+
     def test_planner_handles_circular_dependencies(self):
         """Deve detectar dependências circulares"""
         agent = PlannerAgent()
@@ -334,7 +332,7 @@ class TestPlannerDependencyManagement:
         )
         result = agent.execute(context)
         assert result.status in [TaskStatus.SUCCESS, TaskStatus.FAILED]
-    
+
     def test_planner_optimizes_execution_order(self):
         """Deve otimizar ordem de execução"""
         agent = PlannerAgent()
@@ -349,7 +347,7 @@ class TestPlannerDependencyManagement:
 
 class TestPlannerQualityAssurance:
     """Tests de garantia de qualidade"""
-    
+
     def test_planner_includes_code_review_steps(self):
         """Deve incluir steps de code review"""
         agent = PlannerAgent()
@@ -360,7 +358,7 @@ class TestPlannerQualityAssurance:
         )
         result = agent.execute(context)
         assert result.status == TaskStatus.SUCCESS
-    
+
     def test_planner_defines_acceptance_criteria(self):
         """Deve definir critérios de aceitação"""
         agent = PlannerAgent()
@@ -371,7 +369,7 @@ class TestPlannerQualityAssurance:
         )
         result = agent.execute(context)
         assert result.status == TaskStatus.SUCCESS
-    
+
     def test_planner_suggests_testing_pyramid(self):
         """Deve sugerir pirâmide de testes"""
         agent = PlannerAgent()
@@ -382,7 +380,7 @@ class TestPlannerQualityAssurance:
         )
         result = agent.execute(context)
         assert result.status == TaskStatus.SUCCESS
-    
+
     def test_planner_includes_security_checks(self):
         """Deve incluir checks de segurança"""
         agent = PlannerAgent()
@@ -393,7 +391,7 @@ class TestPlannerQualityAssurance:
         )
         result = agent.execute(context)
         assert result.status == TaskStatus.SUCCESS
-    
+
     def test_planner_suggests_documentation_updates(self):
         """Deve sugerir updates de documentação"""
         agent = PlannerAgent()
@@ -408,7 +406,7 @@ class TestPlannerQualityAssurance:
 
 class TestPlannerEdgeCases:
     """Tests de edge cases específicos"""
-    
+
     def test_planner_handles_vague_requirements(self):
         """Deve tratar requisitos vagos"""
         agent = PlannerAgent()
@@ -419,7 +417,7 @@ class TestPlannerEdgeCases:
         )
         result = agent.execute(context)
         assert result.status in [TaskStatus.SUCCESS, TaskStatus.FAILED]
-    
+
     def test_planner_handles_conflicting_requirements(self):
         """Deve tratar requisitos conflitantes"""
         agent = PlannerAgent()
@@ -430,7 +428,7 @@ class TestPlannerEdgeCases:
         )
         result = agent.execute(context)
         assert result.status in [TaskStatus.SUCCESS, TaskStatus.FAILED]
-    
+
     def test_planner_handles_impossible_deadline(self):
         """Deve tratar deadline impossível"""
         agent = PlannerAgent()
@@ -442,7 +440,7 @@ class TestPlannerEdgeCases:
         )
         result = agent.execute(context)
         assert result.status in [TaskStatus.SUCCESS, TaskStatus.FAILED]
-    
+
     def test_planner_handles_unknown_technology(self):
         """Deve tratar tecnologia desconhecida"""
         agent = PlannerAgent()
@@ -453,7 +451,7 @@ class TestPlannerEdgeCases:
         )
         result = agent.execute(context)
         assert result.status in [TaskStatus.SUCCESS, TaskStatus.FAILED]
-    
+
     def test_planner_handles_minimal_context(self):
         """Deve tratar contexto mínimo"""
         agent = PlannerAgent()
@@ -468,7 +466,7 @@ class TestPlannerEdgeCases:
 
 class TestPlannerConstitutionalCompliance:
     """Tests de aderência à Constituição"""
-    
+
     def test_planner_respects_token_budget(self):
         """Deve respeitar budget de tokens"""
         agent = PlannerAgent()
@@ -480,7 +478,7 @@ class TestPlannerConstitutionalCompliance:
         result = agent.execute(context)
         assert result.status == TaskStatus.SUCCESS
         # Token usage should be tracked
-    
+
     def test_planner_avoids_redundant_planning(self):
         """Deve evitar planejamento redundante"""
         agent = PlannerAgent()
@@ -491,7 +489,7 @@ class TestPlannerConstitutionalCompliance:
         )
         result = agent.execute(context)
         assert result.status == TaskStatus.SUCCESS
-    
+
     def test_planner_provides_actionable_output(self):
         """Deve prover output acionável"""
         agent = PlannerAgent()

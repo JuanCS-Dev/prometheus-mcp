@@ -13,7 +13,6 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from jdev_tui.app import QwenApp
     from jdev_tui.widgets.response_view import ResponseView
-    from jdev_tui.widgets.status_bar import StatusBar
 
 
 class AgentCommandHandler:

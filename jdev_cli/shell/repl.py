@@ -1,6 +1,5 @@
 import asyncio
 import sys
-import os
 from pathlib import Path
 from prompt_toolkit import PromptSession
 from prompt_toolkit.styles import Style
@@ -28,11 +27,11 @@ class ShellREPL:
     def __init__(self):
         self.console = Console()
         self.session = PromptSession(history=FileHistory('.qwen_history'))
-        
+
         # Inicializa componentes
         try:
             # Use o provider corrigido diretamente para garantir funcionamento
-            self.llm = GeminiProvider() 
+            self.llm = GeminiProvider()
             self.executor = ShellExecutor(self.llm, self.console)
         except Exception as e:
             self.console.print(f"[bold red]Critical Startup Error:[/bold red] {e}")
@@ -48,7 +47,7 @@ class ShellREPL:
             try:
                 # Input assíncrono que não bloqueia o event loop principal
                 user_input = await self.session.prompt_async(
-                    "╭─(dev) ❯ ", 
+                    "╭─(dev) ❯ ",
                     style=style
                 )
 
@@ -58,7 +57,7 @@ class ShellREPL:
                 if user_input.lower() in ["exit", "quit", "/q"]:
                     self.console.print("[yellow]Shutting down...[/yellow]")
                     break
-                
+
                 if user_input.lower() == "clear":
                     self.console.clear()
                     continue

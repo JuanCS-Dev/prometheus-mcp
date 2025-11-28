@@ -6,7 +6,7 @@ Constitutional compliance: P1 (Completeness), P2 (Validation), P6 (Efficiency)
 import os
 import re
 from pathlib import Path
-from typing import Optional, List, Tuple, Callable, Any, Dict
+from typing import Optional, List, Any, Dict
 from dataclasses import dataclass
 
 from prompt_toolkit import PromptSession
@@ -16,17 +16,13 @@ from prompt_toolkit.history import FileHistory
 from prompt_toolkit.auto_suggest import AutoSuggestFromHistory
 from prompt_toolkit.key_binding import KeyBindings
 from prompt_toolkit.keys import Keys
-from prompt_toolkit.lexers import PygmentsLexer
 from prompt_toolkit.formatted_text import HTML
-from prompt_toolkit.application import get_app
-from pygments.lexers.python import PythonLexer
-from pygments.lexers.markup import MarkdownLexer
 
 
 @dataclass
 class InputContext:
     """Context for intelligent input processing."""
-    
+
     cwd: str
     env: Dict[str, str]
     recent_files: List[str]
@@ -36,7 +32,7 @@ class InputContext:
 
 class MultiLineMode:
     """Handles multi-line input detection and processing."""
-    
+
     CODE_BLOCK_PATTERNS = [
         r'^```',  # Markdown code block
         r'^def\s+\w+',  # Python function
@@ -46,41 +42,41 @@ class MultiLineMode:
         r'^while\s+.+:$',  # Python while loop
         r'^try:$',  # Python try block
     ]
-    
+
     @staticmethod
     def should_continue(text: str) -> bool:
         """Determine if input should continue to next line."""
         if not text.strip():
             return False
-        
+
         # Code block detection
         if text.strip().startswith('```'):
             # Check if code block is closed
             return text.count('```') % 2 == 1
-        
+
         # Python-like syntax detection
         if text.rstrip().endswith(':'):
             return True
-        
+
         # Unclosed brackets/parentheses
         open_count = text.count('(') + text.count('[') + text.count('{')
         close_count = text.count(')') + text.count(']') + text.count('}')
         if open_count > close_count:
             return True
-        
+
         # Explicit continuation (backslash at end)
         if text.rstrip().endswith('\\'):
             return True
-        
+
         return False
-    
+
     @staticmethod
     def detect_language(text: str) -> Optional[str]:
         """Detect programming language from code block."""
         match = re.match(r'^```(\w+)', text.strip())
         if match:
             return match.group(1)
-        
+
         # Heuristic detection
         if re.search(r'\bdef\s+\w+|class\s+\w+|import\s+\w+', text):
             return 'python'
@@ -88,13 +84,13 @@ class MultiLineMode:
             return 'javascript'
         if re.search(r'\bpub\s+fn\s+\w+|\blet\s+mut\s+', text):
             return 'rust'
-        
+
         return None
 
 
 class IntelligentCompleter(Completer):
     """Context-aware autocomplete system."""
-    
+
     def __init__(self, context: InputContext):
         self.context = context
         # Use lambda to dynamically get current CWD from context (Thread Safety Fix)
@@ -106,12 +102,12 @@ class IntelligentCompleter(Completer):
             '/help', '/exit', '/clear', '/history', '/context',
             '/files', '/git', '/search', '/test', '/commit'
         ]
-    
+
     def get_completions(self, document: Document, complete_event: Any) -> Any:
         """Generate context-aware completions."""
         text = document.text_before_cursor
         word = document.get_word_before_cursor()
-        
+
         # Command completion
         if text.startswith('/'):
             for cmd in self.commands:
@@ -121,12 +117,12 @@ class IntelligentCompleter(Completer):
                         display=cmd,
                         display_meta='Command'
                     )
-        
+
         # File path completion
         elif '/' in word or word.startswith('~') or word.startswith('.'):
             for completion in self.path_completer.get_completions(document, complete_event):
                 yield completion
-        
+
         # Recent files completion
         elif word:
             for file_path in self.context.recent_files:
@@ -141,7 +137,7 @@ class IntelligentCompleter(Completer):
 
 class EnhancedInputSession:
     """Enhanced input session with rich features."""
-    
+
     def __init__(
         self,
         history_file: Optional[Path] = None,
@@ -154,10 +150,10 @@ class EnhancedInputSession:
             command_history=[],
             session_data={}
         )
-        
+
         # Initialize key bindings
         self.kb = self._create_key_bindings()
-        
+
         # Initialize session
         self.session: PromptSession[str] = PromptSession(
             history=FileHistory(str(history_file)) if history_file else None,
@@ -169,33 +165,33 @@ class EnhancedInputSession:
             enable_history_search=True,
             mouse_support=False  # DISABLED: Allow terminal copy/paste/select
         )
-        
+
         self.multi_line_buffer: List[str] = []
         self.in_multiline = False
-    
+
     def _create_key_bindings(self) -> KeyBindings:
         """Setup keyboard shortcuts (Cursor/Claude inspiration)."""
         kb = KeyBindings()
-        
+
         @kb.add(Keys.ControlR)
         def _search(event: Any) -> None:
             """Reverse history search (built-in with prompt_toolkit)."""
             event.app.current_buffer.start_history_search()
-        
+
         @kb.add(Keys.Escape, Keys.Enter)
         def _multiline(event: Any) -> None:
             """Force multiline mode (Alt+Enter)."""
             self.in_multiline = True
             event.app.current_buffer.insert_text('\n')
-        
+
         @kb.add(Keys.ControlK)
         def _command_palette(event: Any) -> None:
             """Open command palette (Ctrl+K) - Cursor-style."""
             # Exit prompt with special signal to trigger palette
             event.app.exit(result="__PALETTE__")
-        
+
         return kb
-    
+
     def _get_prompt_message(self) -> str | HTML:
         """Generate dynamic prompt message."""
         if self.in_multiline:
@@ -203,21 +199,21 @@ class EnhancedInputSession:
         else:
             cwd = Path(self.context.cwd).name
             return HTML(f'<ansicyan><b>{cwd}</b></ansicyan> <ansigreen>❯</ansigreen> ')
-    
+
     async def prompt_async(self, message: Optional[str] = None) -> Optional[str]:
         """Async prompt with multi-line support."""
         try:
             prompt_msg = message or self._get_prompt_message()
             text = await self.session.prompt_async(prompt_msg)
-            
+
             if not text.strip():
                 return None
-            
+
             # Multi-line handling
             if self.in_multiline or MultiLineMode.should_continue(text):
                 self.multi_line_buffer.append(text)
                 self.in_multiline = True
-                
+
                 # Check if multi-line is complete
                 full_text = '\n'.join(self.multi_line_buffer)
                 if not MultiLineMode.should_continue(full_text):
@@ -228,12 +224,12 @@ class EnhancedInputSession:
                 else:
                     # Continue multi-line input
                     return await self.prompt_async()
-            
+
             return text
-        
+
         except (EOFError, KeyboardInterrupt):
             return None
-    
+
     def update_context(self, **kwargs: Any) -> None:
         """Update input context dynamically."""
         for key, value in kwargs.items():
@@ -243,7 +239,7 @@ class EnhancedInputSession:
 
 class ClipboardIntegration:
     """Cross-platform clipboard integration."""
-    
+
     @staticmethod
     def read() -> Optional[str]:
         """Read from system clipboard."""
@@ -258,13 +254,13 @@ class ClipboardIntegration:
                     if os.uname().sysname == 'Darwin':
                         result = subprocess.run(['pbpaste'], capture_output=True, text=True)
                     else:
-                        result = subprocess.run(['xclip', '-selection', 'clipboard', '-o'], 
+                        result = subprocess.run(['xclip', '-selection', 'clipboard', '-o'],
                                                capture_output=True, text=True)
                     return str(result.stdout) if result.stdout else None
             except FileNotFoundError:
                 pass
         return None
-    
+
     @staticmethod
     def write(text: str) -> bool:
         """Write to system clipboard."""
@@ -280,7 +276,7 @@ class ClipboardIntegration:
                     if os.uname().sysname == 'Darwin':
                         subprocess.run(['pbcopy'], input=text.encode(), check=True)
                     else:
-                        subprocess.run(['xclip', '-selection', 'clipboard'], 
+                        subprocess.run(['xclip', '-selection', 'clipboard'],
                                       input=text.encode(), check=True)
                     return True
             except (FileNotFoundError, subprocess.CalledProcessError):
@@ -293,12 +289,12 @@ class EnhancedInput:
     Simplified EnhancedInput for accessibility testing compatibility.
     Phase 5.2 addition for test support.
     """
-    
+
     def __init__(self) -> None:
         self.cursor_position = 0
         self.text = ""
         self.history = []
-        
+
     def handle_key(self, key: str) -> Optional[str]:
         """Handle keyboard input."""
         key_map = {
@@ -316,90 +312,90 @@ class EnhancedInput:
             "ctrl+a": self._handle_select_all,
             "ctrl+z": self._handle_undo,
         }
-        
+
         handler = key_map.get(key)
         if handler:
             return handler()
         return None
-    
+
     def _handle_up(self) -> Optional[str]:
         """Navigate history up."""
         if self.history:
             return self.history[-1] if self.history else None
         return None
-    
+
     def _handle_down(self) -> Optional[str]:
         """Navigate history down."""
         return None
-    
+
     def _handle_left(self) -> Optional[str]:
         """Move cursor left."""
         if self.cursor_position > 0:
             self.cursor_position -= 1
         return None
-    
+
     def _handle_right(self) -> Optional[str]:
         """Move cursor right."""
         if self.cursor_position < len(self.text):
             self.cursor_position += 1
         return None
-    
+
     def _handle_tab(self) -> Optional[str]:
         """Handle tab for autocomplete."""
         return "autocomplete"
-    
+
     def _handle_shift_tab(self) -> Optional[str]:
         """Handle shift+tab for reverse navigation."""
         return "reverse_nav"
-    
+
     def _handle_enter(self) -> Optional[str]:
         """Handle enter for submission."""
         return self.text
-    
+
     def _handle_escape(self) -> Optional[str]:
         """Handle escape for cancel."""
         self.text = ""
         return "cancel"
-    
+
     def _handle_copy(self) -> Optional[str]:
         """Handle copy."""
         return "copy"
-    
+
     def _handle_paste(self) -> Optional[str]:
         """Handle paste."""
         return "paste"
-    
+
     def _handle_cut(self) -> Optional[str]:
         """Handle cut."""
         return "cut"
-    
+
     def _handle_select_all(self) -> Optional[str]:
         """Handle select all."""
         return "select_all"
-    
+
     def _handle_undo(self) -> Optional[str]:
         """Handle undo."""
         return "undo"
-    
+
     def process_input(self, text: str) -> str:
         """Process input text."""
         self.text = text
         return text
-    
+
     def set_text(self, text: str) -> None:
         """Set input text."""
         self.text = text
-    
+
     def validate_input(self, text: str) -> Optional[str]:
         """Validate input and return error if invalid."""
         if not text.strip():
             return "Please enter a valid command. Type /help for assistance."
         return None
-    
+
     def get_label(self) -> str:
         """Get input label for accessibility."""
         return "Command input"
-    
+
     def get_help_text(self) -> str:
         """Get help text for accessibility."""
         return "Enter a command or question. Press Tab for autocomplete, Ctrl+R for history search."

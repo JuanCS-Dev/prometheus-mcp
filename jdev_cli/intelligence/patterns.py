@@ -19,9 +19,9 @@ def _suggest_git_push_after_commit(context: Context) -> Optional[Suggestion]:
     """Suggest git push after successful commit."""
     if not context.command_history:
         return None
-    
+
     last_cmd = context.command_history[-1] if context.command_history else ""
-    
+
     # Check if last command was git commit
     if "git commit" in last_cmd and context.git_branch:
         return Suggestion(
@@ -30,7 +30,7 @@ def _suggest_git_push_after_commit(context: Context) -> Optional[Suggestion]:
             confidence=SuggestionConfidence.HIGH,
             reasoning="After committing, typically you want to push to remote"
         )
-    
+
     return None
 
 
@@ -38,7 +38,7 @@ def _suggest_add_before_commit(context: Context) -> Optional[Suggestion]:
     """Suggest git add before commit attempt."""
     if not context.current_command:
         return None
-    
+
     if "git commit" in context.current_command and "git add" not in str(context.command_history):
         return Suggestion(
             type=SuggestionType.ERROR_PREVENTION,
@@ -46,7 +46,7 @@ def _suggest_add_before_commit(context: Context) -> Optional[Suggestion]:
             confidence=SuggestionConfidence.MEDIUM,
             reasoning="You're about to commit, but haven't staged files yet"
         )
-    
+
     return None
 
 
@@ -54,24 +54,24 @@ def _suggest_test_after_changes(context: Context) -> Optional[Suggestion]:
     """Suggest running tests after code changes."""
     if not context.recent_files:
         return None
-    
+
     # Check if any test files or source files were modified
     code_modified = any(
         f.endswith(('.py', '.js', '.ts', '.go', '.rs'))
         for f in context.recent_files
     )
-    
+
     if code_modified:
         # Try to infer test command from project
         test_cmd = "pytest"  # Default for Python
-        
+
         return Suggestion(
             type=SuggestionType.NEXT_STEP,
             content=test_cmd,
             confidence=SuggestionConfidence.MEDIUM,
             reasoning="Code was modified, running tests ensures nothing broke"
         )
-    
+
     return None
 
 
@@ -79,9 +79,9 @@ def _suggest_safer_rm(context: Context) -> Optional[Suggestion]:
     """Suggest safer alternatives to dangerous rm commands."""
     if not context.current_command:
         return None
-    
+
     cmd = context.current_command
-    
+
     # Detect dangerous rm patterns
     if re.match(r'rm\s+-rf?\s+/', cmd):
         return Suggestion(
@@ -90,7 +90,7 @@ def _suggest_safer_rm(context: Context) -> Optional[Suggestion]:
             confidence=SuggestionConfidence.HIGH,
             reasoning="Destructive rm detected - safer alternatives exist"
         )
-    
+
     return None
 
 
@@ -98,9 +98,9 @@ def _suggest_backup_before_destructive(context: Context) -> Optional[Suggestion]
     """Suggest backup before destructive operations."""
     if not context.current_command:
         return None
-    
+
     destructive_keywords = ['rm', 'delete', 'truncate', 'drop']
-    
+
     if any(kw in context.current_command.lower() for kw in destructive_keywords):
         return Suggestion(
             type=SuggestionType.ERROR_PREVENTION,
@@ -108,7 +108,7 @@ def _suggest_backup_before_destructive(context: Context) -> Optional[Suggestion]
             confidence=SuggestionConfidence.MEDIUM,
             reasoning="Destructive operation detected - backup recommended"
         )
-    
+
     return None
 
 
@@ -116,7 +116,7 @@ def _suggest_verbose_mode(context: Context) -> Optional[Suggestion]:
     """Suggest verbose flags for debugging."""
     if not context.recent_errors:
         return None
-    
+
     if context.current_command and '-v' not in context.current_command:
         return Suggestion(
             type=SuggestionType.ERROR_PREVENTION,
@@ -124,7 +124,7 @@ def _suggest_verbose_mode(context: Context) -> Optional[Suggestion]:
             confidence=SuggestionConfidence.LOW,
             reasoning="Recent errors detected - verbose mode helps debugging"
         )
-    
+
     return None
 
 
@@ -132,9 +132,9 @@ def _suggest_piping_to_grep(context: Context) -> Optional[Suggestion]:
     """Suggest piping large outputs to grep."""
     if not context.current_command:
         return None
-    
+
     large_output_cmds = ['ls -la', 'ps aux', 'docker ps', 'kubectl get']
-    
+
     if any(cmd in context.current_command for cmd in large_output_cmds):
         if '| grep' not in context.current_command:
             return Suggestion(
@@ -143,7 +143,7 @@ def _suggest_piping_to_grep(context: Context) -> Optional[Suggestion]:
                 confidence=SuggestionConfidence.LOW,
                 reasoning="Large output expected - grep can filter results"
             )
-    
+
     return None
 
 

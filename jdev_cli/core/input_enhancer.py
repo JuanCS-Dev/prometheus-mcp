@@ -21,9 +21,9 @@ Design Philosophy:
 from __future__ import annotations
 
 import re
-from typing import Any, Callable, Dict, List, Optional, Set, Tuple, Union
+from typing import Any, Dict, List, Optional, Set, Tuple
 from dataclasses import dataclass, field
-from enum import Enum, auto
+from enum import Enum
 import logging
 
 logger = logging.getLogger(__name__)

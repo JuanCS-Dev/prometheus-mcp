@@ -2,7 +2,7 @@
 import ast, re
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Dict, List, Optional, Set
+from typing import List, Optional
 
 @dataclass
 class RefactoringResult:
@@ -15,7 +15,7 @@ class RefactoringResult:
 class RefactoringEngine:
     def __init__(self, project_root: Path):
         self.project_root = project_root.resolve()
-    
+
     def rename_symbol(self, file_path: Path, old: str, new: str) -> RefactoringResult:
         try:
             content = file_path.read_text()
@@ -25,7 +25,7 @@ class RefactoringEngine:
             return RefactoringResult(True, f"Renamed {count} occurrences", [file_path], f"{old}→{new}: {count}")
         except Exception as e:
             return RefactoringResult(False, "Failed", [], "", str(e))
-    
+
     def organize_imports(self, file_path: Path) -> RefactoringResult:
         try:
             content = file_path.read_text()

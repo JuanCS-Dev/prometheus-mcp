@@ -80,8 +80,6 @@ from jdev_governance.justica import (
     EnforcementMode,
     Constitution,
     TrustLevel,
-    Severity,
-    ViolationType,
     AuditLogger,
     AuditLevel,
     AuditCategory,

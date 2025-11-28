@@ -13,7 +13,7 @@ src_path = Path(__file__).parent.parent / "src"
 sys.path.insert(0, str(src_path))
 
 from juan_dev_sdk import create_tool, ToolBuilder
-from juan_dev_sdk.tools import ToolCategory, ToolResult
+from juan_dev_sdk.tools import ToolCategory
 
 
 # Simple function-based tool

@@ -2,7 +2,6 @@
 import asyncio
 import sys
 import os
-from pathlib import Path
 
 # Add project root to path
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
@@ -12,7 +11,7 @@ from jdev_cli.core.lazy_loader import LazyLoader
 async def verify_plugins():
     print("🔍 Verifying Shell Integrity & Plugins...")
     loader = LazyLoader()
-    
+
     errors = []
 
     # 1. Verify Intelligence Plugin
@@ -21,9 +20,9 @@ async def verify_plugins():
         mod = await loader.load('intelligence')
         if not hasattr(mod, 'Plugin'):
             raise AttributeError("Module has no 'Plugin' class")
-        
+
         plugin = mod.Plugin()
-        # Mocking initialization to avoid heavy lifting if possible, 
+        # Mocking initialization to avoid heavy lifting if possible,
         # but we need to check if attributes exist after init
         # Let's try to run initialize if it's not too heavy, or mock dependencies
         # For now, just checking structure
@@ -38,12 +37,12 @@ async def verify_plugins():
         mod = await loader.load('devsquad')
         if not hasattr(mod, 'Plugin'):
             raise AttributeError("Module has no 'Plugin' class")
-        
+
         plugin = mod.Plugin()
         # Check if it has 'squad' attribute (might be None before init)
         if not hasattr(plugin, 'squad'):
              raise AttributeError("Plugin instance has no 'squad' attribute")
-             
+
         print("✅ OK (Plugin class found)")
     except Exception as e:
         print(f"❌ FAILED: {e}")

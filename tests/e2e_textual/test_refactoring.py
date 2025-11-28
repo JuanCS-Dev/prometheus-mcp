@@ -4,11 +4,9 @@ Tests the ability to refactor and improve existing code.
 """
 
 import pytest
-import asyncio
 import time
-from pathlib import Path
 
-from .conftest import TestResult, get_report
+from .conftest import TestResult
 
 
 class TestCodeRefactoring:

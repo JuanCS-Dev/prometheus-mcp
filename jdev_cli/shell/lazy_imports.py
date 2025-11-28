@@ -20,8 +20,7 @@ Usage:
 from __future__ import annotations
 
 import importlib
-import sys
-from typing import Any, Optional, TYPE_CHECKING
+from typing import Any, Optional
 
 
 class LazyModule:

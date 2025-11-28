@@ -15,16 +15,13 @@ import asyncio
 import sys
 import json
 import pickle
-from unittest.mock import Mock, AsyncMock, patch, MagicMock
-from typing import Any, Dict, Optional
+from unittest.mock import Mock, AsyncMock
 import gc
 import threading
 import time
 
-from jdev_cli.maestro_governance import MaestroGovernance, render_sofia_counsel
+from jdev_cli.maestro_governance import MaestroGovernance
 from jdev_cli.core.governance_pipeline import GovernancePipeline
-from jdev_cli.agents.justica_agent import JusticaIntegratedAgent
-from jdev_cli.agents.sofia_agent import SofiaIntegratedAgent
 from jdev_cli.agents.base import AgentTask, AgentResponse, AgentRole
 from jdev_cli.core.agent_identity import get_agent_identity, AGENT_IDENTITIES
 

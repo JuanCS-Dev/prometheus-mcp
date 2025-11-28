@@ -30,10 +30,10 @@ MARKDOWN TABLES - CRITICAL:
 
 class GeminiProvider:
     """Google Gemini API provider."""
-    
+
     def __init__(
-        self, 
-        api_key: Optional[str] = None, 
+        self,
+        api_key: Optional[str] = None,
         model_name: str = None,
         enable_code_execution: bool = False,
         enable_search: bool = False,
@@ -52,17 +52,17 @@ class GeminiProvider:
         # Respect GEMINI_MODEL from .env unconditionally (Constitutional compliance)
         default_model = "gemini-2.5-flash"  # Stable production model
         self.model_name = model_name or os.getenv("GEMINI_MODEL", default_model)
-        
+
         # Native Capabilities
         self.enable_code_execution = enable_code_execution
         self.enable_search = enable_search
         self.enable_caching = enable_caching
-        
+
         self._client = None
         self._genai = None
         self.generation_config = None
         self._cached_content = None
-        
+
     def _ensure_genai(self):
         """Lazy load genai SDK."""
         if self._genai is None:
@@ -72,12 +72,12 @@ class GeminiProvider:
                 import io
                 _original_stderr = sys.stderr
                 sys.stderr = io.StringIO()
-                
+
                 import google.generativeai as genai
-                
+
                 # Restore stderr
                 sys.stderr = _original_stderr
-                
+
                 self._genai = genai
                 self._genai.configure(api_key=self.api_key)
                 self.generation_config = self._genai.GenerationConfig(
@@ -102,30 +102,30 @@ class GeminiProvider:
                         tools.append("code_execution")
                     if self.enable_search:
                         tools.append("google_search_retrieval")
-                    
+
                     # Initialize Model with Tools
                     self._client = self._genai.GenerativeModel(
                         self.model_name,
                         tools=tools if tools else None
                     )
-                    
+
                     # FORCE visible confirmation
                     print(f"✅ Gemini Native: {self.model_name}")
                     if self.enable_code_execution:
                         print("   └── 🐍 Native Code Execution: ENABLED")
                     if self.enable_search:
                         print("   └── 🌍 Google Search: ENABLED")
-                        
+
                     logger.info(f"Gemini provider initialized with model: {self.model_name}")
                 except Exception as e:
                     logger.error(f"Failed to initialize Gemini: {e}")
                     self._client = None
         return self._client
-    
+
     def is_available(self) -> bool:
         """Check if provider is available."""
         return self.client is not None
-    
+
     async def generate(
         self,
         messages: List[Dict[str, str]],
@@ -145,11 +145,11 @@ class GeminiProvider:
         """
         if not self.is_available():
             raise RuntimeError("Gemini provider not available")
-        
+
         try:
             # Convert messages to Gemini format
             prompt = self._format_messages(messages)
-            
+
             # Generate in thread pool (Gemini SDK is sync)
             loop = asyncio.get_event_loop()
             response = await loop.run_in_executor(
@@ -162,13 +162,13 @@ class GeminiProvider:
                     }
                 )
             )
-            
+
             return response.text
-        
+
         except Exception as e:
             logger.error(f"Gemini generation failed: {e}")
             raise
-    
+
     async def stream_generate(
         self,
         messages: List[Dict[str, str]],
@@ -188,10 +188,10 @@ class GeminiProvider:
         """
         if not self.is_available():
             raise RuntimeError("Gemini provider not available")
-        
+
         try:
             prompt = self._format_messages(messages)
-            
+
             # Create generator function for streaming (suppress stderr for gRPC)
             def _stream():
                 import sys
@@ -210,22 +210,22 @@ class GeminiProvider:
                     return result
                 finally:
                     sys.stderr = _original_stderr
-            
+
             # Run streaming in thread pool and yield chunks
             loop = asyncio.get_event_loop()
             response_iterator = await loop.run_in_executor(None, _stream)
-            
+
             # Yield chunks (run iteration in thread pool to avoid blocking)
             for chunk in response_iterator:
                 if chunk.text:
                     yield chunk.text
                     # Small delay to allow other tasks
                     await asyncio.sleep(0)
-        
+
         except Exception as e:
             logger.error(f"Gemini streaming failed: {e}")
             raise
-    
+
     async def stream_chat(
         self,
         messages: List[Dict[str, str]],
@@ -239,7 +239,7 @@ class GeminiProvider:
         """
         if not self.is_available():
             raise RuntimeError("Gemini provider not available")
-        
+
         try:
             # 1. Prepare Tools
             tools = []
@@ -247,14 +247,14 @@ class GeminiProvider:
                 tools.append("code_execution")
             if self.enable_search:
                 tools.append("google_search_retrieval")
-            
+
             # 2. Initialize Model (with System Instruction)
             # We create a specific instance for this chat to support dynamic system prompt
             # This is lightweight and ensures we use the native system_instruction
-            
+
             # Add anti-repetition instructions
             full_system_prompt = (system_prompt or "") + GEMINI_OUTPUT_RULES
-            
+
             # CRITICAL: Temperature MUST be 1.0 for Gemini 2.5+ to prevent looping
             safe_temperature = 1.0
             if temperature != 1.0:
@@ -273,12 +273,12 @@ class GeminiProvider:
                 role = "user" if msg["role"] == "user" else "model"
                 content = msg.get("content", "")
                 history.append({"role": role, "parts": [content]})
-            
+
             last_user_msg = messages[-1]["content"] if messages else ""
 
             # 4. Start Chat
             chat = model.start_chat(history=history)
-            
+
             # 5. Send Message (Async Wrapper)
             # Use automatic_function_calling=True by default if tools are enabled
             def _send():
@@ -290,13 +290,13 @@ class GeminiProvider:
                     },
                     stream=True
                 )
-            
+
             loop = asyncio.get_event_loop()
             response = await loop.run_in_executor(None, _send)
-            
+
             # FIX: Convert iterable response to iterator
             response_iterator = iter(response)
-            
+
             # 6. Stream Response
             # We iterate manually to avoid blocking the event loop
             def _next_chunk():
@@ -309,7 +309,7 @@ class GeminiProvider:
 
             while True:
                 chunk = await loop.run_in_executor(None, _next_chunk)
-                
+
                 if chunk is None:
                     break
                 if isinstance(chunk, Exception):
@@ -332,14 +332,14 @@ class GeminiProvider:
                 except Exception as chunk_error:
                     # Some chunks might be pure metadata or function calls without text
                     continue
-                
+
                 await asyncio.sleep(0)
 
-                    
+
         except Exception as e:
             logger.error(f"Gemini streaming error: {e}")
             yield f"\n[System Error: {str(e)}]"
-    
+
     def _format_messages(self, messages: List[Dict[str, str]]) -> str:
         """Format messages for Gemini.
         
@@ -350,16 +350,16 @@ class GeminiProvider:
         for msg in messages:
             role = msg.get('role', 'user')
             content = msg.get('content', '')
-            
+
             if role == 'system':
                 formatted.append(f"System: {content}")
             elif role == 'user':
                 formatted.append(f"User: {content}")
             elif role == 'assistant':
                 formatted.append(f"Assistant: {content}")
-        
+
         return "\n\n".join(formatted)
-    
+
     def get_model_info(self) -> Dict[str, str | bool | int]:
         """Get model information."""
         return {
@@ -369,7 +369,7 @@ class GeminiProvider:
             'context_window': 32768,  # Gemini Pro context
             'supports_streaming': True
         }
-    
+
     def count_tokens(self, text: str) -> int:
         """Count tokens using native API.
         
@@ -381,7 +381,7 @@ class GeminiProvider:
         """
         if not self.is_available():
             return len(text) // 4
-            
+
         try:
             # Use native count_tokens
             return self.client.count_tokens(text).total_tokens

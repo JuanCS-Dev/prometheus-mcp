@@ -115,7 +115,7 @@ class IndexHandler:
             code_suggestions = self.shell.suggestion_engine.suggest_edits(file_path)
 
             if code_suggestions:
-                self.console.print(f"\n[bold]🔧 Code suggestions:[/bold]\n")
+                self.console.print("\n[bold]🔧 Code suggestions:[/bold]\n")
 
                 for sug in code_suggestions[:5]:  # Top 5
                     impact_colors = {

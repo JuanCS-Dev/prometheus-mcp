@@ -1,6 +1,5 @@
 """Workflow library for DevSquad."""
 
-import uuid
 from typing import List, Dict, Any, Optional
 from dataclasses import dataclass, field
 from enum import Enum
@@ -35,23 +34,23 @@ class Workflow:
 
 class WorkflowLibrary:
     """Library of predefined workflows."""
-    
+
     def __init__(self) -> None:
         """Initialize workflow library with default workflows."""
         self.workflows: Dict[str, Workflow] = {}
         self._register_defaults()
-    
+
     def get_workflow(self, name: str) -> Optional[Workflow]:
         """Get a workflow by name."""
         return self.workflows.get(name)
-    
+
     def list_workflows(self) -> List[Workflow]:
         """List all available workflows."""
         return list(self.workflows.values())
-    
+
     def _register_defaults(self) -> None:
         """Register default workflows."""
-        
+
         # 1. Setup FastAPI Project
         self.register(Workflow(
             id="setup-fastapi",
@@ -89,7 +88,7 @@ class WorkflowLibrary:
                 )
             ]
         ))
-        
+
         # 2. Add Authentication
         self.register(Workflow(
             id="add-auth",
@@ -133,7 +132,7 @@ class WorkflowLibrary:
                 )
             ]
         ))
-        
+
         # 3. Migrate to FastAPI
         self.register(Workflow(
             id="migrate-fastapi",

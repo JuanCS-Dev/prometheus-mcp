@@ -15,7 +15,7 @@ from .types import Context
 
 class ExpertiseLevel(Enum):
     """User expertise level (Claude pattern)."""
-    
+
     BEGINNER = "beginner"
     INTERMEDIATE = "intermediate"
     EXPERT = "expert"
@@ -23,7 +23,7 @@ class ExpertiseLevel(Enum):
 
 class RiskTolerance(Enum):
     """User risk tolerance (Claude pattern)."""
-    
+
     CAUTIOUS = "cautious"
     BALANCED = "balanced"
     AGGRESSIVE = "aggressive"
@@ -32,7 +32,7 @@ class RiskTolerance(Enum):
 @dataclass(frozen=True)
 class GitStatus:
     """Git repository status."""
-    
+
     branch: Optional[str] = None
     staged_files: List[str] = field(default_factory=list)
     unstaged_files: List[str] = field(default_factory=list)
@@ -45,7 +45,7 @@ class GitStatus:
 @dataclass(frozen=True)
 class WorkspaceInfo:
     """Workspace/project information."""
-    
+
     language: Optional[str] = None
     framework: Optional[str] = None
     dependencies: Dict[str, str] = field(default_factory=dict)
@@ -56,7 +56,7 @@ class WorkspaceInfo:
 @dataclass(frozen=True)
 class TerminalInfo:
     """Terminal state information."""
-    
+
     working_directory: str = "."
     last_exit_code: int = 0
     shell: str = "bash"
@@ -70,16 +70,16 @@ class RichContext(Context):
     - Cursor: Multi-source context fusion
     - Claude: User expertise and preferences
     """
-    
+
     # Git information
     git_status: Optional[GitStatus] = None
-    
+
     # Workspace information
     workspace: Optional[WorkspaceInfo] = None
-    
+
     # Terminal information
     terminal: Optional[TerminalInfo] = None
-    
+
     # User preferences (Claude pattern)
     user_expertise: ExpertiseLevel = ExpertiseLevel.INTERMEDIATE
     risk_tolerance: RiskTolerance = RiskTolerance.BALANCED
@@ -103,7 +103,7 @@ def detect_git_status(working_dir: str = ".") -> Optional[GitStatus]:
             check=True,
             timeout=2
         )
-        
+
         # Get branch
         branch_result = subprocess.run(
             ["git", "branch", "--show-current"],
@@ -113,7 +113,7 @@ def detect_git_status(working_dir: str = ".") -> Optional[GitStatus]:
             timeout=2
         )
         branch = branch_result.stdout.strip() or None
-        
+
         # Get status
         status_result = subprocess.run(
             ["git", "status", "--porcelain"],
@@ -122,25 +122,25 @@ def detect_git_status(working_dir: str = ".") -> Optional[GitStatus]:
             text=True,
             timeout=2
         )
-        
+
         staged = []
         unstaged = []
         untracked = []
-        
+
         for line in status_result.stdout.splitlines():
             if not line.strip():
                 continue
-            
+
             status = line[:2]
             filename = line[3:]
-            
+
             if status[0] in ['M', 'A', 'D', 'R', 'C']:
                 staged.append(filename)
             if status[1] in ['M', 'D']:
                 unstaged.append(filename)
             if status == '??':
                 untracked.append(filename)
-        
+
         # Check for remote
         remote_result = subprocess.run(
             ["git", "remote"],
@@ -150,7 +150,7 @@ def detect_git_status(working_dir: str = ".") -> Optional[GitStatus]:
             timeout=2
         )
         has_remote = bool(remote_result.stdout.strip())
-        
+
         return GitStatus(
             branch=branch,
             staged_files=staged,
@@ -158,7 +158,7 @@ def detect_git_status(working_dir: str = ".") -> Optional[GitStatus]:
             untracked_files=untracked,
             has_remote=has_remote
         )
-    
+
     except (subprocess.CalledProcessError, subprocess.TimeoutExpired, FileNotFoundError):
         return None
 
@@ -173,7 +173,7 @@ def detect_workspace(working_dir: str = ".") -> WorkspaceInfo:
         WorkspaceInfo with detected information
     """
     info = WorkspaceInfo()
-    
+
     # Check for package.json (Node.js)
     package_json = os.path.join(working_dir, "package.json")
     if os.path.exists(package_json):
@@ -183,7 +183,7 @@ def detect_workspace(working_dir: str = ".") -> WorkspaceInfo:
                 deps = pkg.get('dependencies', {})
                 dev_deps = pkg.get('devDependencies', {})
                 scripts = pkg.get('scripts', {})
-                
+
                 # Detect framework
                 framework = None
                 if 'react' in deps:
@@ -194,13 +194,13 @@ def detect_workspace(working_dir: str = ".") -> WorkspaceInfo:
                     framework = 'nextjs'
                 elif 'express' in deps:
                     framework = 'express'
-                
+
                 # Detect test setup
                 has_tests = 'test' in scripts or any(
                     t in dev_deps for t in ['jest', 'vitest', 'mocha']
                 )
                 test_cmd = scripts.get('test', 'npm test') if has_tests else None
-                
+
                 info = WorkspaceInfo(
                     language='javascript',
                     framework=framework,
@@ -210,14 +210,14 @@ def detect_workspace(working_dir: str = ".") -> WorkspaceInfo:
                 )
         except (json.JSONDecodeError, IOError) as e:
             logger.debug(f"Failed to parse package.json: {e}")
-    
+
     # Check for requirements.txt (Python)
     requirements = os.path.join(working_dir, "requirements.txt")
     if os.path.exists(requirements):
         try:
             with open(requirements) as f:
                 reqs = f.read().lower()
-                
+
                 framework = None
                 if 'django' in reqs:
                     framework = 'django'
@@ -225,10 +225,10 @@ def detect_workspace(working_dir: str = ".") -> WorkspaceInfo:
                     framework = 'flask'
                 elif 'fastapi' in reqs:
                     framework = 'fastapi'
-                
+
                 has_tests = 'pytest' in reqs or 'unittest' in reqs
                 test_cmd = 'pytest' if 'pytest' in reqs else 'python -m unittest'
-                
+
                 info = WorkspaceInfo(
                     language='python',
                     framework=framework,
@@ -237,7 +237,7 @@ def detect_workspace(working_dir: str = ".") -> WorkspaceInfo:
                 )
         except IOError as e:
             logger.debug(f"Failed to read requirements.txt: {e}")
-    
+
     # Check for Cargo.toml (Rust)
     cargo_toml = os.path.join(working_dir, "Cargo.toml")
     if os.path.exists(cargo_toml):
@@ -246,7 +246,7 @@ def detect_workspace(working_dir: str = ".") -> WorkspaceInfo:
             has_tests=True,
             test_command='cargo test'
         )
-    
+
     # Check for go.mod (Go)
     go_mod = os.path.join(working_dir, "go.mod")
     if os.path.exists(go_mod):
@@ -255,7 +255,7 @@ def detect_workspace(working_dir: str = ".") -> WorkspaceInfo:
             has_tests=True,
             test_command='go test ./...'
         )
-    
+
     return info
 
 
@@ -279,7 +279,7 @@ def build_rich_context(
     git_status = detect_git_status(working_dir)
     workspace = detect_workspace(working_dir)
     terminal = TerminalInfo(working_directory=working_dir)
-    
+
     return RichContext(
         current_command=current_command,
         command_history=command_history or [],

@@ -4,11 +4,10 @@ Tests security auditing, code review, and validation capabilities.
 """
 
 import pytest
-import asyncio
 import time
 from pathlib import Path
 
-from .conftest import TestResult, get_report
+from .conftest import TestResult
 
 
 class TestSecurityAudit:
@@ -351,7 +350,7 @@ OLD_CONSTANT = "not used"
                     "severity": "MEDIUM"
                 })
 
-            result.logs.append(f"✓ Analyzed code for smells")
+            result.logs.append("✓ Analyzed code for smells")
             result.logs.append(f"✓ Found {len(smells_found)} types of code smells")
             for smell in smells_found:
                 detail = smell.get('detail', f"{smell['count']} occurrences")
@@ -459,7 +458,7 @@ class TestComplianceAudit:
         )
 
         try:
-            from jdev_cli.tools.file_ops import WriteFileTool, ReadFileTool
+            from jdev_cli.tools.file_ops import WriteFileTool
             from jdev_cli.tools.search import SearchFilesTool
 
             write_tool = WriteFileTool()
@@ -521,8 +520,8 @@ FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
             }
 
             result.logs.append(f"✓ License file present: {license_exists}")
-            result.logs.append(f"✓ Project license: MIT")
-            result.logs.append(f"✓ Dependencies analyzed:")
+            result.logs.append("✓ Project license: MIT")
+            result.logs.append("✓ Dependencies analyzed:")
             for lic, count in licenses_found.items():
                 if count > 0:
                     result.logs.append(f"  - {lic}: {count} packages")

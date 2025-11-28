@@ -10,21 +10,17 @@ Architecture:
 Philosophy: "Symbolic precision meets neural intelligence"
 """
 
-import os
 import sys
 import asyncio
 import json
 import time
-from typing import Optional, Iterator, Dict, Any, List
+from typing import Optional, Dict
 from datetime import datetime
 from pathlib import Path
-from enum import Enum
-from dataclasses import dataclass
 
 from rich.console import Console
 from rich.markdown import Markdown
 from rich.text import Text
-from rich.live import Live
 from rich.tree import Tree
 from rich.panel import Panel
 from rich.table import Table
@@ -59,10 +55,10 @@ from jdev_cli.agents.data_agent_production import create_data_agent
 from jdev_cli.agents.devops_agent import create_devops_agent
 
 # Import TUI Components (30 FPS optimized)
-from jdev_cli.tui.maestro_layout import MaestroLayout, CyberpunkHeader
+from jdev_cli.tui.maestro_layout import MaestroLayout
 from jdev_cli.tui.components.agent_routing import AgentRoutingDisplay
 from jdev_cli.tui.components.streaming_display import StreamingResponseDisplay
-from jdev_cli.tui.components.autocomplete import ContextAwareCompleter, create_completer
+from jdev_cli.tui.components.autocomplete import create_completer
 from jdev_cli.tui.components.slash_completer import CombinedCompleter
 from jdev_cli.tui.performance import PerformanceMonitor, FPSCounter
 from jdev_cli.tui.landing import show_landing_screen
@@ -70,7 +66,6 @@ from jdev_cli.ui.command_palette import CommandPalette, Command, CommandCategory
 
 # Import MAESTRO v10.0 Shell UI Components (Definitive Edition)
 from jdev_cli.tui.components.maestro_shell_ui import MaestroShellUI
-from jdev_cli.tui.components.maestro_data_structures import AgentState, AgentStatus, MetricsData
 from jdev_cli.core.file_tracker import FileOperationTracker
 
 # ═══════════════════════════════════════════════════════════════════
@@ -111,7 +106,7 @@ class Orchestrator:
             'data': create_data_agent(llm_client, mcp_client, enable_thinking=True),  # DataAgent v1.0
             'devops': create_devops_agent(llm_client, mcp_client, auto_remediate=False, policy_mode="require_approval")  # DevOpsAgent v1.0
         }
-    
+
     def route(self, prompt: str) -> str:
         """Intelligent routing based on keywords - Priority ordered to avoid conflicts"""
         p = prompt.lower()
@@ -191,20 +186,20 @@ class Orchestrator:
 
         # Default: Executor for everything else
         return 'executor'
-    
+
     async def execute(self, prompt: str, context: Dict = None) -> AgentResponse:
         """Route and execute with real agents"""
-        
+
         agent_name = self.route(prompt)
         agent = self.agents[agent_name]
-        
+
         # Build AgentTask
         task = AgentTask(
             request=prompt,
             context=context or {},
             metadata={'interface': 'maestro_v10', 'timestamp': datetime.now().isoformat()}
         )
-        
+
         # Execute REAL agent
         return await agent.execute(task)
 
@@ -242,19 +237,19 @@ class Orchestrator:
 
 class Renderer:
     """[DEPRECATED] Renders v6.0 agent output - replaced by TUI components"""
-    
+
     def __init__(self, console: Console):
         self.c = console
-    
+
     def render(self, response: AgentResponse, agent_name: str):
         """Render agent response based on type"""
-        
+
         if not response.success:
             self.c.print(f"\n[red]❌ Error:[/red] {response.error}\n")
             if response.reasoning:
                 self.c.print(f"[dim]{response.reasoning}[/dim]\n")
             return
-        
+
         # Route to specialized renderer
         if agent_name == 'reviewer':
             self._render_review(response)
@@ -280,28 +275,28 @@ class Renderer:
             self._render_devops(response)
         else:
             self._render_generic(response)
-    
+
     def _render_review(self, res: AgentResponse):
         """Render ReviewerAgent v5.0 output"""
         data = res.data
-        
+
         if not isinstance(data, dict):
             self.c.print(Markdown(str(data)))
             return
-        
+
         # Extract review report
         report = data.get('report', data)
-        
+
         # Score & Status
         score = report.get('score', 0)
         approved = report.get('approved', False)
-        
+
         status = "✅ APPROVED" if approved else "❌ NOT APPROVED"
         color = "green" if approved else "red"
-        
+
         self.c.print(f"\n[bold {color}]{status}[/bold {color}]")
         self.c.print(f"[bold]Score: {score}/100[/bold]\n")
-        
+
         # Issues
         issues = report.get('issues', [])
         if issues:
@@ -309,7 +304,7 @@ class Renderer:
             table.add_column("Severity", style="red")
             table.add_column("Category", style="cyan")
             table.add_column("Message", style="white", max_width=60)
-            
+
             for issue in issues[:15]:  # Limit display
                 if isinstance(issue, dict):
                     table.add_row(
@@ -317,39 +312,39 @@ class Renderer:
                         issue.get('category', ''),
                         issue.get('message', '')[:80]
                     )
-            
+
             self.c.print(table)
             self.c.print()
-        
+
         # Summary
         if 'summary' in report:
             self.c.print(Panel(report['summary'], title="📋 Summary", border_style="blue"))
             self.c.print()
-        
+
         # Recommendations
         if 'recommendations' in report:
             self.c.print("[bold yellow]💡 Recommendations:[/bold yellow]")
             for rec in report['recommendations'][:5]:
                 self.c.print(f"  • {rec}")
             self.c.print()
-    
+
     def _render_plan(self, res: AgentResponse):
         """Render PlannerAgent v5.0 output"""
         data = res.data
-        
+
         if not isinstance(data, dict):
             self.c.print(Markdown(str(data)))
             return
-        
+
         # Goal
         goal = data.get('goal', 'Execution Plan')
         self.c.print(f"\n[bold cyan]🎯 {goal}[/bold cyan]\n")
-        
+
         # Strategy Overview
         if 'strategy_overview' in data:
             self.c.print(Panel(data['strategy_overview'], title="📋 Strategy", border_style="blue"))
             self.c.print()
-        
+
         # Stages
         stages = data.get('stages', [])
         if stages:
@@ -357,16 +352,16 @@ class Renderer:
                 if isinstance(stage, dict):
                     self.c.print(f"[bold]Stage {idx}: {stage.get('name', 'Unknown')}[/bold]")
                     self.c.print(f"[dim]{stage.get('description', '')}[/dim]")
-                    
+
                     steps = stage.get('steps', [])
                     for step in steps[:3]:  # Show first 3
                         if isinstance(step, dict):
                             self.c.print(f"  • {step.get('action', '')}")
-                    
+
                     if len(steps) > 3:
                         self.c.print(f"  [dim]... +{len(steps)-3} more steps[/dim]")
                     self.c.print()
-        
+
         # SOPs (if stages not present)
         if not stages:
             sops = data.get('sops', [])
@@ -375,7 +370,7 @@ class Renderer:
                 table.add_column("#", style="dim", width=4)
                 table.add_column("Role", style="yellow")
                 table.add_column("Action", style="white")
-                
+
                 for idx, sop in enumerate(sops[:10], 1):
                     if isinstance(sop, dict):
                         table.add_row(
@@ -383,51 +378,51 @@ class Renderer:
                             sop.get('role', ''),
                             sop.get('action', '')[:60]
                         )
-                
+
                 self.c.print(table)
                 self.c.print()
-        
+
         # Metadata
         duration = data.get('estimated_duration', 'Unknown')
         risk = data.get('risk_assessment', 'MEDIUM')
-        
+
         self.c.print(f"[dim]Estimated Duration: {duration}[/dim]")
         self.c.print(f"[dim]Risk Level: {risk}[/dim]\n")
-    
+
     def _render_refactor(self, res: AgentResponse):
         """Render RefactorerAgent v8.0 output"""
         data = res.data
-        
+
         if not isinstance(data, dict):
             self.c.print(str(data))
             return
-        
+
         success = data.get('success', False)
         changes_applied = data.get('changes_applied', 0)
         message = data.get('message', '')
-        
+
         if success:
-            self.c.print(f"\n[green]✅ Refactoring Complete[/green]")
+            self.c.print("\n[green]✅ Refactoring Complete[/green]")
             self.c.print(f"[dim]Applied {changes_applied} changes[/dim]")
         else:
-            self.c.print(f"\n[red]❌ Refactoring Failed[/red]")
-        
+            self.c.print("\n[red]❌ Refactoring Failed[/red]")
+
         if message:
             self.c.print(f"\n{message}\n")
-    
+
     def _render_explorer(self, res: AgentResponse):
         """Render ExplorerAgent output"""
         data = res.data
-        
+
         if isinstance(data, str):
             self.c.print(Markdown(data))
         elif isinstance(data, dict):
             # Graph metrics
             if 'total_entities' in data:
-                self.c.print(f"\n[bold cyan]📊 Code Graph Metrics[/bold cyan]\n")
+                self.c.print("\n[bold cyan]📊 Code Graph Metrics[/bold cyan]\n")
                 self.c.print(f"Total Entities: {data.get('total_entities', 0)}")
                 self.c.print(f"Files Analyzed: {data.get('files_analyzed', 0)}")
-                
+
                 if 'hotspots' in data:
                     self.c.print("\n[yellow]🔥 Hotspots (High Coupling):[/yellow]")
                     for hotspot in data['hotspots'][:5]:
@@ -507,7 +502,7 @@ class Renderer:
             improvement = opt.get('improvement_percent', 0)
             confidence = opt.get('confidence_score', 0)
 
-            self.c.print(f"[bold green]⚡ Query Optimization:[/bold green]")
+            self.c.print("[bold green]⚡ Query Optimization:[/bold green]")
             self.c.print(f"  Improvement: [bold]{improvement}%[/bold]")
             self.c.print(f"  Confidence: {confidence:.0%}")
 
@@ -531,7 +526,7 @@ class Renderer:
                 'low': '🟢',
             }.get(risk, '⚪')
 
-            self.c.print(f"[bold blue]🏗️  Migration Plan:[/bold blue]")
+            self.c.print("[bold blue]🏗️  Migration Plan:[/bold blue]")
             self.c.print(f"  {risk_icon} Risk: {risk.upper()}")
             self.c.print(f"  ⏱️  Downtime: {downtime}s")
             self.c.print(f"  {'✅' if online else '❌'} Can run online: {online}")
@@ -570,14 +565,14 @@ class Renderer:
                 'p3': '🟢',
             }.get(severity.lower(), '⚪')
 
-            self.c.print(f"[bold red]🚨 Incident Detected:[/bold red]")
+            self.c.print("[bold red]🚨 Incident Detected:[/bold red]")
             self.c.print(f"  {severity_icon} Severity: {severity.upper()}")
             self.c.print(f"  📝 Description: {incident.get('description', 'N/A')}")
             self.c.print(f"  🎯 Root Cause: {incident.get('root_cause', 'Investigating...')}")
 
             actions = incident.get('recommended_actions', [])
             if actions:
-                self.c.print(f"  💡 Recommended Actions:")
+                self.c.print("  💡 Recommended Actions:")
                 for action in actions[:3]:
                     self.c.print(f"     • {action}")
 
@@ -625,7 +620,7 @@ class Renderer:
             score = data.get('health_score', data.get('overall_score', 0))
             score_icon = '🟢' if score >= 90 else '🟡' if score >= 70 else '🔴'
 
-            self.c.print(f"[bold green]📊 Infrastructure Health:[/bold green]")
+            self.c.print("[bold green]📊 Infrastructure Health:[/bold green]")
             self.c.print(f"  {score_icon} Overall Score: [bold]{score:.1f}%[/bold]")
 
             predicted = data.get('predicted_issues', [])
@@ -712,11 +707,11 @@ class Shell:
         # ══════════════════════════════════════════════════════════════
         # CRITICAL: Pause UI before requesting input
         # ══════════════════════════════════════════════════════════════
-        
+
         # 1. PAUSE the streaming display
         if hasattr(self, 'maestro_ui') and self.maestro_ui:
             self.maestro_ui.pause()
-        
+
         # 2. Also stop the streaming_display if present
         if hasattr(self, 'streaming_display') and self.streaming_display:
             if hasattr(self.streaming_display, 'stop'):
@@ -724,10 +719,10 @@ class Shell:
                     self.streaming_display.stop()
                 except Exception:
                     pass
-        
+
         # 3. Clear terminal for clean display
         self.c.clear()
-        
+
         try:
             # Show approval panel
             self.c.print()
@@ -767,12 +762,12 @@ class Shell:
                     return True
                 else:
                     self.c.print("[dim]Invalid option. Please enter y, n, or a.[/dim]\n")
-        
+
         finally:
             # ══════════════════════════════════════════════════════════
             # CRITICAL: Resume UI after input is complete
             # ══════════════════════════════════════════════════════════
-            
+
             # 4. Resume streaming display
             if hasattr(self, 'streaming_display') and self.streaming_display:
                 if hasattr(self.streaming_display, 'start'):
@@ -780,7 +775,7 @@ class Shell:
                         self.streaming_display.start()
                     except Exception:
                         pass
-            
+
             # 5. Resume maestro UI
             if hasattr(self, 'maestro_ui') and self.maestro_ui:
                 self.maestro_ui.resume()
@@ -953,13 +948,13 @@ class Shell:
         if c in ['/q', '/quit', '/exit']:
             self.running = False
             return True
-        
+
         if c in ['/c', '/clear']:
             self.c.clear()
             self.c.print("\n  MAESTRO v10.0", style="bold cyan")
             self.c.print()
             return True
-        
+
         if c in ['/h', '/help']:
             help_panel = Panel(
                 """[bold]Commands:[/bold]
@@ -1062,7 +1057,7 @@ class Shell:
             self.c.print("[dim]Tip: Type [bold]/commands [query][/bold] to fuzzy search[/dim]")
             self.c.print()
             return True
-        
+
         if c == '/agents':
             tree = Tree("[bold cyan]🤖 Available Agents (v6.0)[/bold cyan]")
 
@@ -1258,7 +1253,7 @@ class Shell:
             return True
 
         return False
-    
+
     async def loop(self):
         """Main REPL loop with 30 FPS streaming"""
 

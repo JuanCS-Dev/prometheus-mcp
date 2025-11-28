@@ -13,9 +13,7 @@ Refactored: Nov 2025 (841 -> 55 lines)
 Author: JuanCS Dev
 """
 
-from typing import List
 
-from jdev_cli.tools.base import Tool
 
 # Re-export all tools from git submodules for backward compatibility
 from jdev_cli.tools.git import (

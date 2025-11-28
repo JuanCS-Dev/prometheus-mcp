@@ -1,10 +1,10 @@
 """Web search tool using DuckDuckGo."""
 import logging
-from typing import Optional, List, Dict, Any
+from typing import Optional
 
 from ddgs import DDGS
 
-from .base import Tool, ToolResult, ToolCategory
+from .base import ToolResult, ToolCategory
 from .validated import ValidatedTool
 
 logger = logging.getLogger(__name__)
@@ -12,7 +12,7 @@ logger = logging.getLogger(__name__)
 
 class WebSearchTool(ValidatedTool):
     """Search the web using DuckDuckGo (no API key required)."""
-    
+
     def __init__(self):
         super().__init__()
         self.category = ToolCategory.SEARCH
@@ -34,11 +34,11 @@ class WebSearchTool(ValidatedTool):
                 "required": False
             }
         }
-    
+
     def get_validators(self):
         """No additional validation needed."""
         return {}
-    
+
     async def _execute_validated(
         self,
         query: str,
@@ -59,7 +59,7 @@ class WebSearchTool(ValidatedTool):
         try:
             # Clamp max_results
             max_results = max(1, min(max_results, 20))
-            
+
             # Validate time_range
             valid_time_ranges = ['d', 'w', 'm', 'y', None]
             if time_range not in valid_time_ranges:
@@ -68,9 +68,9 @@ class WebSearchTool(ValidatedTool):
                     f"Valid values: {valid_time_ranges}"
                 )
                 time_range = None
-            
+
             logger.info(f"Web search: query='{query}', max_results={max_results}, time_range={time_range}")
-            
+
             # Execute search
             with DDGS() as ddgs:
                 results_raw = ddgs.text(
@@ -78,7 +78,7 @@ class WebSearchTool(ValidatedTool):
                     max_results=max_results,
                     timelimit=time_range
                 )
-            
+
             if not results_raw:
                 return ToolResult(
                     success=True,
@@ -90,7 +90,7 @@ class WebSearchTool(ValidatedTool):
                         "engine": "duckduckgo"
                     }
                 )
-            
+
             # Parse and structure results
             results = []
             for item in results_raw:
@@ -100,9 +100,9 @@ class WebSearchTool(ValidatedTool):
                     "snippet": item.get("body", ""),
                     "source": item.get("href", "").split("/")[2] if item.get("href") else ""
                 })
-            
+
             logger.info(f"Web search successful: {len(results)} results")
-            
+
             return ToolResult(
                 success=True,
                 data=results,
@@ -113,7 +113,7 @@ class WebSearchTool(ValidatedTool):
                     "time_range": time_range
                 }
             )
-        
+
         except Exception as e:
             logger.error(f"Web search failed: {e}", exc_info=True)
             return ToolResult(
@@ -128,7 +128,7 @@ class SearchDocumentationTool(ValidatedTool):
     
     Uses site-specific search to target documentation sites directly.
     """
-    
+
     def __init__(self):
         super().__init__()
         self.category = ToolCategory.SEARCH
@@ -150,10 +150,10 @@ class SearchDocumentationTool(ValidatedTool):
                 "required": False
             }
         }
-    
+
     def get_validators(self):
         return {}
-    
+
     async def _execute_validated(
         self,
         query: str,
@@ -176,26 +176,26 @@ class SearchDocumentationTool(ValidatedTool):
             search_query = query
             if site:
                 search_query = f"site:{site} {query}"
-            
+
             logger.info(f"Documentation search: '{search_query}'")
-            
+
             # Use WebSearchTool internally
             web_tool = WebSearchTool()
             result = await web_tool.execute(
                 query=search_query,
                 max_results=max_results
             )
-            
+
             if not result.success:
                 return result
-            
+
             # Add metadata about doc search
             result.metadata["search_type"] = "documentation"
             if site:
                 result.metadata["restricted_to_site"] = site
-            
+
             return result
-        
+
         except Exception as e:
             logger.error(f"Documentation search failed: {e}", exc_info=True)
             return ToolResult(

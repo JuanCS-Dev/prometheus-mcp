@@ -6,7 +6,6 @@ permitindo uso transparente em Shell CLI, MCP e Gradio UI.
 """
 
 import os
-import asyncio
 from typing import AsyncIterator, Optional, Dict, Any, List
 from dataclasses import dataclass
 
@@ -152,14 +151,14 @@ class PrometheusProvider:
         Fixes 'Physical Airgap' where remote agent can't see local files.
         """
         import re
-        
+
         # Regex for common file paths: ./foo.txt, /tmp/bar.py, src/main.rs
         # Avoids URLs (http://) and simple words
         path_pattern = r'(?<!\w)(?:\./|/|\w+/)[a-zA-Z0-9_\-\./]+\.[a-zA-Z0-9]+'
-        
+
         matches = re.finditer(path_pattern, prompt)
         injections = []
-        
+
         for match in matches:
             path_str = match.group(0)
             try:
@@ -173,10 +172,10 @@ class PrometheusProvider:
                             injections.append(f"\n[FILE_CONTENT: {path_str}]\n```\n{content}\n```\n")
             except Exception:
                 pass  # Ignore errors, best effort
-                
+
         if injections:
             return prompt + "\n" + "".join(injections)
-            
+
         return prompt
 
     async def evolve(self, iterations: int = 5) -> Dict[str, Any]:

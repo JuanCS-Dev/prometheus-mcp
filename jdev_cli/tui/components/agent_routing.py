@@ -4,7 +4,6 @@ Cyberpunk-styled panel with agent selection confidence and ETA.
 """
 
 from rich.panel import Panel
-from rich.progress import BarColumn, Progress
 from rich.table import Table
 from rich.text import Text
 
@@ -93,7 +92,7 @@ class AgentRoutingDisplay:
         # Create panel with neon border
         panel = Panel(
             table,
-            title=f"[bold cyan]⚡ AGENT ROUTING ⚡[/bold cyan]",
+            title="[bold cyan]⚡ AGENT ROUTING ⚡[/bold cyan]",
             border_style="bright_cyan",
             padding=(0, 1)
         )

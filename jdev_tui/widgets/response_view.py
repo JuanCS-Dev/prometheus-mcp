@@ -186,7 +186,7 @@ class ResponseView(VerticalScroll):
         current_time = time.time()
         if not hasattr(self, '_last_scroll_time'):
             self._last_scroll_time = 0
-            
+
         if current_time - self._last_scroll_time >= 0.05:
             self.scroll_end(animate=False)
             self._last_scroll_time = current_time

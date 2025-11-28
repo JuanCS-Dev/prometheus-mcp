@@ -33,7 +33,7 @@ from uuid import UUID, uuid4
 
 class DiscernmentPhase(Enum):
     """Fases do processo de discernimento (baseado em Atos 15)."""
-    
+
     GATHERING = auto()       # Reunir informações e perspectivas
     DELIBERATION = auto()    # Debate intenso e aberto
     EXPERIENCE = auto()      # Compartilhar experiências relevantes
@@ -45,7 +45,7 @@ class DiscernmentPhase(Enum):
 
 class WayType(Enum):
     """Os Dois Caminhos da Didaquê."""
-    
+
     WAY_OF_LIFE = auto()     # Caminho da Vida
     WAY_OF_DEATH = auto()    # Caminho da Morte
     UNCLEAR = auto()         # Não está claro (requer mais discernimento)
@@ -54,17 +54,17 @@ class WayType(Enum):
 @dataclass
 class DiscernmentQuestion:
     """Uma pergunta para guiar o discernimento."""
-    
+
     category: str
     question: str
     purpose: str
     source: str  # Fonte (Atos, Didaquê, Tradição)
 
 
-@dataclass  
+@dataclass
 class ExperienceWitness:
     """Um testemunho de experiência relevante."""
-    
+
     description: str
     lessons_learned: List[str]
     relevance_to_situation: str
@@ -74,7 +74,7 @@ class ExperienceWitness:
 @dataclass
 class TraditionWisdom:
     """Sabedoria da tradição."""
-    
+
     teaching: str
     source: str
     application: str
@@ -84,30 +84,30 @@ class TraditionWisdom:
 @dataclass
 class DiscernmentResult:
     """Resultado do processo de discernimento."""
-    
+
     id: UUID = field(default_factory=uuid4)
     situation: str = ""
-    
+
     # Processo
     phases_completed: List[DiscernmentPhase] = field(default_factory=list)
     questions_explored: List[DiscernmentQuestion] = field(default_factory=list)
     experiences_considered: List[ExperienceWitness] = field(default_factory=list)
     traditions_consulted: List[TraditionWisdom] = field(default_factory=list)
-    
+
     # Análise Duas Vias
     way_of_life_indicators: List[str] = field(default_factory=list)
     way_of_death_indicators: List[str] = field(default_factory=list)
-    
+
     # Resultado
     discerned_direction: Optional[WayType] = None
     counsel: str = ""
     confidence: float = 0.5
     need_for_community: bool = True
     suggested_advisors: List[str] = field(default_factory=list)
-    
+
     # Meta
     timestamp: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
-    
+
     def to_dict(self) -> Dict[str, Any]:
         return {
             "id": str(self.id),
@@ -136,7 +136,7 @@ class DiscernmentEngine:
     4. Humildade de reconhecer incerteza
     5. Abertura para revisar discernimento
     """
-    
+
     # Perguntas de discernimento por fase
     DISCERNMENT_QUESTIONS = {
         DiscernmentPhase.GATHERING: [
@@ -230,7 +230,7 @@ class DiscernmentEngine:
             ),
         ],
     }
-    
+
     # Indicadores dos Dois Caminhos (Didaquê)
     WAY_OF_LIFE_INDICATORS = [
         "Promove amor ao próximo",
@@ -244,7 +244,7 @@ class DiscernmentEngine:
         "Demonstra humildade",
         "Busca o bem comum",
     ]
-    
+
     WAY_OF_DEATH_INDICATORS = [
         "Causa divisão",
         "Prejudica inocentes",
@@ -257,16 +257,16 @@ class DiscernmentEngine:
         "Desumaniza pessoas",
         "Evita responsabilidade",
     ]
-    
+
     def __init__(self):
         self._discernment_history: List[DiscernmentResult] = []
-        
+
         # Banco de sabedoria da tradição
         self._tradition_bank: List[TraditionWisdom] = self._initialize_tradition()
-        
+
         # Métricas
         self.total_discernments = 0
-    
+
     def _initialize_tradition(self) -> List[TraditionWisdom]:
         """Inicializa banco de sabedoria da tradição."""
         return [
@@ -307,19 +307,19 @@ class DiscernmentEngine:
                 application="Discernimento crítico, não aceitação cega",
             ),
         ]
-    
+
     def begin_discernment(self, situation: str) -> DiscernmentResult:
         """Inicia processo de discernimento."""
         result = DiscernmentResult(situation=situation)
         return result
-    
+
     def get_questions_for_phase(
         self,
         phase: DiscernmentPhase,
     ) -> List[DiscernmentQuestion]:
         """Retorna perguntas para uma fase específica."""
         return self.DISCERNMENT_QUESTIONS.get(phase, [])
-    
+
     def analyze_two_ways(
         self,
         situation: str,
@@ -332,23 +332,23 @@ class DiscernmentEngine:
             Tuple de (indicadores de vida, indicadores de morte, caminho discernido)
         """
         situation_lower = (situation + " " + proposed_action).lower()
-        
+
         life_indicators = []
         death_indicators = []
-        
+
         # Análise simplificada (em produção, seria mais sofisticada)
         positive_keywords = ["ajudar", "amar", "cuidar", "verdade", "paz", "perdoar", "servir"]
         negative_keywords = ["mentir", "esconder", "prejudicar", "vingança", "explorar", "manipular"]
-        
+
         for indicator in self.WAY_OF_LIFE_INDICATORS:
             if any(kw in situation_lower for kw in positive_keywords):
                 life_indicators.append(indicator)
             # Análise semântica mais profunda seria implementada aqui
-        
+
         for indicator in self.WAY_OF_DEATH_INDICATORS:
             if any(kw in situation_lower for kw in negative_keywords):
                 death_indicators.append(indicator)
-        
+
         # Determinar caminho
         if len(life_indicators) > len(death_indicators) + 2:
             way = WayType.WAY_OF_LIFE
@@ -356,9 +356,9 @@ class DiscernmentEngine:
             way = WayType.WAY_OF_DEATH
         else:
             way = WayType.UNCLEAR
-        
+
         return life_indicators, death_indicators, way
-    
+
     def get_relevant_tradition(
         self,
         situation: str,
@@ -367,7 +367,7 @@ class DiscernmentEngine:
         # Em produção, usaria busca semântica
         # Por ora, retorna todas com explicação contextualizada
         return self._tradition_bank
-    
+
     def conduct_full_discernment(
         self,
         situation: str,
@@ -386,32 +386,32 @@ class DiscernmentEngine:
             DiscernmentResult completo
         """
         result = self.begin_discernment(situation)
-        
+
         # ════════════════════════════════════════════════════════════════════
         # FASE 1: GATHERING - Reunir Informações
         # ════════════════════════════════════════════════════════════════════
         result.questions_explored.extend(self.get_questions_for_phase(DiscernmentPhase.GATHERING))
         result.phases_completed.append(DiscernmentPhase.GATHERING)
-        
+
         # ════════════════════════════════════════════════════════════════════
         # FASE 2: DELIBERATION - Debate Intenso
         # ════════════════════════════════════════════════════════════════════
         result.questions_explored.extend(self.get_questions_for_phase(DiscernmentPhase.DELIBERATION))
         result.phases_completed.append(DiscernmentPhase.DELIBERATION)
-        
+
         # ════════════════════════════════════════════════════════════════════
         # FASE 3: EXPERIENCE - Compartilhar Experiências
         # ════════════════════════════════════════════════════════════════════
         result.questions_explored.extend(self.get_questions_for_phase(DiscernmentPhase.EXPERIENCE))
         result.phases_completed.append(DiscernmentPhase.EXPERIENCE)
-        
+
         # ════════════════════════════════════════════════════════════════════
         # FASE 4: TRADITION - Consultar Tradição
         # ════════════════════════════════════════════════════════════════════
         result.traditions_consulted = self.get_relevant_tradition(situation)
         result.questions_explored.extend(self.get_questions_for_phase(DiscernmentPhase.TRADITION))
         result.phases_completed.append(DiscernmentPhase.TRADITION)
-        
+
         # ════════════════════════════════════════════════════════════════════
         # FASE 5: ELDER_WISDOM - Sabedoria dos Anciãos
         # ════════════════════════════════════════════════════════════════════
@@ -423,7 +423,7 @@ class DiscernmentEngine:
             "Um conselheiro profissional (se apropriado)",
         ]
         result.phases_completed.append(DiscernmentPhase.ELDER_WISDOM)
-        
+
         # ════════════════════════════════════════════════════════════════════
         # FASE 6: SYNTHESIS - Análise Duas Vias e Síntese
         # ════════════════════════════════════════════════════════════════════
@@ -432,32 +432,32 @@ class DiscernmentEngine:
             result.way_of_life_indicators = life_ind
             result.way_of_death_indicators = death_ind
             result.discerned_direction = way
-        
+
         result.questions_explored.extend(self.get_questions_for_phase(DiscernmentPhase.SYNTHESIS))
         result.phases_completed.append(DiscernmentPhase.SYNTHESIS)
-        
+
         # ════════════════════════════════════════════════════════════════════
         # GERAR COUNSEL FINAL
         # ════════════════════════════════════════════════════════════════════
         result.counsel = self._generate_counsel(result)
         result.need_for_community = True  # Sempre encorajar comunidade
         result.confidence = 0.6 if result.discerned_direction != WayType.UNCLEAR else 0.4
-        
+
         # Registrar
         self._discernment_history.append(result)
         self.total_discernments += 1
-        
+
         return result
-    
+
     def _generate_counsel(self, result: DiscernmentResult) -> str:
         """Gera conselho baseado no discernimento."""
         counsel_parts = []
-        
+
         counsel_parts.append(
             "Após caminhar junto contigo neste discernimento, "
             "compartilho algumas reflexões com humildade:"
         )
-        
+
         if result.discerned_direction == WayType.WAY_OF_LIFE:
             counsel_parts.append(
                 "\nOs indicadores parecem apontar para um caminho que pode dar vida. "
@@ -477,18 +477,18 @@ class DiscernmentEngine:
                 "Encorajo fortemente buscar conselho de uma comunidade de fé "
                 "ou mentor espiritual."
             )
-        
+
         counsel_parts.append(
             f"\n\nConsidere consultar: {', '.join(result.suggested_advisors[:2])}"
         )
-        
+
         counsel_parts.append(
             "\n\n'Pareceu bem ao Espírito Santo e a nós...' (Atos 15:28) - "
             "O discernimento verdadeiro é comunal. Não carregue isso sozinho(a)."
         )
-        
+
         return "".join(counsel_parts)
-    
+
     def format_discernment_output(self, result: DiscernmentResult) -> str:
         """Formata resultado do discernimento para apresentação."""
         output = [
@@ -501,20 +501,20 @@ class DiscernmentEngine:
             "",
             "📜 Fases Completadas:",
         ]
-        
+
         for phase in result.phases_completed:
             output.append(f"  ✓ {phase.name}")
-        
+
         if result.way_of_life_indicators:
             output.append("\n🌱 Indicadores do Caminho da Vida:")
             for ind in result.way_of_life_indicators[:3]:
                 output.append(f"  • {ind}")
-        
+
         if result.way_of_death_indicators:
             output.append("\n⚠️ Indicadores de Alerta:")
             for ind in result.way_of_death_indicators[:3]:
                 output.append(f"  • {ind}")
-        
+
         output.extend([
             "",
             "─" * 60,
@@ -522,16 +522,16 @@ class DiscernmentEngine:
             result.counsel,
             "─" * 60,
         ])
-        
+
         return "\n".join(output)
-    
+
     def get_metrics(self) -> Dict[str, Any]:
         """Retorna métricas do motor de discernimento."""
         return {
             "total_discernments": self.total_discernments,
             "traditions_available": len(self._tradition_bank),
         }
-    
+
     def __repr__(self) -> str:
         return f"DiscernmentEngine(discernments={self.total_discernments})"
 
@@ -542,22 +542,22 @@ class DiscernmentEngine:
 
 if __name__ == "__main__":
     engine = DiscernmentEngine()
-    
+
     print("═" * 70)
     print("  DISCERNIMENTO COMUNAL")
     print("  'Pareceu bem ao Espírito Santo e a nós...' (Atos 15:28)")
     print("═" * 70)
-    
+
     situation = """
     Recebi uma oferta de emprego em outra cidade. O salário é melhor,
     mas significaria afastar-me da minha comunidade de fé e da família.
     Meus pais estão envelhecendo e podem precisar de cuidados em breve.
     Ao mesmo tempo, sinto que estou estagnado profissionalmente.
     """
-    
+
     result = engine.conduct_full_discernment(
         situation=situation,
         proposed_action="aceitar a oferta e mudar de cidade",
     )
-    
+
     print(engine.format_discernment_output(result))

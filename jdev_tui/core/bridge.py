@@ -25,18 +25,14 @@ Usage in app.py:
 
 from __future__ import annotations
 
-import asyncio
-import json
 import os
 import threading
-import time
-from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, AsyncIterator, Dict, List, Optional, Set, Tuple
+from typing import Any, AsyncIterator, Dict, List, Optional, Tuple
 
 # CHAOS ORCHESTRATOR - Thread-safe primitives
-from jdev_tui.core.resilience import ThreadSafeList, AsyncLock
-from jdev_tui.core.prometheus_client import PrometheusClient, PrometheusStreamConfig
+from jdev_tui.core.resilience import AsyncLock
+from jdev_tui.core.prometheus_client import PrometheusClient
 import re
 
 # Padrões para detectar tasks complexas que devem usar PROMETHEUS
@@ -111,9 +107,6 @@ from .ui_bridge import (
 
 # Output formatting - Centralized colors and icons
 from .output_formatter import (
-    Colors,
-    Icons,
-    tool_executing_markup,
     tool_success_markup,
     tool_error_markup,
     agent_routing_markup,
@@ -153,9 +146,7 @@ except ImportError:
 
 # Parallel Executor - extracted module (Nov 2025)
 from .parallel_executor import (
-    ToolCallWithDeps,
     ParallelExecutionResult,
-    detect_tool_dependencies,
     ParallelToolExecutor,
 )
 
@@ -455,7 +446,7 @@ Current working directory: {os.getcwd()}
             # Stream from LLM with context
             response_chunks = []
             stream_filter = StreamFilter()
-            
+
             async for chunk in client.stream(
                 current_message,
                 system_prompt=system_prompt,
@@ -463,14 +454,14 @@ Current working directory: {os.getcwd()}
                 tools=self.tools.get_schemas_for_llm()
             ):
                 response_chunks.append(chunk)
-                
+
                 # Filter chunk to prevent raw JSON leakage
                 filtered_chunk = stream_filter.process_chunk(chunk)
-                
+
                 # Don't yield tool call markers directly - process them
                 if filtered_chunk and not filtered_chunk.startswith("[TOOL_CALL:"):
                     yield filtered_chunk
-            
+
             # Flush any remaining text in filter
             remaining = stream_filter.flush()
             if remaining and not remaining.startswith("[TOOL_CALL:"):
@@ -515,7 +506,7 @@ Current working directory: {os.getcwd()}
             full_response_parts.append(clean_text)
 
             # Feed tool results back to LLM for continuation
-            current_message = f"Tool execution results:\n" + "\n".join(tool_results) + "\n\nContinue or summarize."
+            current_message = "Tool execution results:\n" + "\n".join(tool_results) + "\n\nContinue or summarize."
 
             yield "\n"  # Spacing between iterations
 
@@ -564,7 +555,7 @@ Current working directory: {os.getcwd()}
 
         gov_report = self.governance.observe("agent:planner:multi", task, "planner")
         yield f"*{gov_report}*\n"
-        yield f"📋 **Multi-Plan Generation Mode** (v6.1)...\n\n"
+        yield "📋 **Multi-Plan Generation Mode** (v6.1)...\n\n"
 
         async for chunk in self.agents.invoke_planner_multi(task, context):
             yield chunk
@@ -583,7 +574,7 @@ Current working directory: {os.getcwd()}
 
         gov_report = self.governance.observe("agent:planner:clarify", task, "planner")
         yield f"*{gov_report}*\n"
-        yield f"❓ **Clarification Mode** (v6.1)...\n\n"
+        yield "❓ **Clarification Mode** (v6.1)...\n\n"
 
         async for chunk in self.agents.invoke_planner_clarify(task, context):
             yield chunk
@@ -602,7 +593,7 @@ Current working directory: {os.getcwd()}
 
         gov_report = self.governance.observe("agent:planner:explore", task, "planner")
         yield f"*{gov_report}*\n"
-        yield f"🔍 **Exploration Mode** (Read-Only v6.1)...\n\n"
+        yield "🔍 **Exploration Mode** (Read-Only v6.1)...\n\n"
 
         async for chunk in self.agents.invoke_planner_explore(task, context):
             yield chunk

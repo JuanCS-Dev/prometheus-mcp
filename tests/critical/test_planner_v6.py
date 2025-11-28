@@ -18,7 +18,6 @@ Date: 2025-11-25
 """
 
 import pytest
-import asyncio
 import tempfile
 from pathlib import Path
 from unittest.mock import MagicMock, AsyncMock
@@ -483,9 +482,7 @@ class TestExplorationMode:
         """explore() deve retornar análise."""
         from jdev_cli.agents.planner import (
             PlannerAgent,
-            AgentTask,
-            PlanningMode,
-            AgentCapability
+            AgentTask
         )
 
         mock_llm = AsyncMock()
@@ -603,8 +600,7 @@ class TestExecuteWithClarification:
         """execute_with_clarification deve funcionar."""
         from jdev_cli.agents.planner import (
             PlannerAgent,
-            AgentTask,
-            ClarificationResponse
+            AgentTask
         )
 
         mock_llm = AsyncMock()

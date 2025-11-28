@@ -12,11 +12,9 @@ Autor: JuanCS Dev
 Data: 2025-11-25
 """
 
-import time
 import asyncio
-from typing import Optional, List, Tuple, Dict, Any
+from typing import Optional, List
 from dataclasses import dataclass, field
-from enum import Enum
 
 from textual.widget import Widget
 from textual.widgets import Static
@@ -25,10 +23,8 @@ from textual.message import Message
 from textual.app import ComposeResult
 
 from rich.text import Text
-from rich.syntax import Syntax
 from rich.panel import Panel
 from rich.style import Style
-from rich.console import Console, RenderableType
 
 try:
     from pygments import lex

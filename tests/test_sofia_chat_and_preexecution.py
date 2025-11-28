@@ -13,21 +13,18 @@
 ╚══════════════════════════════════════════════════════════════════════════════════╝
 """
 
-import asyncio
 import pytest
 from datetime import datetime, timezone
-from unittest.mock import AsyncMock, Mock
+from unittest.mock import Mock
 from uuid import UUID
 
 from jdev_cli.agents.sofia_agent import (
-    SofiaIntegratedAgent,
     SofiaChatMode,
     CounselResponse,
     create_sofia_agent,
 )
 
 from jdev_governance.sofia import (
-    SofiaAgent,
     SofiaCounsel,
     CounselType,
     VirtueType,

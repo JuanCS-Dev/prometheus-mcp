@@ -24,14 +24,14 @@ Color Palette (JuanCS Dev-Code Brand):
 - Muted: #6b6b6b (Gray)
 """
 
-from typing import Any, Optional, Tuple, Dict
+from typing import Any, Optional, Tuple
 from dataclasses import dataclass
 from rich.panel import Panel
 from rich.markdown import Markdown
 from rich.syntax import Syntax
 from rich.text import Text
 from rich.table import Table
-from rich.console import Console, RenderableType, Group
+from rich.console import Group
 from rich import box
 
 

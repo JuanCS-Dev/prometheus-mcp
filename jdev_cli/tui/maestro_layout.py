@@ -14,7 +14,6 @@ from rich.panel import Panel
 from rich.text import Text
 from rich.table import Table
 from rich.console import Console, RenderableType, Group
-from rich.padding import Padding
 
 
 @dataclass
@@ -278,17 +277,17 @@ class CyberpunkHeader:
         # Create content
         content = Text()
         content.append(f"  {border_top}\n", style="bright_cyan")
-        content.append(f"  ║ ", style="bright_cyan")
+        content.append("  ║ ", style="bright_cyan")
         content.append(title, style="bold bright_magenta")
         content.append(" ║\n", style="bright_cyan")
-        content.append(f"  ║ ", style="bright_cyan")
+        content.append("  ║ ", style="bright_cyan")
         content.append(subtitle, style="bright_green")
         content.append(" " * (46 - len(subtitle)) + " ║\n", style="bright_cyan")
         content.append(f"  {border_bottom}", style="bright_cyan")
 
         # Status indicator
         status_color = "bright_green" if status == "ONLINE" else "bright_red"
-        content.append(f"\n  [", style="dim")
+        content.append("\n  [", style="dim")
         content.append(f"{status}", style=status_color)
         content.append("]", style="dim")
 

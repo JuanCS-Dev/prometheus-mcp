@@ -24,7 +24,6 @@ from __future__ import annotations
 
 import asyncio
 import logging
-from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from typing import Any, AsyncIterator, Dict, List, Optional
 from uuid import UUID, uuid4
@@ -35,10 +34,8 @@ from pydantic import BaseModel, Field
 from jdev_governance.sofia import (
     SofiaAgent,
     SofiaConfig,
-    SofiaState,
     SofiaCounsel,
     CounselType,
-    VirtueType,
     ThinkingMode,
 )
 
@@ -242,7 +239,7 @@ class SofiaIntegratedAgent(BaseAgent):
         # Session management
         self._active_sessions: Dict[str, List[SofiaCounsel]] = {}
 
-        logger.info(f"✓ Sofia Integrated Agent initialized")
+        logger.info("✓ Sofia Integrated Agent initialized")
         logger.info(f"  - Socratic Ratio: {socratic_ratio:.0%}")
         logger.info(f"  - System 2 Threshold: {system2_threshold:.0%}")
         logger.info(f"  - Auto-Detect: {auto_detect_ethical_dilemmas}")
@@ -921,9 +918,9 @@ async def handle_sofia_slash_command(
     response = await sofia_agent.provide_counsel_async(query)
 
     # Format for CLI display
-    output = f"\n╔════════════════════════════════════════════════════════════════╗\n"
-    output += f"║  SOFIA - Conselheiro Sábio                                    ║\n"
-    output += f"╚════════════════════════════════════════════════════════════════╝\n\n"
+    output = "\n╔════════════════════════════════════════════════════════════════╗\n"
+    output += "║  SOFIA - Conselheiro Sábio                                    ║\n"
+    output += "╚════════════════════════════════════════════════════════════════╝\n\n"
 
     output += f"Query: {response.original_query}\n\n"
     output += f"Counsel Type: {response.counsel_type}\n"
@@ -937,7 +934,7 @@ async def handle_sofia_slash_command(
     output += f"\n{response.counsel}\n"
 
     if response.requires_professional:
-        output += f"\n⚠️  URGENT: This situation requires professional help.\n"
+        output += "\n⚠️  URGENT: This situation requires professional help.\n"
 
     output += f"\nConfidence: {response.confidence:.0%} | "
     output += f"Processing: {response.processing_time_ms:.1f}ms\n"

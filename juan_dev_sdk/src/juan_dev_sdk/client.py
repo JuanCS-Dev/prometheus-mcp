@@ -9,11 +9,10 @@ Author: JuanCS Dev
 Date: 2025-11-26
 """
 
-import asyncio
 import logging
 from typing import AsyncIterator, Optional, Dict, List, Any
 
-from .types import Message, ToolCall, ToolResult, AgentResponse, SDKConfig
+from .types import Message, ToolResult, SDKConfig
 
 logger = logging.getLogger(__name__)
 

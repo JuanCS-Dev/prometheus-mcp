@@ -9,11 +9,9 @@ Tests Sprint 1 & 2 implementations:
 - Task resume capability
 """
 
-import asyncio
 import pytest
 import tempfile
 from pathlib import Path
-from unittest.mock import patch
 
 
 # =============================================================================
@@ -254,8 +252,6 @@ class TestPlanMode:
         from jdev_cli.tools.plan_mode import (
             EnterPlanModeTool,
             ExitPlanModeTool,
-            get_plan_state,
-            reset_plan_state,
         )
         assert EnterPlanModeTool is not None
         assert ExitPlanModeTool is not None
@@ -304,8 +300,6 @@ class TestPlanMode:
         from jdev_cli.tools.plan_mode import (
             EnterPlanModeTool,
             ExitPlanModeTool,
-            AddPlanNoteTool,
-            get_plan_state,
             reset_plan_state,
         )
 

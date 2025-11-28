@@ -13,11 +13,10 @@ Scientific validation covering:
 Boris Cherny Standard: Zero mocks, full integration.
 """
 
-import ast
 import pytest
 import tempfile
 from pathlib import Path
-from typing import Any, Dict, List
+from typing import Any
 
 from jdev_cli.agents.base import AgentTask
 from jdev_cli.agents.performance import (

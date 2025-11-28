@@ -25,7 +25,7 @@ def event_loop():
 def mock_config():
     """Mock configuration for testing."""
     from jdev_cli.core.config import Config
-    
+
     config = Config()
     config.model_name = "test-model"
     config.api_key = "test-key"

@@ -257,7 +257,7 @@ class OperationsHandler:
 
     async def _handle_undo_stack(self, args: str, view: "ResponseView") -> None:
         result = self.bridge.get_undo_stack()
-        lines = [f"## ↩️ Undo Stack\n"]
+        lines = ["## ↩️ Undo Stack\n"]
         lines.append(f"**Undo available:** {result.get('undo_count', 0)}")
         lines.append(f"**Redo available:** {result.get('redo_count', 0)}\n")
 
@@ -285,7 +285,7 @@ class OperationsHandler:
                     f"**Status:** CLEAN"
                 )
             else:
-                lines = [f"## 🚨 Secrets Found!\n"]
+                lines = ["## 🚨 Secrets Found!\n"]
                 lines.append(f"**Findings:** {result.get('findings_count')}")
                 lines.append(f"**Files scanned:** {result.get('files_scanned')}\n")
 
@@ -312,7 +312,7 @@ class OperationsHandler:
                 )
             else:
                 findings = result.get("findings", [])
-                lines = [f"## 🚨 DO NOT COMMIT!\n"]
+                lines = ["## 🚨 DO NOT COMMIT!\n"]
                 lines.append(f"**Secrets found:** {result.get('findings_count')}\n")
                 for f in findings[:5]:
                     lines.append(f"- **{f.get('type')}** in `{f.get('file')}`")

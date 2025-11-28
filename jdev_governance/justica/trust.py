@@ -33,14 +33,14 @@ class TrustLevel(Enum):
     
     Cada nível determina as permissões e capacidades do agente.
     """
-    
+
     MAXIMUM = auto()     # Trust Factor > 0.95 - Todas as permissões
     HIGH = auto()        # Trust Factor 0.80-0.95 - Permissões padrão
     STANDARD = auto()    # Trust Factor 0.60-0.80 - Permissões básicas
     REDUCED = auto()     # Trust Factor 0.40-0.60 - Permissões restritas
     MINIMAL = auto()     # Trust Factor 0.20-0.40 - Apenas leitura
     SUSPENDED = auto()   # Trust Factor < 0.20 - Suspenso, requer revisão
-    
+
     @classmethod
     def from_factor(cls, factor: float) -> TrustLevel:
         """Converte um trust factor para o nível correspondente."""
@@ -73,7 +73,7 @@ class TrustEvent:
         description: Descrição do evento
         context: Contexto adicional
     """
-    
+
     id: UUID = field(default_factory=uuid4)
     timestamp: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
     event_type: str = "unknown"
@@ -82,7 +82,7 @@ class TrustEvent:
     impact: float = 0.0
     description: str = ""
     context: Dict[str, Any] = field(default_factory=dict)
-    
+
     def to_dict(self) -> Dict[str, Any]:
         return {
             "id": str(self.id),
@@ -118,39 +118,39 @@ class TrustFactor:
         total_actions: Total de ações do agente
         total_violations: Total de violações
     """
-    
+
     agent_id: str
     current_factor: float = 1.0
     created_at: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
     last_updated: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
-    
+
     # Histórico (últimos 1000 eventos)
     events: Deque[TrustEvent] = field(default_factory=lambda: deque(maxlen=1000))
-    
+
     # Contadores
     total_actions: int = 0
     total_violations: int = 0
     consecutive_good_actions: int = 0
-    
+
     # Estado
     is_suspended: bool = False
     suspension_reason: Optional[str] = None
     suspension_until: Optional[datetime] = None
-    
+
     @property
     def level(self) -> TrustLevel:
         """Retorna o nível de confiança atual."""
         if self.is_suspended:
             return TrustLevel.SUSPENDED
         return TrustLevel.from_factor(self.current_factor)
-    
+
     @property
     def violation_rate(self) -> float:
         """Taxa de violações."""
         if self.total_actions == 0:
             return 0.0
         return self.total_violations / self.total_actions
-    
+
     def to_dict(self) -> Dict[str, Any]:
         return {
             "agent_id": self.agent_id,
@@ -187,7 +187,7 @@ class TrustEngine:
     - recovery_rate: Taxa de recuperação após boas ações
     - decay_halflife: Meia-vida do decaimento de violações antigas
     """
-    
+
     # Pesos padrão para tipos de violação
     DEFAULT_VIOLATION_WEIGHTS: Dict[ViolationType, float] = {
         ViolationType.DATA_EXFILTRATION: 0.30,
@@ -210,7 +210,7 @@ class TrustEngine:
         ViolationType.COLLECTIVE_BYPASS: 0.30,
         ViolationType.UNKNOWN: 0.10,
     }
-    
+
     # Multiplicadores de severidade
     SEVERITY_MULTIPLIERS: Dict[Severity, float] = {
         Severity.CRITICAL: 2.0,
@@ -219,7 +219,7 @@ class TrustEngine:
         Severity.LOW: 0.5,
         Severity.INFO: 0.1,
     }
-    
+
     def __init__(
         self,
         violation_weights: Optional[Dict[ViolationType, float]] = None,
@@ -237,24 +237,24 @@ class TrustEngine:
         self.good_action_threshold = good_action_threshold
         self.auto_suspend_threshold = auto_suspend_threshold
         self.critical_violation_suspension_hours = critical_violation_suspension_hours
-        
+
         # Armazenamento de trust factors por agente
         self._trust_factors: Dict[str, TrustFactor] = {}
-        
+
         # Métricas globais
         self.total_events_processed = 0
         self.total_suspensions = 0
-    
+
     def get_or_create_trust_factor(self, agent_id: str) -> TrustFactor:
         """Obtém ou cria um TrustFactor para um agente."""
         if agent_id not in self._trust_factors:
             self._trust_factors[agent_id] = TrustFactor(agent_id=agent_id)
         return self._trust_factors[agent_id]
-    
+
     def get_trust_factor(self, agent_id: str) -> Optional[TrustFactor]:
         """Obtém o TrustFactor de um agente (None se não existir)."""
         return self._trust_factors.get(agent_id)
-    
+
     def record_violation(
         self,
         agent_id: str,
@@ -277,12 +277,12 @@ class TrustEngine:
             TrustEvent registrado
         """
         trust_factor = self.get_or_create_trust_factor(agent_id)
-        
+
         # Calcular impacto
         base_weight = self.violation_weights.get(violation_type, 0.1)
         severity_mult = self.severity_multipliers.get(severity, 1.0)
         impact = -(base_weight * severity_mult)  # Negativo pois reduz confiança
-        
+
         # Criar evento
         event = TrustEvent(
             event_type="violation",
@@ -292,10 +292,10 @@ class TrustEngine:
             description=description,
             context=context or {},
         )
-        
+
         # Atualizar trust factor
         self._apply_event(trust_factor, event)
-        
+
         # Verificar se deve suspender
         if severity == Severity.CRITICAL:
             self._suspend_agent(
@@ -309,10 +309,10 @@ class TrustEngine:
                 reason=f"Trust factor abaixo do threshold ({trust_factor.current_factor:.2f})",
                 duration_hours=48,
             )
-        
+
         self.total_events_processed += 1
         return event
-    
+
     def record_good_action(
         self,
         agent_id: str,
@@ -326,15 +326,15 @@ class TrustEngine:
         Múltiplas ações boas consecutivas dão bonus adicional.
         """
         trust_factor = self.get_or_create_trust_factor(agent_id)
-        
+
         # Calcular impacto
         impact = self.recovery_rate
-        
+
         # Bonus por ações consecutivas
         if trust_factor.consecutive_good_actions >= self.good_action_threshold:
             bonus = 0.001 * (trust_factor.consecutive_good_actions - self.good_action_threshold + 1)
             impact += min(bonus, 0.01)  # Máximo +1% de bonus
-        
+
         event = TrustEvent(
             event_type="good_action",
             severity=Severity.INFO,
@@ -342,30 +342,30 @@ class TrustEngine:
             description=description,
             context=context or {},
         )
-        
+
         self._apply_event(trust_factor, event)
         trust_factor.consecutive_good_actions += 1
-        
+
         self.total_events_processed += 1
         return event
-    
+
     def _apply_event(self, trust_factor: TrustFactor, event: TrustEvent) -> None:
         """Aplica um evento ao trust factor."""
         # Registrar evento
         trust_factor.events.append(event)
         trust_factor.total_actions += 1
-        
+
         if event.event_type == "violation":
             trust_factor.total_violations += 1
             trust_factor.consecutive_good_actions = 0
-        
+
         # Aplicar impacto
         new_factor = trust_factor.current_factor + event.impact
-        
+
         # Clamp entre 0 e 1
         trust_factor.current_factor = max(0.0, min(1.0, new_factor))
         trust_factor.last_updated = datetime.now(timezone.utc)
-    
+
     def _suspend_agent(
         self,
         trust_factor: TrustFactor,
@@ -377,7 +377,7 @@ class TrustEngine:
         trust_factor.suspension_reason = reason
         trust_factor.suspension_until = datetime.now(timezone.utc) + timedelta(hours=duration_hours)
         self.total_suspensions += 1
-        
+
         # Registrar evento de suspensão
         event = TrustEvent(
             event_type="suspension",
@@ -387,7 +387,7 @@ class TrustEngine:
             context={"duration_hours": duration_hours},
         )
         trust_factor.events.append(event)
-    
+
     def check_suspension(self, agent_id: str) -> Tuple[bool, Optional[str]]:
         """
         Verifica se um agente está suspenso.
@@ -396,10 +396,10 @@ class TrustEngine:
             Tuple de (is_suspended, reason)
         """
         trust_factor = self.get_trust_factor(agent_id)
-        
+
         if trust_factor is None:
             return False, None
-        
+
         # Verificar se suspensão expirou
         if trust_factor.is_suspended and trust_factor.suspension_until:
             if datetime.now(timezone.utc) > trust_factor.suspension_until:
@@ -407,9 +407,9 @@ class TrustEngine:
                 trust_factor.suspension_reason = None
                 trust_factor.suspension_until = None
                 return False, None
-        
+
         return trust_factor.is_suspended, trust_factor.suspension_reason
-    
+
     def lift_suspension(self, agent_id: str, reason: str = "Manual lift") -> bool:
         """
         Remove suspensão de um agente manualmente.
@@ -418,14 +418,14 @@ class TrustEngine:
             True se suspensão foi removida, False se agente não estava suspenso
         """
         trust_factor = self.get_trust_factor(agent_id)
-        
+
         if trust_factor is None or not trust_factor.is_suspended:
             return False
-        
+
         trust_factor.is_suspended = False
         trust_factor.suspension_reason = None
         trust_factor.suspension_until = None
-        
+
         event = TrustEvent(
             event_type="suspension_lifted",
             severity=Severity.INFO,
@@ -433,9 +433,9 @@ class TrustEngine:
             description=f"Suspensão removida: {reason}",
         )
         trust_factor.events.append(event)
-        
+
         return True
-    
+
     def apply_temporal_decay(self, agent_id: str) -> float:
         """
         Aplica decaimento temporal às violações antigas.
@@ -444,34 +444,34 @@ class TrustEngine:
         Retorna o novo trust factor após decaimento.
         """
         trust_factor = self.get_trust_factor(agent_id)
-        
+
         if trust_factor is None:
             return 1.0
-        
+
         now = datetime.now(timezone.utc)
-        
+
         # Recalcular baseado em eventos recentes com decay
         total_impact = 0.0
-        
+
         for event in trust_factor.events:
             if event.impact < 0:  # Apenas violações
                 age_days = (now - event.timestamp).total_seconds() / 86400
                 decay_factor = math.pow(0.5, age_days / self.decay_halflife_days)
                 total_impact += event.impact * decay_factor
-        
+
         # Aplicar à base de 1.0
         new_factor = max(0.0, min(1.0, 1.0 + total_impact))
-        
+
         # Suavizar a mudança
         trust_factor.current_factor = (trust_factor.current_factor + new_factor) / 2
         trust_factor.last_updated = now
-        
+
         return trust_factor.current_factor
-    
+
     def get_all_agents(self) -> List[str]:
         """Retorna lista de todos os agentes monitorados."""
         return list(self._trust_factors.keys())
-    
+
     def get_agents_by_level(self, level: TrustLevel) -> List[str]:
         """Retorna agentes em um determinado nível de confiança."""
         return [
@@ -479,7 +479,7 @@ class TrustEngine:
             for agent_id, tf in self._trust_factors.items()
             if tf.level == level
         ]
-    
+
     def get_suspended_agents(self) -> List[Tuple[str, str]]:
         """Retorna lista de (agent_id, reason) para agentes suspensos."""
         return [
@@ -487,20 +487,20 @@ class TrustEngine:
             for agent_id, tf in self._trust_factors.items()
             if tf.is_suspended
         ]
-    
+
     def get_global_metrics(self) -> Dict[str, Any]:
         """Retorna métricas globais do Trust Engine."""
         all_factors = list(self._trust_factors.values())
-        
+
         if not all_factors:
             return {
                 "total_agents": 0,
                 "total_events": self.total_events_processed,
                 "total_suspensions": self.total_suspensions,
             }
-        
+
         factors = [tf.current_factor for tf in all_factors]
-        
+
         return {
             "total_agents": len(all_factors),
             "total_events": self.total_events_processed,
@@ -514,7 +514,7 @@ class TrustEngine:
             },
             "suspended_count": len([tf for tf in all_factors if tf.is_suspended]),
         }
-    
+
     def __repr__(self) -> str:
         metrics = self.get_global_metrics()
         return f"TrustEngine(agents={metrics['total_agents']}, events={metrics['total_events']})"
@@ -527,20 +527,20 @@ class TrustEngine:
 if __name__ == "__main__":
     # Criar engine
     engine = TrustEngine()
-    
+
     # Simular eventos para alguns agentes
     agent1 = "agent-code-generator-001"
     agent2 = "agent-data-analyzer-002"
-    
+
     # Agent 1: Algumas boas ações
     for _ in range(5):
         engine.record_good_action(agent1, "Código gerado sem problemas")
-    
+
     print(f"\n{agent1}:")
     tf1 = engine.get_trust_factor(agent1)
     print(f"  Trust Factor: {tf1.current_factor:.2%}")
     print(f"  Level: {tf1.level.name}")
-    
+
     # Agent 2: Uma violação
     engine.record_violation(
         agent2,
@@ -548,12 +548,12 @@ if __name__ == "__main__":
         Severity.MEDIUM,
         "Agente tentou acessar dados fora do escopo",
     )
-    
+
     print(f"\n{agent2}:")
     tf2 = engine.get_trust_factor(agent2)
     print(f"  Trust Factor: {tf2.current_factor:.2%}")
     print(f"  Level: {tf2.level.name}")
-    
+
     # Agent 2: Violação crítica
     engine.record_violation(
         agent2,
@@ -561,14 +561,14 @@ if __name__ == "__main__":
         Severity.CRITICAL,
         "Tentativa de exfiltração de dados detectada",
     )
-    
+
     print(f"\n{agent2} (após violação crítica):")
     tf2 = engine.get_trust_factor(agent2)
     print(f"  Trust Factor: {tf2.current_factor:.2%}")
     print(f"  Level: {tf2.level.name}")
     print(f"  Suspenso: {tf2.is_suspended}")
     print(f"  Razão: {tf2.suspension_reason}")
-    
+
     # Métricas globais
     print("\n" + "═" * 60)
     print("MÉTRICAS GLOBAIS")

@@ -25,7 +25,7 @@ from rich.text import Text
 from rich.console import Console
 
 from ..theme import COLORS
-from ..styles import PRESET_STYLES, StyleCombinations
+from ..styles import StyleCombinations
 
 
 class StatusLevel(Enum):
@@ -50,7 +50,7 @@ class StatusBadge:
         async for frame in badge.render_animated():
             console.print(frame, end='\r')
     """
-    
+
     # Icon mapping
     ICONS = {
         StatusLevel.SUCCESS: "✓",
@@ -60,7 +60,7 @@ class StatusBadge:
         StatusLevel.PROCESSING: "⚡",
         StatusLevel.DEBUG: "🐛",
     }
-    
+
     def __init__(
         self,
         text: str,
@@ -81,10 +81,10 @@ class StatusBadge:
         self.level = level
         self.show_icon = show_icon
         self.animated = animated
-        
+
         # Get style for level
         self.style = StyleCombinations.status_badge(level.value)
-    
+
     def render(self) -> Text:
         """
         Render status badge.
@@ -93,16 +93,16 @@ class StatusBadge:
             Rich Text object
         """
         parts = []
-        
+
         if self.show_icon:
             icon = self.ICONS.get(self.level, "•")
             parts.append(icon)
-        
+
         parts.append(self.text)
-        
+
         content = " ".join(parts)
         return Text(content, style=self.style)
-    
+
     async def render_animated(
         self,
         duration: float = 1.5,
@@ -121,15 +121,15 @@ class StatusBadge:
         if not self.animated:
             yield self.render()
             return
-        
+
         frames = int(duration * fps)
         frame_delay = 1.0 / fps
-        
+
         for frame in range(frames):
             # Pulse effect: brightness oscillates
             progress = frame / frames
             brightness = 0.5 + 0.5 * abs(1 - 2 * progress)
-            
+
             # Render with varying brightness
             # (In terminal, we approximate with bold/normal)
             if brightness > 0.7:
@@ -137,10 +137,10 @@ class StatusBadge:
                 text.stylize("bold")
             else:
                 text = self.render()
-            
+
             yield text
             await asyncio.sleep(frame_delay)
-        
+
         # Final static frame
         yield self.render()
 
@@ -165,7 +165,7 @@ class Spinner:
         async for frame in spinner.spin():
             console.print(frame, end='\r')
     """
-    
+
     # Spinner frame sequences
     FRAMES = {
         SpinnerStyle.DOTS: ['⠋', '⠙', '⠹', '⠸', '⠼', '⠴', '⠦', '⠧', '⠇', '⠏'],
@@ -174,7 +174,7 @@ class Spinner:
         SpinnerStyle.LINE: ['|', '/', '─', '\\'],
         SpinnerStyle.DOTS_PULSE: ['⠁', '⠂', '⠄', '⡀', '⢀', '⠠', '⠐', '⠈'],
     }
-    
+
     def __init__(
         self,
         text: str = "Processing...",
@@ -193,7 +193,7 @@ class Spinner:
         self.style = style
         self.color = color or COLORS['accent_blue']
         self.frames = self.FRAMES[style]
-    
+
     def render(self, frame_index: int = 0) -> Text:
         """
         Render single spinner frame.
@@ -207,7 +207,7 @@ class Spinner:
         frame_char = self.frames[frame_index % len(self.frames)]
         content = f"{frame_char} {self.text}"
         return Text(content, style=self.color)
-    
+
     async def spin(
         self,
         duration: Optional[float] = None,
@@ -231,17 +231,17 @@ class Spinner:
         frame_index = 0
         frame_delay = 1.0 / fps
         start_time = asyncio.get_event_loop().time()
-        
+
         while True:
             yield self.render(frame_index)
             frame_index = (frame_index + 1) % len(self.frames)
-            
+
             # Check duration
             if duration is not None:
                 elapsed = asyncio.get_event_loop().time() - start_time
                 if elapsed >= duration:
                     break
-            
+
             await asyncio.sleep(frame_delay)
 
 
@@ -263,7 +263,7 @@ class StatusIndicator:
         async for frame in status.render_animated():
             console.print(frame, end='\r')
     """
-    
+
     def __init__(
         self,
         text: str,
@@ -284,17 +284,17 @@ class StatusIndicator:
         self.level = level
         self.show_spinner = spinner
         self.spinner_style = spinner_style
-        
+
         # Create badge
         self.badge = StatusBadge(text, level, show_icon=not spinner, animated=False)
-        
+
         # Create spinner if needed
         if spinner:
             color = self._get_color_for_level(level)
             self.spinner = Spinner(text, spinner_style, color)
         else:
             self.spinner = None
-    
+
     def _get_color_for_level(self, level: StatusLevel) -> str:
         """Get color for status level."""
         color_map = {
@@ -306,7 +306,7 @@ class StatusIndicator:
             StatusLevel.DEBUG: COLORS['text_tertiary'],
         }
         return color_map.get(level, COLORS['text_primary'])
-    
+
     def render(self) -> Text:
         """
         Render status indicator (static frame).
@@ -318,7 +318,7 @@ class StatusIndicator:
             return self.spinner.render(0)
         else:
             return self.badge.render()
-    
+
     async def render_animated(
         self,
         duration: Optional[float] = None,
@@ -390,10 +390,10 @@ async def show_spinner_for(
         await show_spinner_for(console, "Loading...", 3.0)
     """
     spinner = Spinner(text, style)
-    
+
     async for frame in spinner.spin(duration=duration, fps=12):
         console.print(frame, end='\r')
         await asyncio.sleep(1/12)
-    
+
     # Clear line
     console.print(" " * (len(text) + 5), end='\r')

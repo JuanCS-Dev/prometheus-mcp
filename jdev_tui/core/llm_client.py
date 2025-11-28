@@ -19,7 +19,6 @@ from __future__ import annotations
 import asyncio
 import logging
 import os
-import time
 from typing import Any, AsyncIterator, Dict, List, Optional
 
 # Import from extracted modules
@@ -156,7 +155,7 @@ class GeminiClient:
                 try:
                     # Use SchemaAdapter to transform and validate
                     gemini_schema = SchemaAdapter.to_gemini_schema(schema)
-                    
+
                     declarations.append(
                         FunctionDeclaration(
                             name=gemini_schema["name"],

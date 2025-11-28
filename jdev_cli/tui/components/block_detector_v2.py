@@ -13,7 +13,6 @@ from __future__ import annotations
 
 import re
 from typing import List, Optional
-from dataclasses import dataclass, field
 
 from .block_renderers import (
     BlockType, BlockInfo, BlockRendererRegistry,

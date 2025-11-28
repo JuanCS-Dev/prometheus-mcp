@@ -9,10 +9,7 @@ Data: 2025-11-25
 """
 
 import pytest
-import asyncio
 import os
-from pathlib import Path
-from unittest.mock import MagicMock, AsyncMock, patch
 
 
 # =============================================================================
@@ -42,7 +39,7 @@ class TestCriticalImports:
             except ImportError as e:
                 errors.append(f"{module}: {e}")
 
-        assert not errors, f"Failed imports:\n" + "\n".join(errors)
+        assert not errors, "Failed imports:\n" + "\n".join(errors)
 
     def test_import_tui_modules(self):
         """TUI modules devem importar sem erro."""
@@ -59,7 +56,7 @@ class TestCriticalImports:
             except ImportError as e:
                 errors.append(f"{module}: {e}")
 
-        assert not errors, f"Failed imports:\n" + "\n".join(errors)
+        assert not errors, "Failed imports:\n" + "\n".join(errors)
 
 
 # =============================================================================
@@ -173,7 +170,6 @@ class TestAgents:
             BaseAgent,
             AgentTask,
             AgentResponse,
-            AgentRole,
         )
 
         assert BaseAgent is not None

@@ -21,14 +21,14 @@ from __future__ import annotations
 
 import asyncio
 import time
-from typing import Any, Callable, Dict, List, Optional, Set, Tuple, TypeVar, Awaitable
+from typing import Any, Callable, Dict, List, Optional, Awaitable
 from dataclasses import dataclass, field
-from enum import Enum, auto
+from enum import Enum
 from contextlib import asynccontextmanager
 import logging
 
-from .atomic_ops import AtomicFileOps, AtomicResult
-from .undo_manager import UndoManager, UndoableOperation
+from .atomic_ops import AtomicFileOps
+from .undo_manager import UndoManager
 
 logger = logging.getLogger(__name__)
 

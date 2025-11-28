@@ -23,9 +23,9 @@ from __future__ import annotations
 
 import re
 import hashlib
-from typing import Any, Dict, List, Optional, Set, Tuple, Union
+from typing import Dict, List, Optional, Tuple
 from dataclasses import dataclass, field
-from enum import Enum, auto
+from enum import Enum
 from functools import lru_cache
 import logging
 

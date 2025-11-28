@@ -13,7 +13,6 @@ import os
 import sys
 import asyncio
 import tempfile
-import subprocess
 from dataclasses import dataclass, field
 from typing import Optional, Dict, Any, List
 from datetime import datetime
@@ -273,7 +272,7 @@ print(f"__SANDBOX_RETURN__:{{_json.dumps(__result__)}}")
                                 mode_arg = node.args[1]
                                 if isinstance(mode_arg, ast.Constant):
                                     if 'w' in str(mode_arg.value) or 'a' in str(mode_arg.value):
-                                        return f"File write operations not allowed"
+                                        return "File write operations not allowed"
                         elif node.func.id != 'open':
                             return f"Dangerous builtin: {node.func.id}"
 

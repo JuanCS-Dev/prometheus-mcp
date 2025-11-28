@@ -4,12 +4,10 @@ These tests use the actual tool APIs as implemented.
 """
 
 import pytest
-import asyncio
 import time
-import os
 from pathlib import Path
 
-from .conftest import TestResult, get_report
+from .conftest import TestResult
 
 
 class TestFileOperations:
@@ -380,7 +378,7 @@ class TestGitOperations:
 
             # Check what we got
             data = status_result.data
-            result.logs.append(f"✓ Git status retrieved")
+            result.logs.append("✓ Git status retrieved")
             result.logs.append(f"✓ Data type: {type(data)}")
 
             if isinstance(data, dict):

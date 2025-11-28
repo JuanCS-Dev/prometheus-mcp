@@ -21,7 +21,6 @@ Philosophy (Boris Cherny):
 """
 
 import ast
-import inspect
 import re
 from dataclasses import dataclass
 from enum import Enum
@@ -250,7 +249,7 @@ class DocumentationAgent(BaseAgent):
                 for module_doc in modules:
                     md_content = self._generate_markdown(module_doc, style)
                     md_file = output_dir / f"{module_doc.name}.md"
-                    
+
                     # Use MCP write_file tool
                     await self._execute_tool(
                         "write_file",
@@ -261,7 +260,7 @@ class DocumentationAgent(BaseAgent):
             elif doc_format == DocFormat.API_REFERENCE:
                 api_ref = self._generate_api_reference(modules)
                 api_file = output_dir / "API_REFERENCE.md"
-                
+
                 await self._execute_tool(
                     "write_file",
                     {"path": str(api_file), "content": api_ref},
@@ -501,7 +500,7 @@ class DocumentationAgent(BaseAgent):
         """
         docstring = ast.get_docstring(node)
         signature = self._get_signature(node)
-        
+
         parameters: List[Tuple[str, str, Optional[str]]] = []
         for arg in node.args.args:
             param_name = arg.arg
@@ -584,13 +583,13 @@ class DocumentationAgent(BaseAgent):
         if module_doc.classes or module_doc.functions:
             lines.append("## Table of Contents")
             lines.append("")
-            
+
             if module_doc.classes:
                 lines.append("### Classes")
                 for cls in module_doc.classes:
                     lines.append(f"- [{cls.name}](#{cls.name.lower()})")
                 lines.append("")
-            
+
             if module_doc.functions:
                 lines.append("### Functions")
                 for func in module_doc.functions:
@@ -600,14 +599,14 @@ class DocumentationAgent(BaseAgent):
         # Classes
         for cls in module_doc.classes:
             lines.extend([f"## {cls.name}", ""])
-            
+
             if cls.bases:
                 lines.append(f"**Inherits from:** `{', '.join(cls.bases)}`")
                 lines.append("")
-            
+
             if cls.docstring:
                 lines.extend([cls.docstring, ""])
-            
+
             # Methods
             if cls.methods:
                 lines.append("### Methods")
@@ -622,7 +621,7 @@ class DocumentationAgent(BaseAgent):
         if module_doc.functions:
             lines.append("## Functions")
             lines.append("")
-            
+
             for func in module_doc.functions:
                 lines.append(f"### `{func.signature}`")
                 lines.append("")
@@ -644,10 +643,10 @@ class DocumentationAgent(BaseAgent):
 
         for module in modules:
             lines.extend([f"## {module.name}", ""])
-            
+
             if module.docstring:
                 lines.extend([module.docstring, ""])
-            
+
             # Classes summary
             if module.classes:
                 lines.append("### Classes")
@@ -655,7 +654,7 @@ class DocumentationAgent(BaseAgent):
                 for cls in module.classes:
                     lines.append(f"- **{cls.name}**: {cls.docstring.split('.')[0] if cls.docstring else 'No description'}")
                 lines.append("")
-            
+
             # Functions summary
             if module.functions:
                 lines.append("### Functions")
@@ -679,7 +678,7 @@ class DocumentationAgent(BaseAgent):
             README.md content
         """
         project_name = project_path.name
-        
+
         lines = [
             f"# {project_name}",
             "",
@@ -695,7 +694,7 @@ class DocumentationAgent(BaseAgent):
         # Simple directory tree
         for module in modules[:20]:  # Limit to 20
             lines.append(f"├── {module.name}.py")
-        
+
         lines.extend([
             "```",
             "",
@@ -729,9 +728,9 @@ class DocumentationAgent(BaseAgent):
         ])
 
         return "\n".join(lines)
-    
+
     # PUBLIC SYNC API (for testing and direct usage)
-    
+
     def generate_documentation(
         self,
         code: str,
@@ -752,14 +751,14 @@ class DocumentationAgent(BaseAgent):
                 - error: Optional[str]
         """
         import asyncio
-        
+
         if not code or not code.strip():
             return {
                 "success": False,
                 "error": "Empty code provided",
                 "documentation": ""
             }
-        
+
         try:
             # Use LLM to generate docs
             prompt = f"""Generate {style}-style documentation for this {doc_type}:
@@ -776,7 +775,7 @@ Return ONLY the documentation text, no explanations."""
             except RuntimeError:
                 loop = asyncio.new_event_loop()
                 asyncio.set_event_loop(loop)
-            
+
             response = loop.run_until_complete(
                 self.llm_client.generate(
                     prompt=prompt,
@@ -784,7 +783,7 @@ Return ONLY the documentation text, no explanations."""
                     temperature=0.3
                 )
             )
-            
+
             return {
                 "success": True,
                 "documentation": response.strip()
@@ -795,7 +794,7 @@ Return ONLY the documentation text, no explanations."""
                 "error": str(e),
                 "documentation": ""
             }
-    
+
     def generate_api_docs(
         self,
         code: str,
@@ -811,7 +810,7 @@ Return ONLY the documentation text, no explanations."""
             Dict with success, documentation, error
         """
         import asyncio
-        
+
         try:
             prompt = f"""Generate {api_type.upper()} API documentation for:
 
@@ -827,7 +826,7 @@ Include: endpoints, methods, parameters, responses, examples."""
             except RuntimeError:
                 loop = asyncio.new_event_loop()
                 asyncio.set_event_loop(loop)
-            
+
             response = loop.run_until_complete(
                 self.llm_client.generate(
                     prompt=prompt,
@@ -835,7 +834,7 @@ Include: endpoints, methods, parameters, responses, examples."""
                     temperature=0.2
                 )
             )
-            
+
             return {
                 "success": True,
                 "documentation": response.strip()
@@ -846,7 +845,7 @@ Include: endpoints, methods, parameters, responses, examples."""
                 "error": str(e),
                 "documentation": ""
             }
-    
+
     def generate_readme(
         self,
         project_info: Dict[str, Any]
@@ -864,13 +863,13 @@ Include: endpoints, methods, parameters, responses, examples."""
             Dict with success, documentation, error
         """
         import asyncio
-        
+
         try:
             name = project_info.get("name", "Project")
             desc = project_info.get("description", "")
             tech = ", ".join(project_info.get("tech_stack", []))
             features = "\n".join(f"- {f}" for f in project_info.get("features", []))
-            
+
             prompt = f"""Generate a professional README.md for:
 
 **Project:** {name}
@@ -887,7 +886,7 @@ Include: Installation, Usage, Contributing, License sections."""
             except RuntimeError:
                 loop = asyncio.new_event_loop()
                 asyncio.set_event_loop(loop)
-            
+
             response = loop.run_until_complete(
                 self.llm_client.generate(
                     prompt=prompt,
@@ -895,7 +894,7 @@ Include: Installation, Usage, Contributing, License sections."""
                     temperature=0.4
                 )
             )
-            
+
             return {
                 "success": True,
                 "documentation": response.strip()

@@ -14,10 +14,7 @@ The Tool Factory enables the agent to:
 
 from dataclasses import dataclass, field
 from typing import Callable, Dict, List, Optional, Any, Tuple
-from enum import Enum
 import ast
-import hashlib
-import inspect
 import json
 import re
 from datetime import datetime

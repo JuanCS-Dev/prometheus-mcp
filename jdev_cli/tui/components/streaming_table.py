@@ -11,7 +11,7 @@ Data: 2025-11-25
 """
 
 import re
-from typing import Optional, List, Tuple
+from typing import Optional, List
 from dataclasses import dataclass, field
 from enum import Enum
 
@@ -22,9 +22,6 @@ from textual.message import Message
 from textual.app import ComposeResult
 
 from rich.table import Table
-from rich.text import Text
-from rich.style import Style
-from rich.console import Console, RenderableType
 from rich import box
 
 

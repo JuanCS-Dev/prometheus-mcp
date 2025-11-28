@@ -12,7 +12,6 @@ Architecture:
     User Input → LLM → Parser → Safety Check → Tool Execution → Result → LLM
 """
 
-import asyncio
 import logging
 from typing import Dict, Any, List, Optional, AsyncGenerator
 from dataclasses import dataclass
@@ -50,7 +49,7 @@ class ShellBridge:
     - Context-aware execution (Cursor strategy)
     - Automatic error recovery (Aider strategy)
     """
-    
+
     def __init__(
         self,
         parser: Optional[ResponseParser] = None,
@@ -72,20 +71,20 @@ class ShellBridge:
         from ..core.llm import llm_client as default_llm
         from .safety import safety_validator as default_safety
         from .session import session_manager as default_session
-        
+
         self.parser = parser or default_parser
         self.llm = llm_client or default_llm
         self.registry = tool_registry or ToolRegistry()
         self.safety = safety_validator or default_safety
         self.sessions = session_manager or default_session
-        
+
         self.current_session: Optional[Session] = None
-        
+
         # Register core tools (Copilot + Cursor + Claude pattern)
         self._register_core_tools()
-        
+
         logger.info("ShellBridge initialized")
-    
+
     def _register_core_tools(self):
         """Register core tools (always available).
         
@@ -119,7 +118,7 @@ class ShellBridge:
             CdTool, LsTool, PwdTool, MkdirTool, RmTool,
             CpTool, MvTool, TouchTool, CatTool
         )
-        
+
         # File operations (9 tools)
         self.registry.register(ReadFileTool())
         self.registry.register(WriteFileTool())
@@ -131,7 +130,7 @@ class ShellBridge:
         self.registry.register(CreateDirectoryTool())
         self.registry.register(ReadMultipleFilesTool())
         self.registry.register(InsertLinesTool())
-        
+
         # Search & navigation (8 tools)
         self.registry.register(SearchFilesTool())
         self.registry.register(GetDirectoryTreeTool())
@@ -141,19 +140,19 @@ class ShellBridge:
         self.registry.register(FetchURLTool())
         self.registry.register(DownloadFileTool())
         self.registry.register(HTTPRequestTool())
-        
+
         # Execution (1 tool)
         self.registry.register(BashCommandTool())
-        
+
         # Git operations (2 tools)
         self.registry.register(GitStatusTool())
         self.registry.register(GitDiffTool())
-        
+
         # Context management (3 tools)
         self.registry.register(GetContextTool())
         self.registry.register(SaveSessionTool())
         self.registry.register(RestoreBackupTool())
-        
+
         # Terminal commands (9 tools)
         self.registry.register(CdTool())
         self.registry.register(LsTool())
@@ -164,9 +163,9 @@ class ShellBridge:
         self.registry.register(MvTool())
         self.registry.register(TouchTool())
         self.registry.register(CatTool())
-        
+
         logger.info(f"Registered {len(self.registry.tools)} core tools")
-    
+
     async def process_input(
         self,
         user_input: str,
@@ -198,16 +197,16 @@ class ShellBridge:
             session = self.sessions.get_or_create_session(session_id)
         else:
             session = self.sessions.create_session()
-        
+
         self.current_session = session
-        
+
         # Track user input
         session.add_history("user_input", {"input": user_input})
-        
+
         try:
             # Build rich context (Cursor strategy)
             full_context = await self._build_context(session, context)
-            
+
             # Stream from LLM
             full_response = ""
             async for chunk in self.llm.stream_chat(
@@ -217,36 +216,36 @@ class ShellBridge:
             ):
                 full_response += chunk
                 yield chunk
-            
+
             # Parse response for tool calls
             parse_result = self.parser.parse(full_response)
-            
+
             if not parse_result.success:
                 logger.warning(f"Parse failed: {parse_result.error}")
                 yield f"\n\n⚠️ Parse error: {parse_result.error}"
                 return
-            
+
             # Execute tool calls if present
             if parse_result.tool_calls:
                 yield "\n\n🔧 Executing tools...\n"
-                
+
                 results = await self._execute_tool_calls(
                     parse_result.tool_calls,
                     session
                 )
-                
+
                 # Format and yield results
                 for result in results:
                     yield self._format_execution_result(result)
-            
+
             # Save session
             self.sessions._save_session(session)
-            
+
         except Exception as e:
             logger.error(f"Error in process_input: {e}", exc_info=True)
             session.add_history("error", {"error": str(e)}, success=False)
             yield f"\n\n❌ Error: {str(e)}"
-    
+
     async def execute_tool_calls(
         self,
         llm_response: str,
@@ -270,21 +269,21 @@ class ShellBridge:
             session = self.sessions.get_active_session()
             if not session:
                 session = self.sessions.create_session()
-        
+
         # Parse response
         parse_result = self.parser.parse(llm_response)
-        
+
         if not parse_result.success:
             logger.error(f"Parse failed: {parse_result.error}")
             return []
-        
+
         if not parse_result.tool_calls:
             logger.info("No tool calls found in response")
             return []
-        
+
         # Execute tools
         return await self._execute_tool_calls(parse_result.tool_calls, session)
-    
+
     async def _execute_tool_calls(
         self,
         tool_calls: List[Dict[str, Any]],
@@ -300,11 +299,11 @@ class ShellBridge:
             List of execution results
         """
         results = []
-        
+
         for tool_call in tool_calls:
             result = await self._execute_single_tool(tool_call, session)
             results.append(result)
-            
+
             # Track in session
             session.add_history(
                 "tool_call",
@@ -315,9 +314,9 @@ class ShellBridge:
                 result=result.result,
                 success=result.success
             )
-        
+
         return results
-    
+
     async def _execute_single_tool(
         self,
         tool_call: Dict[str, Any],
@@ -342,7 +341,7 @@ class ShellBridge:
         tool_name = tool_call.get("tool", "unknown")
         # Support both "arguments" and "args" for compatibility
         arguments = tool_call.get("arguments") or tool_call.get("args", {})
-        
+
         # Safety check (CRITICAL - Claude Code strategy)
         is_safe, block_reason = self.safety.is_safe(tool_call)
         if not is_safe:
@@ -355,7 +354,7 @@ class ShellBridge:
                 blocked=True,
                 block_reason=block_reason,
             )
-        
+
         try:
             # Get tool from registry
             if tool_name not in self.registry.tools:
@@ -365,31 +364,31 @@ class ShellBridge:
                     result=None,
                     error=f"Tool not found: {tool_name}",
                 )
-            
+
             tool = self.registry.tools[tool_name]
-            
+
             # Execute tool
             result = await tool.execute(**arguments)
-            
+
             # Track file operations (Cursor strategy)
             self._track_file_operation(tool_name, arguments, session)
-            
+
             execution_time = (datetime.now() - start_time).total_seconds()
-            
+
             # Check if tool execution actually succeeded
             tool_success = result.success if hasattr(result, 'success') else True
-            
+
             return ToolExecutionResult(
                 success=tool_success,
                 tool_name=tool_name,
                 result=result,
                 execution_time=execution_time,
             )
-        
+
         except Exception as e:
             logger.error(f"Tool execution failed: {e}", exc_info=True)
             execution_time = (datetime.now() - start_time).total_seconds()
-            
+
             return ToolExecutionResult(
                 success=False,
                 tool_name=tool_name,
@@ -397,7 +396,7 @@ class ShellBridge:
                 error=str(e),
                 execution_time=execution_time,
             )
-    
+
     def _track_file_operation(
         self,
         tool_name: str,
@@ -408,7 +407,7 @@ class ShellBridge:
         path = arguments.get("path") or arguments.get("file")
         if not path:
             return
-        
+
         # Map tool names to operations
         if tool_name in ["read_file", "read_multiple_files", "cat"]:
             session.track_file_operation("read", path)
@@ -416,7 +415,7 @@ class ShellBridge:
             session.track_file_operation("write", path)
         elif tool_name in ["delete_file", "rm"]:
             session.track_file_operation("delete", path)
-    
+
     async def _build_context(
         self,
         session: Session,
@@ -432,10 +431,10 @@ class ShellBridge:
             Formatted context string
         """
         context_parts = []
-        
+
         # Session info
         context_parts.append(f"Current directory: {session.cwd}")
-        
+
         # Recent history (last 5 actions)
         if session.history:
             context_parts.append("\nRecent actions:")
@@ -443,38 +442,38 @@ class ShellBridge:
                 action = entry.get("action")
                 details = entry.get("details", {})
                 context_parts.append(f"- {action}: {details}")
-        
+
         # Modified files
         if session.modified_files:
             context_parts.append(f"\nModified files: {len(session.modified_files)}")
-        
+
         # Additional context
         if additional_context:
             context_parts.append(f"\nAdditional context: {additional_context}")
-        
+
         return "\n".join(context_parts)
-    
+
     def _format_execution_result(self, result: ToolExecutionResult) -> str:
         """Format execution result for display."""
         if result.blocked:
             return f"🚫 {result.tool_name}: BLOCKED - {result.block_reason}\n"
-        
+
         if not result.success:
             return f"❌ {result.tool_name}: ERROR - {result.error}\n"
-        
+
         time_str = f"({result.execution_time:.2f}s)" if result.execution_time > 0 else ""
         return f"✅ {result.tool_name} {time_str}\n"
-    
+
     def get_session_info(self, session_id: Optional[str] = None) -> Dict[str, Any]:
         """Get information about current session."""
         if session_id:
             session = self.sessions.get_session(session_id)
         else:
             session = self.current_session or self.sessions.get_active_session()
-        
+
         if not session:
             return {"error": "No active session"}
-        
+
         return session.get_summary()
 
 

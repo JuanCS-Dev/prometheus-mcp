@@ -46,19 +46,19 @@ class Toast:
     duration: float  # seconds (0 = persistent)
     created_at: datetime
     on_dismiss: Optional[Callable[[], None]] = None
-    
+
     @property
     def is_expired(self) -> bool:
         """Check if toast has expired"""
         if self.duration == 0:
             return False
         return datetime.now() > self.created_at + timedelta(seconds=self.duration)
-    
+
     @property
     def icon(self) -> str:
         """Get icon for toast type"""
         return TOAST_ICONS[self.type]
-    
+
     @property
     def color(self) -> str:
         """Get color for toast type"""
@@ -101,12 +101,12 @@ class ToastManager:
     - Auto-dismiss timers
     - Stack overflow protection
     """
-    
+
     def __init__(self, max_toasts: int = 5):
         self.max_toasts = max_toasts
         self.toasts: List[Toast] = []
         self._id_counter = 0
-    
+
     def add_toast(
         self,
         type: ToastType,
@@ -130,7 +130,7 @@ class ToastManager:
         """
         self._id_counter += 1
         toast_id = f"toast-{self._id_counter}"
-        
+
         toast = Toast(
             id=toast_id,
             type=type,
@@ -140,19 +140,19 @@ class ToastManager:
             created_at=datetime.now(),
             on_dismiss=on_dismiss
         )
-        
+
         # Priority insertion (errors first, then warnings, then others)
         priority_order = [ToastType.ERROR, ToastType.WARNING, ToastType.WISDOM, ToastType.INFO, ToastType.SUCCESS]
         insert_index = 0
-        
+
         for i, existing_toast in enumerate(self.toasts):
             if priority_order.index(toast.type) <= priority_order.index(existing_toast.type):
                 insert_index = i
                 break
             insert_index = i + 1
-        
+
         self.toasts.insert(insert_index, toast)
-        
+
         # Trim if exceeds max (remove oldest non-error toasts)
         while len(self.toasts) > self.max_toasts:
             # Find oldest non-error toast to remove
@@ -167,9 +167,9 @@ class ToastManager:
                 removed = self.toasts.pop()
                 if removed.on_dismiss:
                     removed.on_dismiss()
-        
+
         return toast_id
-    
+
     def dismiss_toast(self, toast_id: str) -> bool:
         """
         Dismiss a toast by ID
@@ -184,7 +184,7 @@ class ToastManager:
                     removed.on_dismiss()
                 return True
         return False
-    
+
     def clear_expired(self) -> List[str]:
         """
         Remove expired toasts
@@ -201,12 +201,12 @@ class ToastManager:
                 kept_toasts.append(t)
         self.toasts = kept_toasts
         return dismissed
-    
+
     def get_active_toasts(self) -> List[Toast]:
         """Get all active (non-expired) toasts"""
         self.clear_expired()
         return self.toasts.copy()
-    
+
     def clear_all(self) -> None:
         """Clear all toasts"""
         for toast in self.toasts:
@@ -225,29 +225,29 @@ class ToastWidget(Static):
     - Color-coded border
     - Close button (×)
     """
-    
+
     def __init__(self, toast: Toast, on_close: Optional[Callable[[str], None]] = None):
         super().__init__()
         self.toast = toast
         self.on_close = on_close
-    
+
     def render(self) -> RenderableType:
         """Render the toast as a Rich panel"""
         # Build content
         content = Text()
-        
+
         # Icon + Title (bold, colored)
         content.append(f"{self.toast.icon} ", style=f"bold {self.toast.color}")
         content.append(self.toast.title, style=f"bold {COLORS['text_primary']}")
         content.append(" ")
-        
+
         # Close button (right-aligned)
         content.append("×", style=f"{COLORS['text_tertiary']} dim")
         content.append("\n")
-        
+
         # Message (normal weight)
         content.append(self.toast.message, style=COLORS['text_secondary'])
-        
+
         # Create panel with colored border
         panel = Panel(
             content,
@@ -256,9 +256,9 @@ class ToastWidget(Static):
             padding=(0, 1),
             style=f"on {TOAST_BG_COLORS[self.toast.type]}",
         )
-        
+
         return panel
-    
+
     def on_click(self) -> None:
         """Handle click to dismiss"""
         if self.on_close:
@@ -273,24 +273,24 @@ class ToastContainer(VerticalScroll):
     Max height: 50% of screen
     Auto-scroll to newest
     """
-    
+
     def __init__(self, manager: ToastManager):
         super().__init__()
         self.manager = manager
         self.styles.height = "auto"
         self.styles.max_height = "50%"
         self.styles.align = ("right", "top")
-    
+
     def refresh_toasts(self) -> None:
         """Refresh displayed toasts"""
         # Clear current widgets
         self.remove_children()
-        
+
         # Add active toasts
         for toast in self.manager.get_active_toasts():
             widget = ToastWidget(toast, on_close=self._on_toast_close)
             self.mount(widget)
-    
+
     def _on_toast_close(self, toast_id: str) -> None:
         """Handle toast close"""
         self.manager.dismiss_toast(toast_id)
@@ -360,7 +360,7 @@ def show_wisdom(
         Toast ID
     """
     verse = wisdom_system.get_random()
-    
+
     return manager.add_toast(
         ToastType.WISDOM,
         title="Biblical Wisdom",
@@ -373,7 +373,7 @@ def show_wisdom(
 def example_usage() -> None:
     """Example of how to use the toast system"""
     manager = create_toast_manager()
-    
+
     # Success toast
     show_success(
         manager,
@@ -381,7 +381,7 @@ def example_usage() -> None:
         message="config.py has been saved successfully.",
         duration=3.0
     )
-    
+
     # Warning toast
     show_warning(
         manager,
@@ -389,7 +389,7 @@ def example_usage() -> None:
         message="File context exceeds 10,000 tokens. Consider reducing.",
         duration=5.0
     )
-    
+
     # Error toast (persistent)
     show_error(
         manager,
@@ -397,7 +397,7 @@ def example_usage() -> None:
         message="Invalid Python syntax on line 42: unexpected indent",
         duration=0  # Persistent
     )
-    
+
     # Info toast
     show_info(
         manager,
@@ -405,7 +405,7 @@ def example_usage() -> None:
         message="Now using Qwen2.5-Coder-32B-Instruct",
         duration=3.0
     )
-    
+
     # Wisdom toast
     show_wisdom(
         manager,

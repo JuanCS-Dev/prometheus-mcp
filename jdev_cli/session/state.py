@@ -3,7 +3,7 @@
 from dataclasses import dataclass, field
 from datetime import datetime
 from pathlib import Path
-from typing import List, Dict, Set, Any, Optional
+from typing import List, Dict, Set, Any
 
 
 @dataclass
@@ -23,7 +23,7 @@ class SessionState:
         last_activity: Last activity timestamp
         metadata: Additional metadata
     """
-    
+
     session_id: str
     cwd: Path
     history: List[str] = field(default_factory=list)
@@ -35,7 +35,7 @@ class SessionState:
     created_at: datetime = field(default_factory=datetime.now)
     last_activity: datetime = field(default_factory=datetime.now)
     metadata: Dict[str, Any] = field(default_factory=dict)
-    
+
     def to_dict(self) -> Dict[str, Any]:
         """Convert session state to dictionary for serialization.
         
@@ -55,7 +55,7 @@ class SessionState:
             'last_activity': self.last_activity.isoformat(),
             'metadata': self.metadata,
         }
-    
+
     @classmethod
     def from_dict(cls, data: Dict[str, Any]) -> 'SessionState':
         """Create session state from dictionary.
@@ -74,7 +74,7 @@ class SessionState:
         missing = [f for f in required_fields if f not in data]
         if missing:
             raise ValueError(f"Missing required fields in session data: {', '.join(missing)}")
-        
+
         try:
             return cls(
                 session_id=data['session_id'],
@@ -91,11 +91,11 @@ class SessionState:
             )
         except (ValueError, TypeError) as e:
             raise ValueError(f"Invalid session data format: {e}")
-    
+
     def update_activity(self):
         """Update last activity timestamp."""
         self.last_activity = datetime.now()
-    
+
     def add_message(self, role: str, content: str):
         """Add message to conversation history.
         
@@ -109,7 +109,7 @@ class SessionState:
             'timestamp': datetime.now().isoformat(),
         })
         self.update_activity()
-    
+
     def add_file_read(self, filepath: str):
         """Track file that was read.
         
@@ -118,7 +118,7 @@ class SessionState:
         """
         self.files_read.add(filepath)
         self.update_activity()
-    
+
     def add_file_modified(self, filepath: str):
         """Track file that was modified.
         
@@ -127,7 +127,7 @@ class SessionState:
         """
         self.files_modified.add(filepath)
         self.update_activity()
-    
+
     def increment_tool_calls(self):
         """Increment tool call counter."""
         self.tool_calls_count += 1

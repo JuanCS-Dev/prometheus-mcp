@@ -1,10 +1,9 @@
 """Hook executor - runs hooks with variable substitution and safety checks."""
 
 import asyncio
-import subprocess
 import shlex
 from pathlib import Path
-from typing import List, Dict, Optional, Tuple
+from typing import List, Dict, Optional
 from dataclasses import dataclass
 import logging
 
@@ -29,7 +28,7 @@ class HookResult:
         executed_in_sandbox: Whether the command ran in sandbox
         error: Error message if execution failed
     """
-    
+
     success: bool
     command: str
     stdout: str = ""
@@ -46,7 +45,7 @@ class HookExecutor:
     Safe commands (whitelisted) execute directly for performance.
     Unsafe/unknown commands execute in Docker sandbox for security.
     """
-    
+
     def __init__(
         self,
         sandbox_executor: Optional[object] = None,
@@ -64,12 +63,12 @@ class HookExecutor:
         self.timeout_seconds = timeout_seconds
         self.enable_sandbox = enable_sandbox
         self.whitelist = SafeCommandWhitelist()
-        
+
         self._execution_count = 0
         self._sandbox_count = 0
         self._direct_count = 0
         self._failed_count = 0
-    
+
     async def execute_hooks(
         self,
         event: HookEvent,
@@ -96,14 +95,14 @@ class HookExecutor:
         """
         if not hooks:
             return []
-        
+
         logger.info(f"Executing {len(hooks)} hooks for event: {event}")
-        
+
         results = []
         for hook_command in hooks:
             result = await self.execute_hook(event, context, hook_command)
             results.append(result)
-            
+
             # Log result
             if result.success:
                 logger.debug(
@@ -114,9 +113,9 @@ class HookExecutor:
                 logger.warning(
                     f"Hook failed: {result.command} - {result.error}"
                 )
-        
+
         return results
-    
+
     async def execute_hook(
         self,
         event: HookEvent,
@@ -135,16 +134,16 @@ class HookExecutor:
         """
         import time
         start_time = time.time()
-        
+
         self._execution_count += 1
-        
+
         try:
             # Substitute variables
             command = self._substitute_variables(command_template, context)
-            
+
             # Check if command is safe
             is_safe, reason = self.whitelist.is_safe(command)
-            
+
             if is_safe:
                 # Execute directly (fast path)
                 result = await self._execute_direct(command, context.cwd)
@@ -162,15 +161,15 @@ class HookExecutor:
                     error=f"Command not whitelisted and sandbox disabled: {reason}",
                     execution_time_ms=(time.time() - start_time) * 1000
                 )
-            
+
             execution_time = (time.time() - start_time) * 1000
             result.execution_time_ms = execution_time
-            
+
             if not result.success:
                 self._failed_count += 1
-            
+
             return result
-            
+
         except Exception as e:
             self._failed_count += 1
             return HookResult(
@@ -179,7 +178,7 @@ class HookExecutor:
                 error=f"Hook execution failed: {str(e)}",
                 execution_time_ms=(time.time() - start_time) * 1000
             )
-    
+
     def _substitute_variables(
         self,
         command_template: str,
@@ -201,13 +200,13 @@ class HookExecutor:
         """
         variables = context.get_variables()
         command = command_template
-        
+
         for var_name, var_value in variables.items():
             placeholder = f"{{{var_name}}}"
             command = command.replace(placeholder, var_value)
-        
+
         return command
-    
+
     async def _execute_direct(
         self,
         command: str,
@@ -225,19 +224,19 @@ class HookExecutor:
         try:
             # Use shlex to properly parse command
             args = shlex.split(command)
-            
+
             process = await asyncio.create_subprocess_exec(
                 *args,
                 stdout=asyncio.subprocess.PIPE,
                 stderr=asyncio.subprocess.PIPE,
                 cwd=str(cwd)
             )
-            
+
             stdout, stderr = await asyncio.wait_for(
                 process.communicate(),
                 timeout=self.timeout_seconds
             )
-            
+
             return HookResult(
                 success=process.returncode == 0,
                 command=command,
@@ -246,7 +245,7 @@ class HookExecutor:
                 exit_code=process.returncode,
                 executed_in_sandbox=False
             )
-            
+
         except asyncio.TimeoutError:
             return HookResult(
                 success=False,
@@ -261,7 +260,7 @@ class HookExecutor:
                 error=str(e),
                 executed_in_sandbox=False
             )
-    
+
     async def _execute_sandboxed(
         self,
         command: str,
@@ -283,7 +282,7 @@ class HookExecutor:
                 error="Sandbox executor not available",
                 executed_in_sandbox=False
             )
-        
+
         try:
             sandbox_result = self.sandbox_executor.execute_sandboxed(
                 command=command,
@@ -291,7 +290,7 @@ class HookExecutor:
                 timeout=self.timeout_seconds,
                 readonly=False
             )
-            
+
             return HookResult(
                 success=sandbox_result.get('success', False),
                 command=command,
@@ -301,7 +300,7 @@ class HookExecutor:
                 executed_in_sandbox=True,
                 error=sandbox_result.get('error')
             )
-            
+
         except Exception as e:
             return HookResult(
                 success=False,
@@ -309,7 +308,7 @@ class HookExecutor:
                 error=f"Sandbox execution failed: {str(e)}",
                 executed_in_sandbox=True
             )
-    
+
     def get_stats(self) -> Dict[str, int]:
         """Get execution statistics.
         

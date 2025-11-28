@@ -5,9 +5,8 @@ Provides the same interface as GeminiClient but routes through
 PROMETHEUS for enhanced capabilities.
 """
 
-import asyncio
-from typing import AsyncIterator, Optional, Dict, Any, List, Callable
-from dataclasses import dataclass, field
+from typing import AsyncIterator, Optional, Dict, Any, List
+from dataclasses import dataclass
 from datetime import datetime
 
 from jdev_cli.core.providers.prometheus_provider import PrometheusProvider, PrometheusConfig

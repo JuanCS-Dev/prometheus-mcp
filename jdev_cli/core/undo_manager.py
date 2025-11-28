@@ -25,14 +25,14 @@ import json
 import time
 import shutil
 import hashlib
-from typing import Any, Callable, Dict, List, Optional, Tuple, Union, Generic, TypeVar
+from typing import Any, Callable, Dict, List, Optional, TypeVar
 from pathlib import Path
 from dataclasses import dataclass, field
-from enum import Enum, auto
+from enum import Enum
 from contextlib import contextmanager
 import logging
 
-from .atomic_ops import AtomicFileOps, AtomicResult, OperationCheckpoint
+from .atomic_ops import AtomicFileOps
 
 logger = logging.getLogger(__name__)
 

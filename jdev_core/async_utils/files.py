@@ -12,9 +12,8 @@ Date: 2025-11-26
 
 import asyncio
 import json
-import os
 from pathlib import Path
-from typing import Any, List, Optional, Union
+from typing import Any, List, Union
 
 # Try to import aiofiles, fallback to thread pool
 try:

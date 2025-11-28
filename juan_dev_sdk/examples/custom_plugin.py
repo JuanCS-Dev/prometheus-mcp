@@ -312,7 +312,7 @@ async def run_plugin_examples():
     print(f"  - {security.plugin.name}: {security.plugin.description}")
 
     # Show dependencies
-    print(f"\n--- Plugin Dependencies ---")
+    print("\n--- Plugin Dependencies ---")
     print(f"Notifications depends on: {notifications.plugin.dependencies}")
     print(f"Notifications provides: {notifications.plugin.provides}")
 

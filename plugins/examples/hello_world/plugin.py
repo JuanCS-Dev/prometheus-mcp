@@ -9,7 +9,7 @@ Author: JuanCS Dev
 Date: 2025-11-26
 """
 
-from typing import Optional, Any, Dict
+from typing import Optional, Any
 
 from plugins.core import (
     Plugin,

@@ -8,7 +8,6 @@ Persists the learned memory to a Modal Volume.
 import modal
 import os
 import sys
-import asyncio
 from datetime import datetime
 
 # Define the Modal App
@@ -43,10 +42,10 @@ async def train_prometheus(num_iterations: int = 10):
     Run the Co-Evolution Loop remotely.
     """
     print(f"🚀 Starting Prometheus Training ({num_iterations} iterations)...")
-    
+
     # Add project root to path so imports work
     sys.path.append("/root/qwen-dev-cli")
-    
+
     try:
         from prometheus.core.evolution import CoEvolutionLoop
         from prometheus.core.llm_client import GeminiClient
@@ -82,28 +81,28 @@ async def train_prometheus(num_iterations: int = 10):
     # Run Evolution
     print("🧬 Evolving...")
     stats = await evolution.evolve(num_iterations=num_iterations)
-    
+
     # Export Memory
     print("💾 Persisting Memory...")
     memory_state = memory.export_state()
-    
+
     # Save to Volume
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     filename = f"/data/prometheus_memory_{timestamp}.json"
-    
+
     import json
     with open(filename, "w") as f:
         json.dump(memory_state, f, indent=2)
-        
+
     # Also save as 'latest'
     with open("/data/prometheus_memory_latest.json", "w") as f:
         json.dump(memory_state, f, indent=2)
-        
+
     volume.commit()
-    
+
     print(f"✅ Training Complete! Memory saved to {filename}")
     print(f"📈 Stats: {stats.to_dict()}")
-    
+
     return stats.to_dict()
 
 @app.local_entrypoint()

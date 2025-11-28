@@ -16,7 +16,7 @@ Date: 2025-11-26
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
 from enum import Enum, auto
-from typing import List, Optional, Dict, Any, Callable, TYPE_CHECKING
+from typing import List, Optional, Dict, Any, TYPE_CHECKING
 
 if TYPE_CHECKING:
     from .registry import PluginRegistry

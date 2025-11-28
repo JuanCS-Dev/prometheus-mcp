@@ -30,7 +30,7 @@ class ToolResult:
     def output(self) -> Any:
         """Alias for data."""
         return self.data
-    
+
     @property
     def output(self) -> Any:
         """Alias for data (API compatibility)."""
@@ -40,7 +40,7 @@ class ToolResult:
 
 class Tool(ABC):
     """Base class for all tools."""
-    
+
     def __init__(self):
         # Convert CamelCase to snake_case for consistency
         import re
@@ -49,7 +49,7 @@ class Tool(ABC):
         self.category: ToolCategory = ToolCategory.FILE_READ
         self.description: str = ""
         self.parameters: Dict[str, Any] = {}
-    
+
     @abstractmethod
     async def _execute_validated(self, **kwargs) -> ToolResult:
         """Execute the tool with given parameters.
@@ -61,7 +61,7 @@ class Tool(ABC):
             ToolResult with execution outcome
         """
         raise NotImplementedError(f"{self.__class__.__name__}.execute() must be implemented")
-    
+
     def validate_params(self, **kwargs) -> tuple[bool, Optional[str]]:
         """Validate tool parameters.
         
@@ -70,12 +70,12 @@ class Tool(ABC):
         """
         required = [k for k, v in self.parameters.items() if v.get('required', False)]
         missing = [k for k in required if k not in kwargs]
-        
+
         if missing:
             return False, f"Missing required parameters: {', '.join(missing)}"
-        
+
         return True, None
-    
+
     def get_schema(self) -> Dict[str, Any]:
         """Get tool schema for LLM tool use."""
         return {
@@ -91,26 +91,26 @@ class Tool(ABC):
 
 class ToolRegistry:
     """Registry for all available tools."""
-    
+
     def __init__(self):
         self.tools: Dict[str, Tool] = {}
-    
+
     def register(self, tool: Tool) -> None:
         """Register a tool."""
         self.tools[tool.name] = tool
-    
+
     def get(self, name: str) -> Optional[Tool]:
         """Get tool by name."""
         return self.tools.get(name)
-    
+
     def get_all(self) -> Dict[str, Tool]:
         """Get all registered tools."""
         return self.tools
-    
+
     def get_schemas(self) -> list[Dict[str, Any]]:
         """Get all tool schemas for LLM."""
         return [tool.get_schema() for tool in self.tools.values()]
-    
+
     def get_by_category(self, category: ToolCategory) -> list[Tool]:
         """Get all tools in a category."""
         return [t for t in self.tools.values() if t.category == category]

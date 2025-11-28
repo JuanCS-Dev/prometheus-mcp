@@ -11,7 +11,7 @@ Based on November 2025 research:
 """
 
 import asyncio
-from typing import Optional, Dict, Any
+from typing import Optional, Dict
 from datetime import datetime
 
 from rich.console import Console
@@ -321,7 +321,7 @@ class MaestroShellUI:
                 self.live.stop()
             except Exception:
                 pass
-    
+
     def resume(self):
         """
         Resume the live display after user input.
@@ -347,7 +347,7 @@ class MaestroShellUI:
                 self.refresh_display(force=True)
             except Exception:
                 pass
-    
+
     @property
     def is_paused(self) -> bool:
         """Check if display is paused."""

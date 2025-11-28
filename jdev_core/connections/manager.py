@@ -9,10 +9,9 @@ Author: JuanCS Dev
 Date: 2025-11-26
 """
 
-import asyncio
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import Any, Dict, Optional, Type
+from typing import Any, Dict, Optional
 
 from .pool import ConnectionPool, PoolConfig, PoolStats
 

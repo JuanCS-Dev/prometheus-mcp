@@ -10,7 +10,7 @@ import gradio as gr
 
 def create_heroic_theme() -> gr.Theme:
     """Simple Gradio 6 theme - glassmorphism via CSS"""
-    
+
     # Use Soft theme as base (minimal customization)
     theme = gr.themes.Soft(
         primary_hue="neutral",
@@ -18,7 +18,7 @@ def create_heroic_theme() -> gr.Theme:
         font=gr.themes.GoogleFont("Inter"),
         font_mono=gr.themes.GoogleFont("JetBrains Mono"),
     )
-    
+
     return theme
 
 

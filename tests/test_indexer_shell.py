@@ -20,7 +20,7 @@ print(f"✓ Indexed {count} files in {elapsed:.2f}s")
 
 # Stats
 stats = indexer.get_stats()
-print(f"\n📊 Stats:")
+print("\n📊 Stats:")
 print(f"  Files: {stats['files_indexed']}")
 print(f"  Symbols: {stats['total_symbols']}")
 print(f"  Unique: {stats['unique_symbols']}")

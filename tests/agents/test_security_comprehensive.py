@@ -17,11 +17,9 @@ Philosophy (Boris Cherny):
     "Tests that don't break the code are worthless."
 """
 
-import json
-import subprocess
 import tempfile
 from pathlib import Path
-from unittest.mock import AsyncMock, MagicMock, patch
+from unittest.mock import AsyncMock, MagicMock
 
 import pytest
 

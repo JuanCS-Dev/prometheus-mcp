@@ -6,7 +6,6 @@ Measures:
 """
 import subprocess
 import time
-import sys
 
 ALIAS = "neuroshell-code"
 PROMPT = "Oi"

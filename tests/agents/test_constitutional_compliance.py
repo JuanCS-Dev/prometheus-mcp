@@ -412,7 +412,6 @@ class TestTypeSafetyCompliance:
 
     def test_pydantic_models_use_field_validators(self) -> None:
         """Test that Pydantic models use Field for validation."""
-        from pydantic import Field
 
         # AgentTask uses Field for constraints
         task = AgentTask(request="Test", session_id="s1")

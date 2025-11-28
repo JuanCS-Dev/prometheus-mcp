@@ -33,12 +33,12 @@ def create_ui() -> gr.Blocks:
     Returns:
         Gradio Blocks interface (theme and css applied in launch())
     """
-    
+
     with gr.Blocks(
         title="🚀 QWEN-DEV-CLI - AI DevSquad",
         analytics_enabled=False,
     ) as demo:
-        
+
         # 🎯 Spectacular Header
         gr.Markdown("""
         <div style="text-align: center; padding: 20px 0;">
@@ -53,7 +53,7 @@ def create_ui() -> gr.Blocks:
             </p>
         </div>
         """)
-        
+
         # 🎮 Main Layout
         with gr.Row():
             # Left: Chat Interface (70%)
@@ -68,7 +68,7 @@ def create_ui() -> gr.Blocks:
                     buttons=["copy"],
                     elem_classes=["chat-container"],
                 )
-                
+
                 # Input area
                 with gr.Row():
                     msg_input = gr.Textbox(
@@ -88,7 +88,7 @@ def create_ui() -> gr.Blocks:
                         min_width=100,
                         size="lg"
                     )
-                
+
                 # Action buttons
                 with gr.Row():
                     clear_btn = gr.Button("🗑️ Clear", size="sm", scale=1, variant="secondary")
@@ -96,10 +96,10 @@ def create_ui() -> gr.Blocks:
                     if DEVSQUAD_AVAILABLE:
                         squad_btn = gr.Button("🤖 DevSquad", size="sm", scale=1, variant="primary")
                     examples_btn = gr.Button("💡 Examples", size="sm", scale=1, variant="secondary")
-            
+
             # Right: Controls & Status (30%)
             with gr.Column(scale=3, min_width=320):
-                
+
                 # 🤖 DevSquad Status (if available)
                 if DEVSQUAD_AVAILABLE:
                     with gr.Accordion("🤖 DevSquad Status", open=True):
@@ -125,13 +125,13 @@ def create_ui() -> gr.Blocks:
                             <span class="status-dot status-idle"></span> Idle
                         </div>
                         """, elem_classes=["squad-status"])
-                        
+
                         squad_mode = gr.Checkbox(
                             label="Enable DevSquad Orchestration",
                             value=False,
                             info="Use multi-agent workflow"
                         )
-                
+
                 # ⚙️ Model Settings
                 with gr.Accordion("⚙️ Model Settings", open=True):
                     provider_dropdown = gr.Dropdown(
@@ -141,7 +141,7 @@ def create_ui() -> gr.Blocks:
                         info="Smart routing (auto recommended)",
                         interactive=True
                     )
-                    
+
                     temperature = gr.Slider(
                         minimum=0.0,
                         maximum=2.0,
@@ -150,7 +150,7 @@ def create_ui() -> gr.Blocks:
                         label="🌡️ Temperature",
                         info="Creativity level"
                     )
-                    
+
                     max_tokens = gr.Slider(
                         minimum=128,
                         maximum=8192,
@@ -159,13 +159,13 @@ def create_ui() -> gr.Blocks:
                         label="📏 Max Tokens",
                         info="Response length"
                     )
-                    
+
                     stream_enabled = gr.Checkbox(
                         label="⚡ Enable Streaming",
                         value=True,
                         info="Real-time response"
                     )
-                
+
                 # 📁 Context Files
                 with gr.Accordion("📁 Context Files", open=False):
                     file_upload = gr.File(
@@ -175,7 +175,7 @@ def create_ui() -> gr.Blocks:
                         elem_classes=["upload-area"],
                         height=140
                     )
-                    
+
                     context_status = gr.Textbox(
                         label="Status",
                         value="📂 No files loaded",
@@ -183,9 +183,9 @@ def create_ui() -> gr.Blocks:
                         lines=2,
                         show_label=False
                     )
-                    
+
                     clear_context_btn = gr.Button("🧹 Clear Context", size="sm", variant="secondary")
-                
+
                 # 🔧 MCP Tools
                 with gr.Accordion("🔧 MCP Tools", open=False):
                     mcp_enabled = gr.Checkbox(
@@ -193,14 +193,14 @@ def create_ui() -> gr.Blocks:
                         value=mcp_manager.enabled,
                         info="Access local files"
                     )
-                    
+
                     mcp_status = gr.Textbox(
                         label="MCP Status",
                         value="✅ Ready" if mcp_manager.enabled else "⚠️ Disabled",
                         interactive=False,
                         show_label=False
                     )
-                
+
                 # ⚡ Performance Metrics
                 with gr.Accordion("⚡ Performance", open=True):
                     perf_display = gr.Markdown("""
@@ -210,18 +210,18 @@ def create_ui() -> gr.Blocks:
                     - ⏱️ Total: - s
                     - 🔥 Status: Ready
                     """, elem_classes=["perf-metrics"])
-                
+
                 # 📊 Statistics
                 with gr.Accordion("📊 Statistics", open=False):
                     stats_display = gr.JSON(
                         label="Context Stats",
                         value={"files": 0, "chars": 0, "tokens": 0}
                     )
-        
+
         # State management
         chat_history = gr.State([])
         last_user_msg = gr.State("")
-        
+
         # 💡 Examples
         examples_row = gr.Examples(
             examples=[
@@ -235,24 +235,24 @@ def create_ui() -> gr.Blocks:
             inputs=msg_input,
             label="💡 Example Prompts"
         )
-        
+
         # 🎯 Event Handlers
-        
+
         def respond_stream(message: str, history: List, temp: float, max_tok: int, stream: bool, provider: str, use_squad: bool = False) -> Generator:
             """Handle chat response with optional DevSquad."""
             import time
-            
+
             if not message.strip():
                 yield history, None, None
                 return
-            
+
             # Add user message (Gradio 6 messages format)
             history.append({"role": "user", "content": message})
             history.append({"role": "assistant", "content": ""})
-            
+
             start_time = time.time()
             first_token_time = None
-            
+
             # DevSquad mode
             if use_squad and DEVSQUAD_AVAILABLE:
                 try:
@@ -280,28 +280,28 @@ def create_ui() -> gr.Blocks:
                     </div>
                     """
                     yield history, squad_html, None
-                    
+
                     # Execute DevSquad
                     registry = get_default_registry()
                     mcp_client = MCPClient(registry)
                     squad = DevSquad(llm_client, mcp_client, require_human_approval=False)
-                    
+
                     async def run_squad():
                         return await squad.execute_workflow(message)
-                    
+
                     result = asyncio.run(run_squad())
-                    
+
                     # Format response
-                    response_text = f"**DevSquad Workflow Complete!**\n\n"
+                    response_text = "**DevSquad Workflow Complete!**\n\n"
                     response_text += f"**Status:** {result.status.value}\n"
                     response_text += f"**Phases:** {len(result.phases)}\n\n"
-                    
+
                     for phase in result.phases:
                         icon = "✅" if phase.success else "❌"
                         response_text += f"{icon} **{phase.phase.value.capitalize()}**: {phase.duration_seconds:.2f}s\n"
-                    
+
                     history[-1]["content"] = response_text
-                    
+
                     # Final status
                     squad_html = """
                     <div class="agent-card">
@@ -325,7 +325,7 @@ def create_ui() -> gr.Blocks:
                         <span class="status-dot status-active"></span> ✅ Complete
                     </div>
                     """
-                    
+
                     total_time = time.time() - start_time
                     perf_info = f"""
 **Last Response:**
@@ -336,12 +336,12 @@ def create_ui() -> gr.Blocks:
 """
                     yield history, squad_html, perf_info
                     return
-                    
+
                 except Exception as e:
                     history[-1]["content"] = f"❌ DevSquad Error: {str(e)}"
                     yield history, None, None
                     return
-            
+
             # Regular LLM mode
             if stream:
                 async def stream_response():
@@ -353,10 +353,10 @@ def create_ui() -> gr.Blocks:
                                 first_token_time = time.time()
                             full_response += chunk
                             history[-1]["content"] = full_response
-                            
+
                             elapsed = (time.time() - start_time) * 1000
                             ttft = (first_token_time - start_time) * 1000 if first_token_time else elapsed
-                            
+
                             perf_info = f"""
 **Last Response:**
 - 🎯 Provider: `{provider}`
@@ -368,7 +368,7 @@ def create_ui() -> gr.Blocks:
                     except Exception as e:
                         history[-1]["content"] = f"❌ Error: {str(e)}"
                         yield history, None, None
-                
+
                 loop = asyncio.new_event_loop()
                 asyncio.set_event_loop(loop)
                 try:
@@ -385,7 +385,7 @@ def create_ui() -> gr.Blocks:
                 try:
                     response = asyncio.run(llm_client.generate(message, temperature=temp, max_tokens=max_tok, provider=provider))
                     history[-1]["content"] = response
-                    
+
                     total_time = time.time() - start_time
                     perf_info = f"""
 **Last Response:**
@@ -397,45 +397,45 @@ def create_ui() -> gr.Blocks:
                 except Exception as e:
                     history[-1]["content"] = f"❌ Error: {str(e)}"
                     yield history, None, None
-        
+
         def upload_files(files) -> Tuple[str, dict]:
             """Handle file uploads."""
             if not files:
                 return "📂 No files uploaded", context_builder.get_stats()
-            
+
             context_builder.clear()
-            
+
             results = []
             for file in files:
                 success, message = context_builder.add_file(file.name)
                 status = "✅" if success else "❌"
                 results.append(f"{status} {message}")
-            
+
             status_text = "\n".join(results)
             stats = context_builder.get_stats()
-            
+
             return f"📁 {status_text}", stats
-        
+
         def clear_context() -> Tuple[str, dict]:
             """Clear context files."""
             context_builder.clear()
             return "🧹 Context cleared", context_builder.get_stats()
-        
+
         def clear_chat() -> Tuple[List, str]:
             """Clear chat history."""
             return [], ""
-        
+
         def toggle_mcp(enabled: bool) -> str:
             """Toggle MCP on/off."""
             mcp_manager.toggle(enabled)
             return "✅ MCP Enabled" if enabled else "⚠️ MCP Disabled"
-        
+
         # Wire events
         send_outputs = [chatbot, perf_display] if not DEVSQUAD_AVAILABLE else [chatbot, squad_status, perf_display]
         send_inputs = [msg_input, chatbot, temperature, max_tokens, stream_enabled, provider_dropdown]
         if DEVSQUAD_AVAILABLE:
             send_inputs.append(squad_mode)
-        
+
         send_btn.click(
             respond_stream,
             inputs=send_inputs,
@@ -448,7 +448,7 @@ def create_ui() -> gr.Blocks:
             inputs=[chatbot],
             outputs=[last_user_msg]
         )
-        
+
         msg_input.submit(
             respond_stream,
             inputs=send_inputs,
@@ -461,12 +461,12 @@ def create_ui() -> gr.Blocks:
             inputs=[chatbot],
             outputs=[last_user_msg]
         )
-        
+
         clear_btn.click(clear_chat, outputs=[chatbot, last_user_msg])
         file_upload.change(upload_files, inputs=[file_upload], outputs=[context_status, stats_display])
         clear_context_btn.click(clear_context, outputs=[context_status, stats_display])
         mcp_enabled.change(toggle_mcp, inputs=[mcp_enabled], outputs=[mcp_status])
-        
+
         # Footer
         gr.Markdown("""
         ---
@@ -481,13 +481,13 @@ def create_ui() -> gr.Blocks:
             </p>
         </div>
         """)
-    
+
     return demo
 
 
 if __name__ == "__main__":
     demo = create_ui()
-    
+
     # 🎨 Gradio 6: Theme and CSS go in launch(), not Blocks()
     theme = gr.themes.Base(
         primary_hue="green",
@@ -500,7 +500,7 @@ if __name__ == "__main__":
         button_primary_background_fill="*primary_500",
         button_primary_text_color="*neutral_950",
     )
-    
+
     # 🎨 Spectacular Cyberpunk CSS
     spectacular_css = """
     /* Cyberpunk Glassmorphism Theme */
@@ -608,7 +608,7 @@ if __name__ == "__main__":
         h1 { font-size: 32px !important; }
     }
     """
-    
+
     demo.launch(
         server_name="0.0.0.0",
         server_port=config.gradio_port,

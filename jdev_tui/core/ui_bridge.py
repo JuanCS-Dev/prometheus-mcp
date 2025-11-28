@@ -13,7 +13,7 @@ Features:
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Any, Dict, List, Optional, TYPE_CHECKING
+from typing import Dict, List, Optional, TYPE_CHECKING
 
 if TYPE_CHECKING:
     from .tools_bridge import ToolBridge

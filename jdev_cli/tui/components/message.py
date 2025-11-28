@@ -30,11 +30,9 @@ from rich.console import Console, RenderableType
 from rich.panel import Panel
 from rich.text import Text
 from rich.markdown import Markdown
-from rich.syntax import Syntax
 
 from ..theme import COLORS
 from ..styles import PRESET_STYLES, StyleCombinations
-from ..spacing import SPACING
 from ._enums import MessageRole
 from ._enums import MessageRole
 
@@ -54,7 +52,7 @@ class Message:
     role: str = "user"
     timestamp: Optional[datetime] = None
     metadata: Dict[str, Any] = field(default_factory=dict)
-    
+
     def __post_init__(self) -> None:
         if self.timestamp is None:
             self.timestamp = datetime.now()
@@ -75,7 +73,7 @@ class MessageBox:
             console.print(frame)
             await asyncio.sleep(0.03)
     """
-    
+
     def __init__(
         self,
         message: Message,
@@ -99,7 +97,7 @@ class MessageBox:
         self.max_width = max_width
         self.show_timestamp = show_timestamp
         self.show_role = show_role
-        
+
         # Get role-specific styling
         if message.role == "user":
             self.styles = StyleCombinations.message_user()
@@ -117,25 +115,25 @@ class MessageBox:
             }
             self.title_prefix = "System"
             self.border_color = COLORS['text_secondary']
-    
+
     def _format_timestamp(self) -> str:
         """Format timestamp for display."""
         if not self.message.timestamp:
             return ""
         return self.message.timestamp.strftime("%H:%M:%S")
-    
+
     def _create_title(self) -> str:
         """Create panel title with role and timestamp."""
         parts = []
-        
+
         if self.show_role:
             parts.append(self.title_prefix)
-        
+
         if self.show_timestamp:
             parts.append(self._format_timestamp())
-        
+
         return " • ".join(parts) if parts else None
-    
+
     def _process_content(self, content: str) -> RenderableType:
         """
         Process message content (markdown, code, plain text).
@@ -150,11 +148,11 @@ class MessageBox:
         if "```" in content:
             # Render as markdown with syntax highlighting
             return Markdown(content)
-        
+
         # Plain text with proper wrapping
         text = Text(content, style=self.styles['text'])
         return text
-    
+
     def render(self) -> Panel:
         """
         Render complete message box.
@@ -164,7 +162,7 @@ class MessageBox:
         """
         content = self._process_content(self.message.content)
         title = self._create_title()
-        
+
         return Panel(
             content,
             title=title,
@@ -173,7 +171,7 @@ class MessageBox:
             expand=False,
             width=self.max_width,
         )
-    
+
     async def render_animated(
         self,
         wpm: int = 400,
@@ -204,26 +202,26 @@ class MessageBox:
         """
         content = self.message.content
         title = self._create_title()
-        
+
         # Calculate delay per character
         chars_per_second = (wpm * 5) / 60  # Avg 5 chars per word
         base_delay = 1.0 / chars_per_second
-        
+
         # Build content character by character
         accumulated = ""
         total_chars = len(content)
-        
+
         for i, char in enumerate(content):
             accumulated += char
-            
+
             # Process accumulated text
             rendered_content = self._process_content(accumulated)
-            
+
             # Add cursor effect at end (blinking)
             if i < total_chars - 1 and smooth:
                 cursor = "▋" if (i // 3) % 2 == 0 else "▊"
                 rendered_content = self._process_content(accumulated + cursor)
-            
+
             # Create panel frame
             panel = Panel(
                 rendered_content,
@@ -233,19 +231,19 @@ class MessageBox:
                 expand=False,
                 width=self.max_width,
             )
-            
+
             yield panel
-            
+
             # Variable delay based on character and position
             delay = base_delay
-            
+
             # Smooth acceleration (ease-out cubic)
             if smooth and i < 10:
                 # Start slower (thinking)
                 progress = i / 10.0
                 eased = 1 - pow(1 - progress, 3)
                 delay *= (2 - eased)  # 2x slower → 1x
-            
+
             # Pause longer at punctuation (natural breathing)
             if char in '.!?':
                 delay *= 5  # Long pause (sentence end)
@@ -255,9 +253,9 @@ class MessageBox:
                 delay *= 2  # Line break pause
             elif char == '\n':
                 delay *= 2
-            
+
             await asyncio.sleep(delay)
-        
+
         # Final frame (complete message)
         final_panel = self.render()
         yield final_panel
@@ -273,7 +271,7 @@ class MessageStream:
         stream.add_message(Message("Hi there!", role=MessageRole.ASSISTANT))
         stream.render()
     """
-    
+
     def __init__(
         self,
         console: Optional[Console] = None,
@@ -292,19 +290,19 @@ class MessageStream:
         self.messages: list[Message] = []
         self.max_messages = max_messages
         self.max_width = max_width
-    
+
     def add_message(self, message: Message) -> None:
         """Add message to stream."""
         self.messages.append(message)
-        
+
         # Trim old messages
         if len(self.messages) > self.max_messages:
             self.messages = self.messages[-self.max_messages:]
-    
+
     def clear(self) -> None:
         """Clear all messages."""
         self.messages.clear()
-    
+
     def render(self, last_n: Optional[int] = None) -> None:
         """
         Render all messages in stream.
@@ -313,12 +311,12 @@ class MessageStream:
             last_n: Only render last N messages (None = all)
         """
         messages_to_render = self.messages[-last_n:] if last_n else self.messages
-        
+
         for msg in messages_to_render:
             box = MessageBox(msg, console=self.console, max_width=self.max_width)
             self.console.print(box.render())
             self.console.print()  # Add spacing between messages
-    
+
     async def render_last_animated(self, wpm: int = 400):
         """
         Render last message with typing animation.
@@ -328,16 +326,16 @@ class MessageStream:
         """
         if not self.messages:
             return
-        
+
         last_message = self.messages[-1]
         box = MessageBox(last_message, console=self.console, max_width=self.max_width)
-        
+
         async for frame in box.render_animated(wpm=wpm, clear_screen=False):
             # Move cursor to message position
             # (In real implementation, would track position)
             self.console.print(frame, end='\r')
             await asyncio.sleep(0.03)
-        
+
         self.console.print()  # Final newline
 
 
@@ -363,10 +361,10 @@ async def typing_effect(text: str, wpm: int = 400) -> AsyncIterator[str]:
     """
     chars_per_second = (wpm * 5) / 60
     base_delay = 1.0 / chars_per_second
-    
+
     for char in text:
         yield char
-        
+
         # Variable delay
         delay = base_delay
         if char in '.!?':
@@ -375,7 +373,7 @@ async def typing_effect(text: str, wpm: int = 400) -> AsyncIterator[str]:
             delay *= 2
         elif char == '\n':
             delay *= 2
-        
+
         await asyncio.sleep(delay)
 
 

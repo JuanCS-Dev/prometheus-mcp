@@ -14,26 +14,17 @@ Based on Anthropic Claude Code testing standards.
 
 import pytest
 import asyncio
-import json
-from datetime import datetime
-from unittest.mock import AsyncMock, MagicMock, patch, call
-from dataclasses import asdict
+from unittest.mock import AsyncMock, MagicMock, patch
 
 from jdev_cli.agents.executor import (
     ExecutionMode,
     SecurityLevel,
-    CommandCategory,
-    ExecutionMetrics,
     CommandResult,
-    AdvancedSecurityValidator,
     CodeExecutionEngine,
     NextGenExecutorAgent,
 )
 from jdev_cli.agents.base import (
-    AgentRole,
-    AgentCapability,
     AgentTask,
-    AgentResponse,
 )
 from jdev_cli.permissions import PermissionLevel
 

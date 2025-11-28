@@ -6,12 +6,11 @@ Boris Cherny: Quantify everything. Risk is measurable.
 import re
 from dataclasses import dataclass
 from enum import Enum
-from typing import Dict, List
 
 
 class RiskLevel(Enum):
     """Risk level classification."""
-    
+
     LOW = "low"
     MEDIUM = "medium"
     HIGH = "high"
@@ -24,12 +23,12 @@ class RiskScore:
     
     Each dimension scored 0.0-1.0 (0 = safe, 1 = dangerous)
     """
-    
+
     destructiveness: float
     reversibility: float  # 0 = irreversible, 1 = easily reversible
     scope: float
     security: float
-    
+
     @property
     def overall(self) -> float:
         """Weighted overall risk score.
@@ -46,14 +45,14 @@ class RiskScore:
             self.scope * 0.2 +
             self.security * 0.1
         )
-    
+
     @property
     def level(self) -> RiskLevel:
         """Get risk level from score."""
         # Special case: Very high destructiveness OR security = CRITICAL
         if self.destructiveness >= 0.9 or self.security >= 0.85:
             return RiskLevel.CRITICAL
-        
+
         if self.overall >= 0.65:
             return RiskLevel.CRITICAL
         elif self.overall >= 0.45:
@@ -61,7 +60,7 @@ class RiskScore:
         elif self.overall >= 0.25:
             return RiskLevel.MEDIUM
         return RiskLevel.LOW
-    
+
     @property
     def requires_confirmation(self) -> bool:
         """Should require user confirmation?"""
@@ -124,32 +123,32 @@ def assess_risk(command: str) -> RiskScore:
     """
     if not command:
         return RiskScore(0.0, 1.0, 0.0, 0.0)
-    
+
     # Assess destructiveness
     destructiveness = 0.0
     for pattern, score in DESTRUCTIVE_PATTERNS:
         if re.search(pattern, command):
             destructiveness = max(destructiveness, score)
-    
+
     # Assess security
     security = 0.0
     for pattern, score in SECURITY_PATTERNS:
         if re.search(pattern, command):
             security = max(security, score)
-    
+
     # Assess scope
     scope = 0.3  # Default: local scope
     for pattern, score in SCOPE_PATTERNS:
         if re.search(pattern, command):
             scope = max(scope, score)
-    
+
     # Assess reversibility
     reversibility = 1.0  # Default: reversible
     if destructiveness > 0.5:
         reversibility = 0.1  # Destructive commands are hard to reverse
     elif destructiveness > 0.0:
         reversibility = 0.5  # Somewhat reversible
-    
+
     return RiskScore(
         destructiveness=destructiveness,
         reversibility=reversibility,
@@ -183,7 +182,7 @@ Dangers:
 
 ⚠️  This action cannot be easily undone. Consider safer alternatives.
 """
-    
+
     elif score.level == RiskLevel.HIGH:
         return f"""⚠️  HIGH RISK: This command could cause significant damage.
 
@@ -192,7 +191,7 @@ Risk Level: {score.level.value.upper()}
 
 Proceed with caution. Consider backing up first.
 """
-    
+
     elif score.level == RiskLevel.MEDIUM:
         return f"""💡 MEDIUM RISK: This command has some risks.
 
@@ -200,5 +199,5 @@ Command: {command}
 
 Consider reviewing the command before executing.
 """
-    
+
     return ""  # Low risk, no warning needed

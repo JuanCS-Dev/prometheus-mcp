@@ -258,7 +258,7 @@ class CustomCommandsManager:
         try:
             command_file.resolve().relative_to(commands_dir.resolve())
         except ValueError:
-            raise ValueError(f"Invalid command name: path traversal detected")
+            raise ValueError("Invalid command name: path traversal detected")
 
         # Build content with optional description header
         content = prompt

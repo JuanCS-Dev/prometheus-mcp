@@ -25,10 +25,8 @@ import psutil
 import random
 import sys
 import time
-from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass
 from typing import List, Dict, Any
-from unittest.mock import AsyncMock
 
 import pytest
 
@@ -185,7 +183,7 @@ class TestLoadTesting:
         metrics = measure_performance(start_time, end_time, latencies, memory_samples,
                                      cpu_samples, successful, failed)
 
-        print(f"\n=== Sustained Load 1000 Requests ===")
+        print("\n=== Sustained Load 1000 Requests ===")
         print(f"Throughput: {metrics.throughput:.2f} req/s")
         print(f"Avg Latency: {metrics.avg_latency*1000:.2f} ms")
         print(f"P95 Latency: {metrics.p95_latency*1000:.2f} ms")
@@ -230,7 +228,7 @@ class TestLoadTesting:
         total_time = end_time - start_time
         throughput = 100 / total_time
 
-        print(f"\n=== Concurrent Load 100 Parallel ===")
+        print("\n=== Concurrent Load 100 Parallel ===")
         print(f"Total Time: {total_time:.2f} s")
         print(f"Throughput: {throughput:.2f} req/s")
         print(f"Success Rate: {successful}/100")
@@ -287,7 +285,7 @@ class TestStressTesting:
         end_time = time.time()
         total_time = end_time - start_time
 
-        print(f"\n=== Stress 10000 Requests ===")
+        print("\n=== Stress 10000 Requests ===")
         print(f"Total Time: {total_time:.2f} s")
         print(f"Throughput: {10000/total_time:.2f} req/s")
         print(f"Success Rate: {successful}/10000 ({successful/100:.1f}%)")
@@ -324,7 +322,7 @@ class TestStressTesting:
         successful = sum(1 for r in results if r is True)
         failed = 1000 - successful
 
-        print(f"\n=== Stress 1000 Concurrent ===")
+        print("\n=== Stress 1000 Concurrent ===")
         print(f"Total Time: {end_time - start_time:.2f} s")
         print(f"Success Rate: {successful}/1000")
         print(f"Failed: {failed}")
@@ -373,7 +371,7 @@ class TestSpikeTesting:
 
         successful = sum(1 for r in results if not isinstance(r, Exception))
 
-        print(f"\n=== Spike Sudden Burst ===")
+        print("\n=== Spike Sudden Burst ===")
         print(f"Spike Duration: {end_time - start_time:.2f} s")
         print(f"Success Rate: {successful}/500")
 
@@ -429,7 +427,7 @@ class TestEnduranceTesting:
         end_time = time.time()
         total_time = end_time - start_time
 
-        print(f"\n=== Endurance 5 Minutes ===")
+        print("\n=== Endurance 5 Minutes ===")
         print(f"Duration: {total_time:.2f} s")
         print(f"Total Requests: {successful + failed}")
         print(f"Throughput: {(successful + failed)/total_time:.2f} req/s")
@@ -491,7 +489,7 @@ class TestScalabilityTesting:
         ratio_10_to_100 = results[100]["time"] / results[10]["time"]
         ratio_100_to_1000 = results[1000]["time"] / results[100]["time"]
 
-        print(f"\nScalability Ratios:")
+        print("\nScalability Ratios:")
         print(f"  10→100: {ratio_10_to_100:.2f}x")
         print(f"  100→1000: {ratio_100_to_1000:.2f}x")
 
@@ -531,7 +529,7 @@ class TestChaosEngineering:
             except Exception:
                 failed += 1
 
-        print(f"\n=== Chaos Random LLM Failures ===")
+        print("\n=== Chaos Random LLM Failures ===")
         print(f"Success: {successful}/1000")
         print(f"Failed: {failed}/1000")
 
@@ -567,7 +565,7 @@ class TestChaosEngineering:
             except Exception:
                 failed += 1
 
-        print(f"\n=== Chaos Memory Pressure ===")
+        print("\n=== Chaos Memory Pressure ===")
         print(f"Success: {successful}/100")
 
         assert successful > 90, f"Failed under memory pressure: {failed}"
@@ -595,8 +593,8 @@ class TestChaosEngineering:
 
         gc.collect()
 
-        print(f"\n=== Chaos Rapid Agent Creation ===")
-        print(f"Created and destroyed 50 agents successfully")
+        print("\n=== Chaos Rapid Agent Creation ===")
+        print("Created and destroyed 50 agents successfully")
 
 
 # ============================================================================

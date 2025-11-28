@@ -35,13 +35,13 @@ COLORS = {
     'bg_secondary': '#161b22',    # Card/panel backgrounds
     'bg_tertiary': '#21262d',     # Hover states, raised elements
     'bg_overlay': '#1c2128',      # Modal overlays, dropdowns
-    
+
     # Text Hierarchy (from most to least prominent)
     'text_primary': '#c9d1d9',    # Main text - High contrast (WCAG AAA)
     'text_secondary': '#8b949e',  # Muted text - Metadata, labels
     'text_tertiary': '#6e7681',   # Dimmed text - Timestamps, hints
     'text_disabled': '#484f58',   # Disabled text/controls
-    
+
     # Accent Colors (Semantic)
     'accent_blue': '#58a6ff',     # Info, links, focus states
     'accent_green': '#3fb950',    # Success, confirmations, done
@@ -49,12 +49,12 @@ COLORS = {
     'accent_red': '#f85149',      # Error, danger, critical
     'accent_purple': '#bc8cff',   # AI responses, special features
     'accent_orange': '#db6d28',   # Highlights, notifications
-    
+
     # Border Colors
     'border_default': '#30363d',  # Default borders
     'border_muted': '#21262d',    # Subtle borders
     'border_emphasis': '#6e7681', # Emphasized borders
-    
+
     # Syntax Highlighting (Code blocks)
     'syntax_keyword': '#ff7b72',    # Keywords (if, def, class)
     'syntax_string': '#a5d6ff',     # Strings
@@ -64,21 +64,21 @@ COLORS = {
     'syntax_number': '#79c0ff',     # Numbers
     'syntax_operator': '#ff7b72',   # Operators (+, -, *, /)
     'syntax_builtin': '#ffa657',    # Built-in functions
-    
+
     # Git Diff Colors
     'diff_add_bg': '#0d4429',       # Added line background
     'diff_add_text': '#3fb950',     # Added line text
     'diff_remove_bg': '#4c1f1f',    # Removed line background
     'diff_remove_text': '#f85149',  # Removed line text
     'diff_context': '#8b949e',      # Context lines
-    
+
     # Status Colors (For badges, indicators)
     'status_success': '#238636',    # Success operations
     'status_warning': '#9e6a03',    # Warning states
     'status_error': '#da3633',      # Error states
     'status_info': '#1f6feb',       # Info messages
     'status_processing': '#8957e5', # Processing/loading
-    
+
     # Legacy aliases for backwards compatibility
     'primary': '#58a6ff',           # Alias for accent_blue
     'success': '#3fb950',           # Alias for accent_green
@@ -120,7 +120,7 @@ COLORS = {
 
 class ColorHelpers:
     """Utility functions for color manipulation."""
-    
+
     @staticmethod
     def hex_to_rgb(hex_color: str) -> Tuple[int, int, int]:
         """
@@ -134,7 +134,7 @@ class ColorHelpers:
         """
         hex_color = hex_color.lstrip('#')
         return tuple(int(hex_color[i:i+2], 16) for i in (0, 2, 4))
-    
+
     @staticmethod
     def rgb_to_hex(r: int, g: int, b: int) -> str:
         """
@@ -147,7 +147,7 @@ class ColorHelpers:
             Hex color string (e.g., '#0d1117')
         """
         return f"#{r:02x}{g:02x}{b:02x}"
-    
+
     @staticmethod
     def darken(hex_color: str, amount: float = 0.1) -> str:
         """
@@ -165,7 +165,7 @@ class ColorHelpers:
         l = max(0, l - amount)
         r, g, b = colorsys.hls_to_rgb(h, l, s)
         return ColorHelpers.rgb_to_hex(int(r*255), int(g*255), int(b*255))
-    
+
     @staticmethod
     def lighten(hex_color: str, amount: float = 0.1) -> str:
         """
@@ -183,7 +183,7 @@ class ColorHelpers:
         l = min(1.0, l + amount)
         r, g, b = colorsys.hls_to_rgb(h, l, s)
         return ColorHelpers.rgb_to_hex(int(r*255), int(g*255), int(b*255))
-    
+
     @staticmethod
     def with_alpha(hex_color: str, alpha: float) -> str:
         """
@@ -198,7 +198,7 @@ class ColorHelpers:
         """
         alpha_hex = format(int(alpha * 255), '02x')
         return f"{hex_color}{alpha_hex}"
-    
+
     @staticmethod
     def contrast_ratio(hex_color1: str, hex_color2: str) -> float:
         """
@@ -214,21 +214,21 @@ class ColorHelpers:
         def relative_luminance(hex_color: str) -> float:
             r, g, b = ColorHelpers.hex_to_rgb(hex_color)
             r, g, b = r/255.0, g/255.0, b/255.0
-            
+
             def adjust(c):
                 return c / 12.92 if c <= 0.03928 else ((c + 0.055) / 1.055) ** 2.4
-            
+
             r, g, b = adjust(r), adjust(g), adjust(b)
             return 0.2126 * r + 0.7152 * g + 0.0722 * b
-        
+
         l1 = relative_luminance(hex_color1)
         l2 = relative_luminance(hex_color2)
-        
+
         lighter = max(l1, l2)
         darker = min(l1, l2)
-        
+
         return (lighter + 0.05) / (darker + 0.05)
-    
+
     @staticmethod
     def is_wcag_aa_compliant(text_color: str, bg_color: str) -> bool:
         """
@@ -300,7 +300,7 @@ def get_theme(variant: ThemeVariant = ThemeVariant.DARK) -> dict:
             **{k: v for k, v in COLORS.items() if k.startswith('diff_')},
             **{k: v for k, v in COLORS.items() if k.startswith('status_')},
         }
-    
+
     return COLORS
 
 
@@ -311,17 +311,17 @@ def get_theme(variant: ThemeVariant = ThemeVariant.DARK) -> dict:
 def validate_theme():
     """Validate that theme colors meet WCAG AA standards."""
     issues = []
-    
+
     # Check primary text on primary background
     if not ColorHelpers.is_wcag_aa_compliant(COLORS['text_primary'], COLORS['bg_primary']):
         ratio = ColorHelpers.contrast_ratio(COLORS['text_primary'], COLORS['bg_primary'])
         issues.append(f"text_primary on bg_primary: {ratio:.2f}:1 (needs 4.5:1)")
-    
+
     # Check secondary text on primary background
     if not ColorHelpers.is_wcag_aa_compliant(COLORS['text_secondary'], COLORS['bg_primary']):
         ratio = ColorHelpers.contrast_ratio(COLORS['text_secondary'], COLORS['bg_primary'])
         issues.append(f"text_secondary on bg_primary: {ratio:.2f}:1 (needs 4.5:1)")
-    
+
     if issues:
         print("⚠️  Theme validation warnings:")
         for issue in issues:

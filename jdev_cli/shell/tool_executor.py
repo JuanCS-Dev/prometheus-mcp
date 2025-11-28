@@ -15,7 +15,7 @@ if TYPE_CHECKING:
     from rich.console import Console
     from ..tools.base import ToolRegistry
     from ..core.conversation import ConversationManager
-    from ..core.recovery import ErrorRecoveryEngine, RecoveryContext
+    from ..core.recovery import ErrorRecoveryEngine
 
 logger = logging.getLogger(__name__)
 

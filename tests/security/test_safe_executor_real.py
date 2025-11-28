@@ -14,12 +14,8 @@ Implementation details (READ FROM FILE):
 """
 
 import pytest
-import asyncio
-from pathlib import Path
 from jdev_tui.core.safe_executor import (
     SafeCommandExecutor,
-    SafeExecutionResult,
-    AllowedCommand,
     CommandCategory,
     get_safe_executor,
 )

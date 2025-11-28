@@ -3,7 +3,6 @@ import pytest
 import asyncio
 from unittest.mock import Mock, AsyncMock
 from jdev_cli.maestro_governance import MaestroGovernance
-from jdev_cli.core.governance_pipeline import GovernancePipeline
 from jdev_cli.agents.base import AgentTask, AgentResponse, AgentRole
 
 
@@ -5207,7 +5206,7 @@ async def test_400_race_condition():
         pass
 
 
-@pytest.mark.asyncio  
+@pytest.mark.asyncio
 async def test_401_exception_path():
     """Exception path test 401"""
     try:
@@ -5218,7 +5217,7 @@ async def test_401_exception_path():
             return_value=(True, None, {})
         )
         agent = Mock()
-        agent.role = AgentRole.EXECUTOR  
+        agent.role = AgentRole.EXECUTOR
         agent.execute = AsyncMock(return_value=AgentResponse(success=True, reasoning="ok", data={}))
         task = AgentTask(request="test", context={})
         response = await gov.execute_with_governance(agent, task)
@@ -5227,7 +5226,7 @@ async def test_401_exception_path():
         pass
 
 
-@pytest.mark.asyncio  
+@pytest.mark.asyncio
 async def test_402_exception_path():
     """Exception path test 402"""
     try:
@@ -5238,7 +5237,7 @@ async def test_402_exception_path():
             return_value=(True, None, {})
         )
         agent = Mock()
-        agent.role = AgentRole.EXECUTOR  
+        agent.role = AgentRole.EXECUTOR
         agent.execute = AsyncMock(return_value=AgentResponse(success=True, reasoning="ok", data={}))
         task = AgentTask(request="test", context={})
         response = await gov.execute_with_governance(agent, task)
@@ -5247,7 +5246,7 @@ async def test_402_exception_path():
         pass
 
 
-@pytest.mark.asyncio  
+@pytest.mark.asyncio
 async def test_403_exception_path():
     """Exception path test 403"""
     try:
@@ -5258,7 +5257,7 @@ async def test_403_exception_path():
             return_value=(True, None, {})
         )
         agent = Mock()
-        agent.role = AgentRole.EXECUTOR  
+        agent.role = AgentRole.EXECUTOR
         agent.execute = AsyncMock(return_value=AgentResponse(success=True, reasoning="ok", data={}))
         task = AgentTask(request="test", context={})
         response = await gov.execute_with_governance(agent, task)
@@ -5267,7 +5266,7 @@ async def test_403_exception_path():
         pass
 
 
-@pytest.mark.asyncio  
+@pytest.mark.asyncio
 async def test_404_exception_path():
     """Exception path test 404"""
     try:
@@ -5278,7 +5277,7 @@ async def test_404_exception_path():
             return_value=(True, None, {})
         )
         agent = Mock()
-        agent.role = AgentRole.EXECUTOR  
+        agent.role = AgentRole.EXECUTOR
         agent.execute = AsyncMock(return_value=AgentResponse(success=True, reasoning="ok", data={}))
         task = AgentTask(request="test", context={})
         response = await gov.execute_with_governance(agent, task)
@@ -5287,7 +5286,7 @@ async def test_404_exception_path():
         pass
 
 
-@pytest.mark.asyncio  
+@pytest.mark.asyncio
 async def test_405_exception_path():
     """Exception path test 405"""
     try:
@@ -5298,7 +5297,7 @@ async def test_405_exception_path():
             return_value=(True, None, {})
         )
         agent = Mock()
-        agent.role = AgentRole.EXECUTOR  
+        agent.role = AgentRole.EXECUTOR
         agent.execute = AsyncMock(return_value=AgentResponse(success=True, reasoning="ok", data={}))
         task = AgentTask(request="test", context={})
         response = await gov.execute_with_governance(agent, task)
@@ -5307,7 +5306,7 @@ async def test_405_exception_path():
         pass
 
 
-@pytest.mark.asyncio  
+@pytest.mark.asyncio
 async def test_406_exception_path():
     """Exception path test 406"""
     try:
@@ -5318,7 +5317,7 @@ async def test_406_exception_path():
             return_value=(True, None, {})
         )
         agent = Mock()
-        agent.role = AgentRole.EXECUTOR  
+        agent.role = AgentRole.EXECUTOR
         agent.execute = AsyncMock(return_value=AgentResponse(success=True, reasoning="ok", data={}))
         task = AgentTask(request="test", context={})
         response = await gov.execute_with_governance(agent, task)
@@ -5327,7 +5326,7 @@ async def test_406_exception_path():
         pass
 
 
-@pytest.mark.asyncio  
+@pytest.mark.asyncio
 async def test_407_exception_path():
     """Exception path test 407"""
     try:
@@ -5338,7 +5337,7 @@ async def test_407_exception_path():
             return_value=(True, None, {})
         )
         agent = Mock()
-        agent.role = AgentRole.EXECUTOR  
+        agent.role = AgentRole.EXECUTOR
         agent.execute = AsyncMock(return_value=AgentResponse(success=True, reasoning="ok", data={}))
         task = AgentTask(request="test", context={})
         response = await gov.execute_with_governance(agent, task)
@@ -5347,7 +5346,7 @@ async def test_407_exception_path():
         pass
 
 
-@pytest.mark.asyncio  
+@pytest.mark.asyncio
 async def test_408_exception_path():
     """Exception path test 408"""
     try:
@@ -5358,7 +5357,7 @@ async def test_408_exception_path():
             return_value=(True, None, {})
         )
         agent = Mock()
-        agent.role = AgentRole.EXECUTOR  
+        agent.role = AgentRole.EXECUTOR
         agent.execute = AsyncMock(return_value=AgentResponse(success=True, reasoning="ok", data={}))
         task = AgentTask(request="test", context={})
         response = await gov.execute_with_governance(agent, task)
@@ -5367,7 +5366,7 @@ async def test_408_exception_path():
         pass
 
 
-@pytest.mark.asyncio  
+@pytest.mark.asyncio
 async def test_409_exception_path():
     """Exception path test 409"""
     try:
@@ -5378,7 +5377,7 @@ async def test_409_exception_path():
             return_value=(True, None, {})
         )
         agent = Mock()
-        agent.role = AgentRole.EXECUTOR  
+        agent.role = AgentRole.EXECUTOR
         agent.execute = AsyncMock(return_value=AgentResponse(success=True, reasoning="ok", data={}))
         task = AgentTask(request="test", context={})
         response = await gov.execute_with_governance(agent, task)
@@ -5387,7 +5386,7 @@ async def test_409_exception_path():
         pass
 
 
-@pytest.mark.asyncio  
+@pytest.mark.asyncio
 async def test_410_exception_path():
     """Exception path test 410"""
     try:
@@ -5398,7 +5397,7 @@ async def test_410_exception_path():
             return_value=(True, None, {})
         )
         agent = Mock()
-        agent.role = AgentRole.EXECUTOR  
+        agent.role = AgentRole.EXECUTOR
         agent.execute = AsyncMock(return_value=AgentResponse(success=True, reasoning="ok", data={}))
         task = AgentTask(request="test", context={})
         response = await gov.execute_with_governance(agent, task)
@@ -5407,7 +5406,7 @@ async def test_410_exception_path():
         pass
 
 
-@pytest.mark.asyncio  
+@pytest.mark.asyncio
 async def test_411_exception_path():
     """Exception path test 411"""
     try:
@@ -5418,7 +5417,7 @@ async def test_411_exception_path():
             return_value=(True, None, {})
         )
         agent = Mock()
-        agent.role = AgentRole.EXECUTOR  
+        agent.role = AgentRole.EXECUTOR
         agent.execute = AsyncMock(return_value=AgentResponse(success=True, reasoning="ok", data={}))
         task = AgentTask(request="test", context={})
         response = await gov.execute_with_governance(agent, task)
@@ -5427,7 +5426,7 @@ async def test_411_exception_path():
         pass
 
 
-@pytest.mark.asyncio  
+@pytest.mark.asyncio
 async def test_412_exception_path():
     """Exception path test 412"""
     try:
@@ -5438,7 +5437,7 @@ async def test_412_exception_path():
             return_value=(True, None, {})
         )
         agent = Mock()
-        agent.role = AgentRole.EXECUTOR  
+        agent.role = AgentRole.EXECUTOR
         agent.execute = AsyncMock(return_value=AgentResponse(success=True, reasoning="ok", data={}))
         task = AgentTask(request="test", context={})
         response = await gov.execute_with_governance(agent, task)
@@ -5447,7 +5446,7 @@ async def test_412_exception_path():
         pass
 
 
-@pytest.mark.asyncio  
+@pytest.mark.asyncio
 async def test_413_exception_path():
     """Exception path test 413"""
     try:
@@ -5458,7 +5457,7 @@ async def test_413_exception_path():
             return_value=(True, None, {})
         )
         agent = Mock()
-        agent.role = AgentRole.EXECUTOR  
+        agent.role = AgentRole.EXECUTOR
         agent.execute = AsyncMock(return_value=AgentResponse(success=True, reasoning="ok", data={}))
         task = AgentTask(request="test", context={})
         response = await gov.execute_with_governance(agent, task)
@@ -5467,7 +5466,7 @@ async def test_413_exception_path():
         pass
 
 
-@pytest.mark.asyncio  
+@pytest.mark.asyncio
 async def test_414_exception_path():
     """Exception path test 414"""
     try:
@@ -5478,7 +5477,7 @@ async def test_414_exception_path():
             return_value=(True, None, {})
         )
         agent = Mock()
-        agent.role = AgentRole.EXECUTOR  
+        agent.role = AgentRole.EXECUTOR
         agent.execute = AsyncMock(return_value=AgentResponse(success=True, reasoning="ok", data={}))
         task = AgentTask(request="test", context={})
         response = await gov.execute_with_governance(agent, task)
@@ -5487,7 +5486,7 @@ async def test_414_exception_path():
         pass
 
 
-@pytest.mark.asyncio  
+@pytest.mark.asyncio
 async def test_415_exception_path():
     """Exception path test 415"""
     try:
@@ -5498,7 +5497,7 @@ async def test_415_exception_path():
             return_value=(True, None, {})
         )
         agent = Mock()
-        agent.role = AgentRole.EXECUTOR  
+        agent.role = AgentRole.EXECUTOR
         agent.execute = AsyncMock(return_value=AgentResponse(success=True, reasoning="ok", data={}))
         task = AgentTask(request="test", context={})
         response = await gov.execute_with_governance(agent, task)
@@ -5507,7 +5506,7 @@ async def test_415_exception_path():
         pass
 
 
-@pytest.mark.asyncio  
+@pytest.mark.asyncio
 async def test_416_exception_path():
     """Exception path test 416"""
     try:
@@ -5518,7 +5517,7 @@ async def test_416_exception_path():
             return_value=(True, None, {})
         )
         agent = Mock()
-        agent.role = AgentRole.EXECUTOR  
+        agent.role = AgentRole.EXECUTOR
         agent.execute = AsyncMock(return_value=AgentResponse(success=True, reasoning="ok", data={}))
         task = AgentTask(request="test", context={})
         response = await gov.execute_with_governance(agent, task)
@@ -5527,7 +5526,7 @@ async def test_416_exception_path():
         pass
 
 
-@pytest.mark.asyncio  
+@pytest.mark.asyncio
 async def test_417_exception_path():
     """Exception path test 417"""
     try:
@@ -5538,7 +5537,7 @@ async def test_417_exception_path():
             return_value=(True, None, {})
         )
         agent = Mock()
-        agent.role = AgentRole.EXECUTOR  
+        agent.role = AgentRole.EXECUTOR
         agent.execute = AsyncMock(return_value=AgentResponse(success=True, reasoning="ok", data={}))
         task = AgentTask(request="test", context={})
         response = await gov.execute_with_governance(agent, task)
@@ -5547,7 +5546,7 @@ async def test_417_exception_path():
         pass
 
 
-@pytest.mark.asyncio  
+@pytest.mark.asyncio
 async def test_418_exception_path():
     """Exception path test 418"""
     try:
@@ -5558,7 +5557,7 @@ async def test_418_exception_path():
             return_value=(True, None, {})
         )
         agent = Mock()
-        agent.role = AgentRole.EXECUTOR  
+        agent.role = AgentRole.EXECUTOR
         agent.execute = AsyncMock(return_value=AgentResponse(success=True, reasoning="ok", data={}))
         task = AgentTask(request="test", context={})
         response = await gov.execute_with_governance(agent, task)
@@ -5567,7 +5566,7 @@ async def test_418_exception_path():
         pass
 
 
-@pytest.mark.asyncio  
+@pytest.mark.asyncio
 async def test_419_exception_path():
     """Exception path test 419"""
     try:
@@ -5578,7 +5577,7 @@ async def test_419_exception_path():
             return_value=(True, None, {})
         )
         agent = Mock()
-        agent.role = AgentRole.EXECUTOR  
+        agent.role = AgentRole.EXECUTOR
         agent.execute = AsyncMock(return_value=AgentResponse(success=True, reasoning="ok", data={}))
         task = AgentTask(request="test", context={})
         response = await gov.execute_with_governance(agent, task)
@@ -5587,7 +5586,7 @@ async def test_419_exception_path():
         pass
 
 
-@pytest.mark.asyncio  
+@pytest.mark.asyncio
 async def test_420_exception_path():
     """Exception path test 420"""
     try:
@@ -5598,7 +5597,7 @@ async def test_420_exception_path():
             return_value=(True, None, {})
         )
         agent = Mock()
-        agent.role = AgentRole.EXECUTOR  
+        agent.role = AgentRole.EXECUTOR
         agent.execute = AsyncMock(return_value=AgentResponse(success=True, reasoning="ok", data={}))
         task = AgentTask(request="test", context={})
         response = await gov.execute_with_governance(agent, task)
@@ -5607,7 +5606,7 @@ async def test_420_exception_path():
         pass
 
 
-@pytest.mark.asyncio  
+@pytest.mark.asyncio
 async def test_421_exception_path():
     """Exception path test 421"""
     try:
@@ -5618,7 +5617,7 @@ async def test_421_exception_path():
             return_value=(True, None, {})
         )
         agent = Mock()
-        agent.role = AgentRole.EXECUTOR  
+        agent.role = AgentRole.EXECUTOR
         agent.execute = AsyncMock(return_value=AgentResponse(success=True, reasoning="ok", data={}))
         task = AgentTask(request="test", context={})
         response = await gov.execute_with_governance(agent, task)
@@ -5627,7 +5626,7 @@ async def test_421_exception_path():
         pass
 
 
-@pytest.mark.asyncio  
+@pytest.mark.asyncio
 async def test_422_exception_path():
     """Exception path test 422"""
     try:
@@ -5638,7 +5637,7 @@ async def test_422_exception_path():
             return_value=(True, None, {})
         )
         agent = Mock()
-        agent.role = AgentRole.EXECUTOR  
+        agent.role = AgentRole.EXECUTOR
         agent.execute = AsyncMock(return_value=AgentResponse(success=True, reasoning="ok", data={}))
         task = AgentTask(request="test", context={})
         response = await gov.execute_with_governance(agent, task)
@@ -5647,7 +5646,7 @@ async def test_422_exception_path():
         pass
 
 
-@pytest.mark.asyncio  
+@pytest.mark.asyncio
 async def test_423_exception_path():
     """Exception path test 423"""
     try:
@@ -5658,7 +5657,7 @@ async def test_423_exception_path():
             return_value=(True, None, {})
         )
         agent = Mock()
-        agent.role = AgentRole.EXECUTOR  
+        agent.role = AgentRole.EXECUTOR
         agent.execute = AsyncMock(return_value=AgentResponse(success=True, reasoning="ok", data={}))
         task = AgentTask(request="test", context={})
         response = await gov.execute_with_governance(agent, task)
@@ -5667,7 +5666,7 @@ async def test_423_exception_path():
         pass
 
 
-@pytest.mark.asyncio  
+@pytest.mark.asyncio
 async def test_424_exception_path():
     """Exception path test 424"""
     try:
@@ -5678,7 +5677,7 @@ async def test_424_exception_path():
             return_value=(True, None, {})
         )
         agent = Mock()
-        agent.role = AgentRole.EXECUTOR  
+        agent.role = AgentRole.EXECUTOR
         agent.execute = AsyncMock(return_value=AgentResponse(success=True, reasoning="ok", data={}))
         task = AgentTask(request="test", context={})
         response = await gov.execute_with_governance(agent, task)
@@ -5687,7 +5686,7 @@ async def test_424_exception_path():
         pass
 
 
-@pytest.mark.asyncio  
+@pytest.mark.asyncio
 async def test_425_exception_path():
     """Exception path test 425"""
     try:
@@ -5698,7 +5697,7 @@ async def test_425_exception_path():
             return_value=(True, None, {})
         )
         agent = Mock()
-        agent.role = AgentRole.EXECUTOR  
+        agent.role = AgentRole.EXECUTOR
         agent.execute = AsyncMock(return_value=AgentResponse(success=True, reasoning="ok", data={}))
         task = AgentTask(request="test", context={})
         response = await gov.execute_with_governance(agent, task)
@@ -5707,7 +5706,7 @@ async def test_425_exception_path():
         pass
 
 
-@pytest.mark.asyncio  
+@pytest.mark.asyncio
 async def test_426_exception_path():
     """Exception path test 426"""
     try:
@@ -5718,7 +5717,7 @@ async def test_426_exception_path():
             return_value=(True, None, {})
         )
         agent = Mock()
-        agent.role = AgentRole.EXECUTOR  
+        agent.role = AgentRole.EXECUTOR
         agent.execute = AsyncMock(return_value=AgentResponse(success=True, reasoning="ok", data={}))
         task = AgentTask(request="test", context={})
         response = await gov.execute_with_governance(agent, task)
@@ -5727,7 +5726,7 @@ async def test_426_exception_path():
         pass
 
 
-@pytest.mark.asyncio  
+@pytest.mark.asyncio
 async def test_427_exception_path():
     """Exception path test 427"""
     try:
@@ -5738,7 +5737,7 @@ async def test_427_exception_path():
             return_value=(True, None, {})
         )
         agent = Mock()
-        agent.role = AgentRole.EXECUTOR  
+        agent.role = AgentRole.EXECUTOR
         agent.execute = AsyncMock(return_value=AgentResponse(success=True, reasoning="ok", data={}))
         task = AgentTask(request="test", context={})
         response = await gov.execute_with_governance(agent, task)
@@ -5747,7 +5746,7 @@ async def test_427_exception_path():
         pass
 
 
-@pytest.mark.asyncio  
+@pytest.mark.asyncio
 async def test_428_exception_path():
     """Exception path test 428"""
     try:
@@ -5758,7 +5757,7 @@ async def test_428_exception_path():
             return_value=(True, None, {})
         )
         agent = Mock()
-        agent.role = AgentRole.EXECUTOR  
+        agent.role = AgentRole.EXECUTOR
         agent.execute = AsyncMock(return_value=AgentResponse(success=True, reasoning="ok", data={}))
         task = AgentTask(request="test", context={})
         response = await gov.execute_with_governance(agent, task)
@@ -5767,7 +5766,7 @@ async def test_428_exception_path():
         pass
 
 
-@pytest.mark.asyncio  
+@pytest.mark.asyncio
 async def test_429_exception_path():
     """Exception path test 429"""
     try:
@@ -5778,7 +5777,7 @@ async def test_429_exception_path():
             return_value=(True, None, {})
         )
         agent = Mock()
-        agent.role = AgentRole.EXECUTOR  
+        agent.role = AgentRole.EXECUTOR
         agent.execute = AsyncMock(return_value=AgentResponse(success=True, reasoning="ok", data={}))
         task = AgentTask(request="test", context={})
         response = await gov.execute_with_governance(agent, task)
@@ -5787,7 +5786,7 @@ async def test_429_exception_path():
         pass
 
 
-@pytest.mark.asyncio  
+@pytest.mark.asyncio
 async def test_430_exception_path():
     """Exception path test 430"""
     try:
@@ -5798,7 +5797,7 @@ async def test_430_exception_path():
             return_value=(True, None, {})
         )
         agent = Mock()
-        agent.role = AgentRole.EXECUTOR  
+        agent.role = AgentRole.EXECUTOR
         agent.execute = AsyncMock(return_value=AgentResponse(success=True, reasoning="ok", data={}))
         task = AgentTask(request="test", context={})
         response = await gov.execute_with_governance(agent, task)
@@ -5807,7 +5806,7 @@ async def test_430_exception_path():
         pass
 
 
-@pytest.mark.asyncio  
+@pytest.mark.asyncio
 async def test_431_exception_path():
     """Exception path test 431"""
     try:
@@ -5818,7 +5817,7 @@ async def test_431_exception_path():
             return_value=(True, None, {})
         )
         agent = Mock()
-        agent.role = AgentRole.EXECUTOR  
+        agent.role = AgentRole.EXECUTOR
         agent.execute = AsyncMock(return_value=AgentResponse(success=True, reasoning="ok", data={}))
         task = AgentTask(request="test", context={})
         response = await gov.execute_with_governance(agent, task)
@@ -5827,7 +5826,7 @@ async def test_431_exception_path():
         pass
 
 
-@pytest.mark.asyncio  
+@pytest.mark.asyncio
 async def test_432_exception_path():
     """Exception path test 432"""
     try:
@@ -5838,7 +5837,7 @@ async def test_432_exception_path():
             return_value=(True, None, {})
         )
         agent = Mock()
-        agent.role = AgentRole.EXECUTOR  
+        agent.role = AgentRole.EXECUTOR
         agent.execute = AsyncMock(return_value=AgentResponse(success=True, reasoning="ok", data={}))
         task = AgentTask(request="test", context={})
         response = await gov.execute_with_governance(agent, task)
@@ -5847,7 +5846,7 @@ async def test_432_exception_path():
         pass
 
 
-@pytest.mark.asyncio  
+@pytest.mark.asyncio
 async def test_433_exception_path():
     """Exception path test 433"""
     try:
@@ -5858,7 +5857,7 @@ async def test_433_exception_path():
             return_value=(True, None, {})
         )
         agent = Mock()
-        agent.role = AgentRole.EXECUTOR  
+        agent.role = AgentRole.EXECUTOR
         agent.execute = AsyncMock(return_value=AgentResponse(success=True, reasoning="ok", data={}))
         task = AgentTask(request="test", context={})
         response = await gov.execute_with_governance(agent, task)
@@ -5867,7 +5866,7 @@ async def test_433_exception_path():
         pass
 
 
-@pytest.mark.asyncio  
+@pytest.mark.asyncio
 async def test_434_exception_path():
     """Exception path test 434"""
     try:
@@ -5878,7 +5877,7 @@ async def test_434_exception_path():
             return_value=(True, None, {})
         )
         agent = Mock()
-        agent.role = AgentRole.EXECUTOR  
+        agent.role = AgentRole.EXECUTOR
         agent.execute = AsyncMock(return_value=AgentResponse(success=True, reasoning="ok", data={}))
         task = AgentTask(request="test", context={})
         response = await gov.execute_with_governance(agent, task)
@@ -5887,7 +5886,7 @@ async def test_434_exception_path():
         pass
 
 
-@pytest.mark.asyncio  
+@pytest.mark.asyncio
 async def test_435_exception_path():
     """Exception path test 435"""
     try:
@@ -5898,7 +5897,7 @@ async def test_435_exception_path():
             return_value=(True, None, {})
         )
         agent = Mock()
-        agent.role = AgentRole.EXECUTOR  
+        agent.role = AgentRole.EXECUTOR
         agent.execute = AsyncMock(return_value=AgentResponse(success=True, reasoning="ok", data={}))
         task = AgentTask(request="test", context={})
         response = await gov.execute_with_governance(agent, task)
@@ -5907,7 +5906,7 @@ async def test_435_exception_path():
         pass
 
 
-@pytest.mark.asyncio  
+@pytest.mark.asyncio
 async def test_436_exception_path():
     """Exception path test 436"""
     try:
@@ -5918,7 +5917,7 @@ async def test_436_exception_path():
             return_value=(True, None, {})
         )
         agent = Mock()
-        agent.role = AgentRole.EXECUTOR  
+        agent.role = AgentRole.EXECUTOR
         agent.execute = AsyncMock(return_value=AgentResponse(success=True, reasoning="ok", data={}))
         task = AgentTask(request="test", context={})
         response = await gov.execute_with_governance(agent, task)
@@ -5927,7 +5926,7 @@ async def test_436_exception_path():
         pass
 
 
-@pytest.mark.asyncio  
+@pytest.mark.asyncio
 async def test_437_exception_path():
     """Exception path test 437"""
     try:
@@ -5938,7 +5937,7 @@ async def test_437_exception_path():
             return_value=(True, None, {})
         )
         agent = Mock()
-        agent.role = AgentRole.EXECUTOR  
+        agent.role = AgentRole.EXECUTOR
         agent.execute = AsyncMock(return_value=AgentResponse(success=True, reasoning="ok", data={}))
         task = AgentTask(request="test", context={})
         response = await gov.execute_with_governance(agent, task)
@@ -5947,7 +5946,7 @@ async def test_437_exception_path():
         pass
 
 
-@pytest.mark.asyncio  
+@pytest.mark.asyncio
 async def test_438_exception_path():
     """Exception path test 438"""
     try:
@@ -5958,7 +5957,7 @@ async def test_438_exception_path():
             return_value=(True, None, {})
         )
         agent = Mock()
-        agent.role = AgentRole.EXECUTOR  
+        agent.role = AgentRole.EXECUTOR
         agent.execute = AsyncMock(return_value=AgentResponse(success=True, reasoning="ok", data={}))
         task = AgentTask(request="test", context={})
         response = await gov.execute_with_governance(agent, task)
@@ -5967,7 +5966,7 @@ async def test_438_exception_path():
         pass
 
 
-@pytest.mark.asyncio  
+@pytest.mark.asyncio
 async def test_439_exception_path():
     """Exception path test 439"""
     try:
@@ -5978,7 +5977,7 @@ async def test_439_exception_path():
             return_value=(True, None, {})
         )
         agent = Mock()
-        agent.role = AgentRole.EXECUTOR  
+        agent.role = AgentRole.EXECUTOR
         agent.execute = AsyncMock(return_value=AgentResponse(success=True, reasoning="ok", data={}))
         task = AgentTask(request="test", context={})
         response = await gov.execute_with_governance(agent, task)
@@ -5987,7 +5986,7 @@ async def test_439_exception_path():
         pass
 
 
-@pytest.mark.asyncio  
+@pytest.mark.asyncio
 async def test_440_exception_path():
     """Exception path test 440"""
     try:
@@ -5998,7 +5997,7 @@ async def test_440_exception_path():
             return_value=(True, None, {})
         )
         agent = Mock()
-        agent.role = AgentRole.EXECUTOR  
+        agent.role = AgentRole.EXECUTOR
         agent.execute = AsyncMock(return_value=AgentResponse(success=True, reasoning="ok", data={}))
         task = AgentTask(request="test", context={})
         response = await gov.execute_with_governance(agent, task)
@@ -6007,7 +6006,7 @@ async def test_440_exception_path():
         pass
 
 
-@pytest.mark.asyncio  
+@pytest.mark.asyncio
 async def test_441_exception_path():
     """Exception path test 441"""
     try:
@@ -6018,7 +6017,7 @@ async def test_441_exception_path():
             return_value=(True, None, {})
         )
         agent = Mock()
-        agent.role = AgentRole.EXECUTOR  
+        agent.role = AgentRole.EXECUTOR
         agent.execute = AsyncMock(return_value=AgentResponse(success=True, reasoning="ok", data={}))
         task = AgentTask(request="test", context={})
         response = await gov.execute_with_governance(agent, task)
@@ -6027,7 +6026,7 @@ async def test_441_exception_path():
         pass
 
 
-@pytest.mark.asyncio  
+@pytest.mark.asyncio
 async def test_442_exception_path():
     """Exception path test 442"""
     try:
@@ -6038,7 +6037,7 @@ async def test_442_exception_path():
             return_value=(True, None, {})
         )
         agent = Mock()
-        agent.role = AgentRole.EXECUTOR  
+        agent.role = AgentRole.EXECUTOR
         agent.execute = AsyncMock(return_value=AgentResponse(success=True, reasoning="ok", data={}))
         task = AgentTask(request="test", context={})
         response = await gov.execute_with_governance(agent, task)
@@ -6047,7 +6046,7 @@ async def test_442_exception_path():
         pass
 
 
-@pytest.mark.asyncio  
+@pytest.mark.asyncio
 async def test_443_exception_path():
     """Exception path test 443"""
     try:
@@ -6058,7 +6057,7 @@ async def test_443_exception_path():
             return_value=(True, None, {})
         )
         agent = Mock()
-        agent.role = AgentRole.EXECUTOR  
+        agent.role = AgentRole.EXECUTOR
         agent.execute = AsyncMock(return_value=AgentResponse(success=True, reasoning="ok", data={}))
         task = AgentTask(request="test", context={})
         response = await gov.execute_with_governance(agent, task)
@@ -6067,7 +6066,7 @@ async def test_443_exception_path():
         pass
 
 
-@pytest.mark.asyncio  
+@pytest.mark.asyncio
 async def test_444_exception_path():
     """Exception path test 444"""
     try:
@@ -6078,7 +6077,7 @@ async def test_444_exception_path():
             return_value=(True, None, {})
         )
         agent = Mock()
-        agent.role = AgentRole.EXECUTOR  
+        agent.role = AgentRole.EXECUTOR
         agent.execute = AsyncMock(return_value=AgentResponse(success=True, reasoning="ok", data={}))
         task = AgentTask(request="test", context={})
         response = await gov.execute_with_governance(agent, task)
@@ -6087,7 +6086,7 @@ async def test_444_exception_path():
         pass
 
 
-@pytest.mark.asyncio  
+@pytest.mark.asyncio
 async def test_445_exception_path():
     """Exception path test 445"""
     try:
@@ -6098,7 +6097,7 @@ async def test_445_exception_path():
             return_value=(True, None, {})
         )
         agent = Mock()
-        agent.role = AgentRole.EXECUTOR  
+        agent.role = AgentRole.EXECUTOR
         agent.execute = AsyncMock(return_value=AgentResponse(success=True, reasoning="ok", data={}))
         task = AgentTask(request="test", context={})
         response = await gov.execute_with_governance(agent, task)
@@ -6107,7 +6106,7 @@ async def test_445_exception_path():
         pass
 
 
-@pytest.mark.asyncio  
+@pytest.mark.asyncio
 async def test_446_exception_path():
     """Exception path test 446"""
     try:
@@ -6118,7 +6117,7 @@ async def test_446_exception_path():
             return_value=(True, None, {})
         )
         agent = Mock()
-        agent.role = AgentRole.EXECUTOR  
+        agent.role = AgentRole.EXECUTOR
         agent.execute = AsyncMock(return_value=AgentResponse(success=True, reasoning="ok", data={}))
         task = AgentTask(request="test", context={})
         response = await gov.execute_with_governance(agent, task)
@@ -6127,7 +6126,7 @@ async def test_446_exception_path():
         pass
 
 
-@pytest.mark.asyncio  
+@pytest.mark.asyncio
 async def test_447_exception_path():
     """Exception path test 447"""
     try:
@@ -6138,7 +6137,7 @@ async def test_447_exception_path():
             return_value=(True, None, {})
         )
         agent = Mock()
-        agent.role = AgentRole.EXECUTOR  
+        agent.role = AgentRole.EXECUTOR
         agent.execute = AsyncMock(return_value=AgentResponse(success=True, reasoning="ok", data={}))
         task = AgentTask(request="test", context={})
         response = await gov.execute_with_governance(agent, task)
@@ -6147,7 +6146,7 @@ async def test_447_exception_path():
         pass
 
 
-@pytest.mark.asyncio  
+@pytest.mark.asyncio
 async def test_448_exception_path():
     """Exception path test 448"""
     try:
@@ -6158,7 +6157,7 @@ async def test_448_exception_path():
             return_value=(True, None, {})
         )
         agent = Mock()
-        agent.role = AgentRole.EXECUTOR  
+        agent.role = AgentRole.EXECUTOR
         agent.execute = AsyncMock(return_value=AgentResponse(success=True, reasoning="ok", data={}))
         task = AgentTask(request="test", context={})
         response = await gov.execute_with_governance(agent, task)
@@ -6167,7 +6166,7 @@ async def test_448_exception_path():
         pass
 
 
-@pytest.mark.asyncio  
+@pytest.mark.asyncio
 async def test_449_exception_path():
     """Exception path test 449"""
     try:
@@ -6178,7 +6177,7 @@ async def test_449_exception_path():
             return_value=(True, None, {})
         )
         agent = Mock()
-        agent.role = AgentRole.EXECUTOR  
+        agent.role = AgentRole.EXECUTOR
         agent.execute = AsyncMock(return_value=AgentResponse(success=True, reasoning="ok", data={}))
         task = AgentTask(request="test", context={})
         response = await gov.execute_with_governance(agent, task)
@@ -6187,7 +6186,7 @@ async def test_449_exception_path():
         pass
 
 
-@pytest.mark.asyncio  
+@pytest.mark.asyncio
 async def test_450_exception_path():
     """Exception path test 450"""
     try:
@@ -6198,7 +6197,7 @@ async def test_450_exception_path():
             return_value=(True, None, {})
         )
         agent = Mock()
-        agent.role = AgentRole.EXECUTOR  
+        agent.role = AgentRole.EXECUTOR
         agent.execute = AsyncMock(return_value=AgentResponse(success=True, reasoning="ok", data={}))
         task = AgentTask(request="test", context={})
         response = await gov.execute_with_governance(agent, task)
@@ -6207,7 +6206,7 @@ async def test_450_exception_path():
         pass
 
 
-@pytest.mark.asyncio  
+@pytest.mark.asyncio
 async def test_451_exception_path():
     """Exception path test 451"""
     try:
@@ -6218,7 +6217,7 @@ async def test_451_exception_path():
             return_value=(True, None, {})
         )
         agent = Mock()
-        agent.role = AgentRole.EXECUTOR  
+        agent.role = AgentRole.EXECUTOR
         agent.execute = AsyncMock(return_value=AgentResponse(success=True, reasoning="ok", data={}))
         task = AgentTask(request="test", context={})
         response = await gov.execute_with_governance(agent, task)
@@ -6227,7 +6226,7 @@ async def test_451_exception_path():
         pass
 
 
-@pytest.mark.asyncio  
+@pytest.mark.asyncio
 async def test_452_exception_path():
     """Exception path test 452"""
     try:
@@ -6238,7 +6237,7 @@ async def test_452_exception_path():
             return_value=(True, None, {})
         )
         agent = Mock()
-        agent.role = AgentRole.EXECUTOR  
+        agent.role = AgentRole.EXECUTOR
         agent.execute = AsyncMock(return_value=AgentResponse(success=True, reasoning="ok", data={}))
         task = AgentTask(request="test", context={})
         response = await gov.execute_with_governance(agent, task)
@@ -6247,7 +6246,7 @@ async def test_452_exception_path():
         pass
 
 
-@pytest.mark.asyncio  
+@pytest.mark.asyncio
 async def test_453_exception_path():
     """Exception path test 453"""
     try:
@@ -6258,7 +6257,7 @@ async def test_453_exception_path():
             return_value=(True, None, {})
         )
         agent = Mock()
-        agent.role = AgentRole.EXECUTOR  
+        agent.role = AgentRole.EXECUTOR
         agent.execute = AsyncMock(return_value=AgentResponse(success=True, reasoning="ok", data={}))
         task = AgentTask(request="test", context={})
         response = await gov.execute_with_governance(agent, task)
@@ -6267,7 +6266,7 @@ async def test_453_exception_path():
         pass
 
 
-@pytest.mark.asyncio  
+@pytest.mark.asyncio
 async def test_454_exception_path():
     """Exception path test 454"""
     try:
@@ -6278,7 +6277,7 @@ async def test_454_exception_path():
             return_value=(True, None, {})
         )
         agent = Mock()
-        agent.role = AgentRole.EXECUTOR  
+        agent.role = AgentRole.EXECUTOR
         agent.execute = AsyncMock(return_value=AgentResponse(success=True, reasoning="ok", data={}))
         task = AgentTask(request="test", context={})
         response = await gov.execute_with_governance(agent, task)
@@ -6287,7 +6286,7 @@ async def test_454_exception_path():
         pass
 
 
-@pytest.mark.asyncio  
+@pytest.mark.asyncio
 async def test_455_exception_path():
     """Exception path test 455"""
     try:
@@ -6298,7 +6297,7 @@ async def test_455_exception_path():
             return_value=(True, None, {})
         )
         agent = Mock()
-        agent.role = AgentRole.EXECUTOR  
+        agent.role = AgentRole.EXECUTOR
         agent.execute = AsyncMock(return_value=AgentResponse(success=True, reasoning="ok", data={}))
         task = AgentTask(request="test", context={})
         response = await gov.execute_with_governance(agent, task)
@@ -6307,7 +6306,7 @@ async def test_455_exception_path():
         pass
 
 
-@pytest.mark.asyncio  
+@pytest.mark.asyncio
 async def test_456_exception_path():
     """Exception path test 456"""
     try:
@@ -6318,7 +6317,7 @@ async def test_456_exception_path():
             return_value=(True, None, {})
         )
         agent = Mock()
-        agent.role = AgentRole.EXECUTOR  
+        agent.role = AgentRole.EXECUTOR
         agent.execute = AsyncMock(return_value=AgentResponse(success=True, reasoning="ok", data={}))
         task = AgentTask(request="test", context={})
         response = await gov.execute_with_governance(agent, task)
@@ -6327,7 +6326,7 @@ async def test_456_exception_path():
         pass
 
 
-@pytest.mark.asyncio  
+@pytest.mark.asyncio
 async def test_457_exception_path():
     """Exception path test 457"""
     try:
@@ -6338,7 +6337,7 @@ async def test_457_exception_path():
             return_value=(True, None, {})
         )
         agent = Mock()
-        agent.role = AgentRole.EXECUTOR  
+        agent.role = AgentRole.EXECUTOR
         agent.execute = AsyncMock(return_value=AgentResponse(success=True, reasoning="ok", data={}))
         task = AgentTask(request="test", context={})
         response = await gov.execute_with_governance(agent, task)
@@ -6347,7 +6346,7 @@ async def test_457_exception_path():
         pass
 
 
-@pytest.mark.asyncio  
+@pytest.mark.asyncio
 async def test_458_exception_path():
     """Exception path test 458"""
     try:
@@ -6358,7 +6357,7 @@ async def test_458_exception_path():
             return_value=(True, None, {})
         )
         agent = Mock()
-        agent.role = AgentRole.EXECUTOR  
+        agent.role = AgentRole.EXECUTOR
         agent.execute = AsyncMock(return_value=AgentResponse(success=True, reasoning="ok", data={}))
         task = AgentTask(request="test", context={})
         response = await gov.execute_with_governance(agent, task)
@@ -6367,7 +6366,7 @@ async def test_458_exception_path():
         pass
 
 
-@pytest.mark.asyncio  
+@pytest.mark.asyncio
 async def test_459_exception_path():
     """Exception path test 459"""
     try:
@@ -6378,7 +6377,7 @@ async def test_459_exception_path():
             return_value=(True, None, {})
         )
         agent = Mock()
-        agent.role = AgentRole.EXECUTOR  
+        agent.role = AgentRole.EXECUTOR
         agent.execute = AsyncMock(return_value=AgentResponse(success=True, reasoning="ok", data={}))
         task = AgentTask(request="test", context={})
         response = await gov.execute_with_governance(agent, task)
@@ -6387,7 +6386,7 @@ async def test_459_exception_path():
         pass
 
 
-@pytest.mark.asyncio  
+@pytest.mark.asyncio
 async def test_460_exception_path():
     """Exception path test 460"""
     try:
@@ -6398,7 +6397,7 @@ async def test_460_exception_path():
             return_value=(True, None, {})
         )
         agent = Mock()
-        agent.role = AgentRole.EXECUTOR  
+        agent.role = AgentRole.EXECUTOR
         agent.execute = AsyncMock(return_value=AgentResponse(success=True, reasoning="ok", data={}))
         task = AgentTask(request="test", context={})
         response = await gov.execute_with_governance(agent, task)
@@ -6407,7 +6406,7 @@ async def test_460_exception_path():
         pass
 
 
-@pytest.mark.asyncio  
+@pytest.mark.asyncio
 async def test_461_exception_path():
     """Exception path test 461"""
     try:
@@ -6418,7 +6417,7 @@ async def test_461_exception_path():
             return_value=(True, None, {})
         )
         agent = Mock()
-        agent.role = AgentRole.EXECUTOR  
+        agent.role = AgentRole.EXECUTOR
         agent.execute = AsyncMock(return_value=AgentResponse(success=True, reasoning="ok", data={}))
         task = AgentTask(request="test", context={})
         response = await gov.execute_with_governance(agent, task)
@@ -6427,7 +6426,7 @@ async def test_461_exception_path():
         pass
 
 
-@pytest.mark.asyncio  
+@pytest.mark.asyncio
 async def test_462_exception_path():
     """Exception path test 462"""
     try:
@@ -6438,7 +6437,7 @@ async def test_462_exception_path():
             return_value=(True, None, {})
         )
         agent = Mock()
-        agent.role = AgentRole.EXECUTOR  
+        agent.role = AgentRole.EXECUTOR
         agent.execute = AsyncMock(return_value=AgentResponse(success=True, reasoning="ok", data={}))
         task = AgentTask(request="test", context={})
         response = await gov.execute_with_governance(agent, task)
@@ -6447,7 +6446,7 @@ async def test_462_exception_path():
         pass
 
 
-@pytest.mark.asyncio  
+@pytest.mark.asyncio
 async def test_463_exception_path():
     """Exception path test 463"""
     try:
@@ -6458,7 +6457,7 @@ async def test_463_exception_path():
             return_value=(True, None, {})
         )
         agent = Mock()
-        agent.role = AgentRole.EXECUTOR  
+        agent.role = AgentRole.EXECUTOR
         agent.execute = AsyncMock(return_value=AgentResponse(success=True, reasoning="ok", data={}))
         task = AgentTask(request="test", context={})
         response = await gov.execute_with_governance(agent, task)
@@ -6467,7 +6466,7 @@ async def test_463_exception_path():
         pass
 
 
-@pytest.mark.asyncio  
+@pytest.mark.asyncio
 async def test_464_exception_path():
     """Exception path test 464"""
     try:
@@ -6478,7 +6477,7 @@ async def test_464_exception_path():
             return_value=(True, None, {})
         )
         agent = Mock()
-        agent.role = AgentRole.EXECUTOR  
+        agent.role = AgentRole.EXECUTOR
         agent.execute = AsyncMock(return_value=AgentResponse(success=True, reasoning="ok", data={}))
         task = AgentTask(request="test", context={})
         response = await gov.execute_with_governance(agent, task)
@@ -6487,7 +6486,7 @@ async def test_464_exception_path():
         pass
 
 
-@pytest.mark.asyncio  
+@pytest.mark.asyncio
 async def test_465_exception_path():
     """Exception path test 465"""
     try:
@@ -6498,7 +6497,7 @@ async def test_465_exception_path():
             return_value=(True, None, {})
         )
         agent = Mock()
-        agent.role = AgentRole.EXECUTOR  
+        agent.role = AgentRole.EXECUTOR
         agent.execute = AsyncMock(return_value=AgentResponse(success=True, reasoning="ok", data={}))
         task = AgentTask(request="test", context={})
         response = await gov.execute_with_governance(agent, task)
@@ -6507,7 +6506,7 @@ async def test_465_exception_path():
         pass
 
 
-@pytest.mark.asyncio  
+@pytest.mark.asyncio
 async def test_466_exception_path():
     """Exception path test 466"""
     try:
@@ -6518,7 +6517,7 @@ async def test_466_exception_path():
             return_value=(True, None, {})
         )
         agent = Mock()
-        agent.role = AgentRole.EXECUTOR  
+        agent.role = AgentRole.EXECUTOR
         agent.execute = AsyncMock(return_value=AgentResponse(success=True, reasoning="ok", data={}))
         task = AgentTask(request="test", context={})
         response = await gov.execute_with_governance(agent, task)
@@ -6527,7 +6526,7 @@ async def test_466_exception_path():
         pass
 
 
-@pytest.mark.asyncio  
+@pytest.mark.asyncio
 async def test_467_exception_path():
     """Exception path test 467"""
     try:
@@ -6538,7 +6537,7 @@ async def test_467_exception_path():
             return_value=(True, None, {})
         )
         agent = Mock()
-        agent.role = AgentRole.EXECUTOR  
+        agent.role = AgentRole.EXECUTOR
         agent.execute = AsyncMock(return_value=AgentResponse(success=True, reasoning="ok", data={}))
         task = AgentTask(request="test", context={})
         response = await gov.execute_with_governance(agent, task)
@@ -6547,7 +6546,7 @@ async def test_467_exception_path():
         pass
 
 
-@pytest.mark.asyncio  
+@pytest.mark.asyncio
 async def test_468_exception_path():
     """Exception path test 468"""
     try:
@@ -6558,7 +6557,7 @@ async def test_468_exception_path():
             return_value=(True, None, {})
         )
         agent = Mock()
-        agent.role = AgentRole.EXECUTOR  
+        agent.role = AgentRole.EXECUTOR
         agent.execute = AsyncMock(return_value=AgentResponse(success=True, reasoning="ok", data={}))
         task = AgentTask(request="test", context={})
         response = await gov.execute_with_governance(agent, task)
@@ -6567,7 +6566,7 @@ async def test_468_exception_path():
         pass
 
 
-@pytest.mark.asyncio  
+@pytest.mark.asyncio
 async def test_469_exception_path():
     """Exception path test 469"""
     try:
@@ -6578,7 +6577,7 @@ async def test_469_exception_path():
             return_value=(True, None, {})
         )
         agent = Mock()
-        agent.role = AgentRole.EXECUTOR  
+        agent.role = AgentRole.EXECUTOR
         agent.execute = AsyncMock(return_value=AgentResponse(success=True, reasoning="ok", data={}))
         task = AgentTask(request="test", context={})
         response = await gov.execute_with_governance(agent, task)
@@ -6587,7 +6586,7 @@ async def test_469_exception_path():
         pass
 
 
-@pytest.mark.asyncio  
+@pytest.mark.asyncio
 async def test_470_exception_path():
     """Exception path test 470"""
     try:
@@ -6598,7 +6597,7 @@ async def test_470_exception_path():
             return_value=(True, None, {})
         )
         agent = Mock()
-        agent.role = AgentRole.EXECUTOR  
+        agent.role = AgentRole.EXECUTOR
         agent.execute = AsyncMock(return_value=AgentResponse(success=True, reasoning="ok", data={}))
         task = AgentTask(request="test", context={})
         response = await gov.execute_with_governance(agent, task)
@@ -6607,7 +6606,7 @@ async def test_470_exception_path():
         pass
 
 
-@pytest.mark.asyncio  
+@pytest.mark.asyncio
 async def test_471_exception_path():
     """Exception path test 471"""
     try:
@@ -6618,7 +6617,7 @@ async def test_471_exception_path():
             return_value=(True, None, {})
         )
         agent = Mock()
-        agent.role = AgentRole.EXECUTOR  
+        agent.role = AgentRole.EXECUTOR
         agent.execute = AsyncMock(return_value=AgentResponse(success=True, reasoning="ok", data={}))
         task = AgentTask(request="test", context={})
         response = await gov.execute_with_governance(agent, task)
@@ -6627,7 +6626,7 @@ async def test_471_exception_path():
         pass
 
 
-@pytest.mark.asyncio  
+@pytest.mark.asyncio
 async def test_472_exception_path():
     """Exception path test 472"""
     try:
@@ -6638,7 +6637,7 @@ async def test_472_exception_path():
             return_value=(True, None, {})
         )
         agent = Mock()
-        agent.role = AgentRole.EXECUTOR  
+        agent.role = AgentRole.EXECUTOR
         agent.execute = AsyncMock(return_value=AgentResponse(success=True, reasoning="ok", data={}))
         task = AgentTask(request="test", context={})
         response = await gov.execute_with_governance(agent, task)
@@ -6647,7 +6646,7 @@ async def test_472_exception_path():
         pass
 
 
-@pytest.mark.asyncio  
+@pytest.mark.asyncio
 async def test_473_exception_path():
     """Exception path test 473"""
     try:
@@ -6658,7 +6657,7 @@ async def test_473_exception_path():
             return_value=(True, None, {})
         )
         agent = Mock()
-        agent.role = AgentRole.EXECUTOR  
+        agent.role = AgentRole.EXECUTOR
         agent.execute = AsyncMock(return_value=AgentResponse(success=True, reasoning="ok", data={}))
         task = AgentTask(request="test", context={})
         response = await gov.execute_with_governance(agent, task)
@@ -6667,7 +6666,7 @@ async def test_473_exception_path():
         pass
 
 
-@pytest.mark.asyncio  
+@pytest.mark.asyncio
 async def test_474_exception_path():
     """Exception path test 474"""
     try:
@@ -6678,7 +6677,7 @@ async def test_474_exception_path():
             return_value=(True, None, {})
         )
         agent = Mock()
-        agent.role = AgentRole.EXECUTOR  
+        agent.role = AgentRole.EXECUTOR
         agent.execute = AsyncMock(return_value=AgentResponse(success=True, reasoning="ok", data={}))
         task = AgentTask(request="test", context={})
         response = await gov.execute_with_governance(agent, task)
@@ -6687,7 +6686,7 @@ async def test_474_exception_path():
         pass
 
 
-@pytest.mark.asyncio  
+@pytest.mark.asyncio
 async def test_475_exception_path():
     """Exception path test 475"""
     try:
@@ -6698,7 +6697,7 @@ async def test_475_exception_path():
             return_value=(True, None, {})
         )
         agent = Mock()
-        agent.role = AgentRole.EXECUTOR  
+        agent.role = AgentRole.EXECUTOR
         agent.execute = AsyncMock(return_value=AgentResponse(success=True, reasoning="ok", data={}))
         task = AgentTask(request="test", context={})
         response = await gov.execute_with_governance(agent, task)
@@ -6707,7 +6706,7 @@ async def test_475_exception_path():
         pass
 
 
-@pytest.mark.asyncio  
+@pytest.mark.asyncio
 async def test_476_exception_path():
     """Exception path test 476"""
     try:
@@ -6718,7 +6717,7 @@ async def test_476_exception_path():
             return_value=(True, None, {})
         )
         agent = Mock()
-        agent.role = AgentRole.EXECUTOR  
+        agent.role = AgentRole.EXECUTOR
         agent.execute = AsyncMock(return_value=AgentResponse(success=True, reasoning="ok", data={}))
         task = AgentTask(request="test", context={})
         response = await gov.execute_with_governance(agent, task)
@@ -6727,7 +6726,7 @@ async def test_476_exception_path():
         pass
 
 
-@pytest.mark.asyncio  
+@pytest.mark.asyncio
 async def test_477_exception_path():
     """Exception path test 477"""
     try:
@@ -6738,7 +6737,7 @@ async def test_477_exception_path():
             return_value=(True, None, {})
         )
         agent = Mock()
-        agent.role = AgentRole.EXECUTOR  
+        agent.role = AgentRole.EXECUTOR
         agent.execute = AsyncMock(return_value=AgentResponse(success=True, reasoning="ok", data={}))
         task = AgentTask(request="test", context={})
         response = await gov.execute_with_governance(agent, task)
@@ -6747,7 +6746,7 @@ async def test_477_exception_path():
         pass
 
 
-@pytest.mark.asyncio  
+@pytest.mark.asyncio
 async def test_478_exception_path():
     """Exception path test 478"""
     try:
@@ -6758,7 +6757,7 @@ async def test_478_exception_path():
             return_value=(True, None, {})
         )
         agent = Mock()
-        agent.role = AgentRole.EXECUTOR  
+        agent.role = AgentRole.EXECUTOR
         agent.execute = AsyncMock(return_value=AgentResponse(success=True, reasoning="ok", data={}))
         task = AgentTask(request="test", context={})
         response = await gov.execute_with_governance(agent, task)
@@ -6767,7 +6766,7 @@ async def test_478_exception_path():
         pass
 
 
-@pytest.mark.asyncio  
+@pytest.mark.asyncio
 async def test_479_exception_path():
     """Exception path test 479"""
     try:
@@ -6778,7 +6777,7 @@ async def test_479_exception_path():
             return_value=(True, None, {})
         )
         agent = Mock()
-        agent.role = AgentRole.EXECUTOR  
+        agent.role = AgentRole.EXECUTOR
         agent.execute = AsyncMock(return_value=AgentResponse(success=True, reasoning="ok", data={}))
         task = AgentTask(request="test", context={})
         response = await gov.execute_with_governance(agent, task)
@@ -6787,7 +6786,7 @@ async def test_479_exception_path():
         pass
 
 
-@pytest.mark.asyncio  
+@pytest.mark.asyncio
 async def test_480_exception_path():
     """Exception path test 480"""
     try:
@@ -6798,7 +6797,7 @@ async def test_480_exception_path():
             return_value=(True, None, {})
         )
         agent = Mock()
-        agent.role = AgentRole.EXECUTOR  
+        agent.role = AgentRole.EXECUTOR
         agent.execute = AsyncMock(return_value=AgentResponse(success=True, reasoning="ok", data={}))
         task = AgentTask(request="test", context={})
         response = await gov.execute_with_governance(agent, task)
@@ -6807,7 +6806,7 @@ async def test_480_exception_path():
         pass
 
 
-@pytest.mark.asyncio  
+@pytest.mark.asyncio
 async def test_481_exception_path():
     """Exception path test 481"""
     try:
@@ -6818,7 +6817,7 @@ async def test_481_exception_path():
             return_value=(True, None, {})
         )
         agent = Mock()
-        agent.role = AgentRole.EXECUTOR  
+        agent.role = AgentRole.EXECUTOR
         agent.execute = AsyncMock(return_value=AgentResponse(success=True, reasoning="ok", data={}))
         task = AgentTask(request="test", context={})
         response = await gov.execute_with_governance(agent, task)
@@ -6827,7 +6826,7 @@ async def test_481_exception_path():
         pass
 
 
-@pytest.mark.asyncio  
+@pytest.mark.asyncio
 async def test_482_exception_path():
     """Exception path test 482"""
     try:
@@ -6838,7 +6837,7 @@ async def test_482_exception_path():
             return_value=(True, None, {})
         )
         agent = Mock()
-        agent.role = AgentRole.EXECUTOR  
+        agent.role = AgentRole.EXECUTOR
         agent.execute = AsyncMock(return_value=AgentResponse(success=True, reasoning="ok", data={}))
         task = AgentTask(request="test", context={})
         response = await gov.execute_with_governance(agent, task)
@@ -6847,7 +6846,7 @@ async def test_482_exception_path():
         pass
 
 
-@pytest.mark.asyncio  
+@pytest.mark.asyncio
 async def test_483_exception_path():
     """Exception path test 483"""
     try:
@@ -6858,7 +6857,7 @@ async def test_483_exception_path():
             return_value=(True, None, {})
         )
         agent = Mock()
-        agent.role = AgentRole.EXECUTOR  
+        agent.role = AgentRole.EXECUTOR
         agent.execute = AsyncMock(return_value=AgentResponse(success=True, reasoning="ok", data={}))
         task = AgentTask(request="test", context={})
         response = await gov.execute_with_governance(agent, task)
@@ -6867,7 +6866,7 @@ async def test_483_exception_path():
         pass
 
 
-@pytest.mark.asyncio  
+@pytest.mark.asyncio
 async def test_484_exception_path():
     """Exception path test 484"""
     try:
@@ -6878,7 +6877,7 @@ async def test_484_exception_path():
             return_value=(True, None, {})
         )
         agent = Mock()
-        agent.role = AgentRole.EXECUTOR  
+        agent.role = AgentRole.EXECUTOR
         agent.execute = AsyncMock(return_value=AgentResponse(success=True, reasoning="ok", data={}))
         task = AgentTask(request="test", context={})
         response = await gov.execute_with_governance(agent, task)
@@ -6887,7 +6886,7 @@ async def test_484_exception_path():
         pass
 
 
-@pytest.mark.asyncio  
+@pytest.mark.asyncio
 async def test_485_exception_path():
     """Exception path test 485"""
     try:
@@ -6898,7 +6897,7 @@ async def test_485_exception_path():
             return_value=(True, None, {})
         )
         agent = Mock()
-        agent.role = AgentRole.EXECUTOR  
+        agent.role = AgentRole.EXECUTOR
         agent.execute = AsyncMock(return_value=AgentResponse(success=True, reasoning="ok", data={}))
         task = AgentTask(request="test", context={})
         response = await gov.execute_with_governance(agent, task)
@@ -6907,7 +6906,7 @@ async def test_485_exception_path():
         pass
 
 
-@pytest.mark.asyncio  
+@pytest.mark.asyncio
 async def test_486_exception_path():
     """Exception path test 486"""
     try:
@@ -6918,7 +6917,7 @@ async def test_486_exception_path():
             return_value=(True, None, {})
         )
         agent = Mock()
-        agent.role = AgentRole.EXECUTOR  
+        agent.role = AgentRole.EXECUTOR
         agent.execute = AsyncMock(return_value=AgentResponse(success=True, reasoning="ok", data={}))
         task = AgentTask(request="test", context={})
         response = await gov.execute_with_governance(agent, task)
@@ -6927,7 +6926,7 @@ async def test_486_exception_path():
         pass
 
 
-@pytest.mark.asyncio  
+@pytest.mark.asyncio
 async def test_487_exception_path():
     """Exception path test 487"""
     try:
@@ -6938,7 +6937,7 @@ async def test_487_exception_path():
             return_value=(True, None, {})
         )
         agent = Mock()
-        agent.role = AgentRole.EXECUTOR  
+        agent.role = AgentRole.EXECUTOR
         agent.execute = AsyncMock(return_value=AgentResponse(success=True, reasoning="ok", data={}))
         task = AgentTask(request="test", context={})
         response = await gov.execute_with_governance(agent, task)
@@ -6947,7 +6946,7 @@ async def test_487_exception_path():
         pass
 
 
-@pytest.mark.asyncio  
+@pytest.mark.asyncio
 async def test_488_exception_path():
     """Exception path test 488"""
     try:
@@ -6958,7 +6957,7 @@ async def test_488_exception_path():
             return_value=(True, None, {})
         )
         agent = Mock()
-        agent.role = AgentRole.EXECUTOR  
+        agent.role = AgentRole.EXECUTOR
         agent.execute = AsyncMock(return_value=AgentResponse(success=True, reasoning="ok", data={}))
         task = AgentTask(request="test", context={})
         response = await gov.execute_with_governance(agent, task)
@@ -6967,7 +6966,7 @@ async def test_488_exception_path():
         pass
 
 
-@pytest.mark.asyncio  
+@pytest.mark.asyncio
 async def test_489_exception_path():
     """Exception path test 489"""
     try:
@@ -6978,7 +6977,7 @@ async def test_489_exception_path():
             return_value=(True, None, {})
         )
         agent = Mock()
-        agent.role = AgentRole.EXECUTOR  
+        agent.role = AgentRole.EXECUTOR
         agent.execute = AsyncMock(return_value=AgentResponse(success=True, reasoning="ok", data={}))
         task = AgentTask(request="test", context={})
         response = await gov.execute_with_governance(agent, task)
@@ -6987,7 +6986,7 @@ async def test_489_exception_path():
         pass
 
 
-@pytest.mark.asyncio  
+@pytest.mark.asyncio
 async def test_490_exception_path():
     """Exception path test 490"""
     try:
@@ -6998,7 +6997,7 @@ async def test_490_exception_path():
             return_value=(True, None, {})
         )
         agent = Mock()
-        agent.role = AgentRole.EXECUTOR  
+        agent.role = AgentRole.EXECUTOR
         agent.execute = AsyncMock(return_value=AgentResponse(success=True, reasoning="ok", data={}))
         task = AgentTask(request="test", context={})
         response = await gov.execute_with_governance(agent, task)
@@ -7007,7 +7006,7 @@ async def test_490_exception_path():
         pass
 
 
-@pytest.mark.asyncio  
+@pytest.mark.asyncio
 async def test_491_exception_path():
     """Exception path test 491"""
     try:
@@ -7018,7 +7017,7 @@ async def test_491_exception_path():
             return_value=(True, None, {})
         )
         agent = Mock()
-        agent.role = AgentRole.EXECUTOR  
+        agent.role = AgentRole.EXECUTOR
         agent.execute = AsyncMock(return_value=AgentResponse(success=True, reasoning="ok", data={}))
         task = AgentTask(request="test", context={})
         response = await gov.execute_with_governance(agent, task)
@@ -7027,7 +7026,7 @@ async def test_491_exception_path():
         pass
 
 
-@pytest.mark.asyncio  
+@pytest.mark.asyncio
 async def test_492_exception_path():
     """Exception path test 492"""
     try:
@@ -7038,7 +7037,7 @@ async def test_492_exception_path():
             return_value=(True, None, {})
         )
         agent = Mock()
-        agent.role = AgentRole.EXECUTOR  
+        agent.role = AgentRole.EXECUTOR
         agent.execute = AsyncMock(return_value=AgentResponse(success=True, reasoning="ok", data={}))
         task = AgentTask(request="test", context={})
         response = await gov.execute_with_governance(agent, task)
@@ -7047,7 +7046,7 @@ async def test_492_exception_path():
         pass
 
 
-@pytest.mark.asyncio  
+@pytest.mark.asyncio
 async def test_493_exception_path():
     """Exception path test 493"""
     try:
@@ -7058,7 +7057,7 @@ async def test_493_exception_path():
             return_value=(True, None, {})
         )
         agent = Mock()
-        agent.role = AgentRole.EXECUTOR  
+        agent.role = AgentRole.EXECUTOR
         agent.execute = AsyncMock(return_value=AgentResponse(success=True, reasoning="ok", data={}))
         task = AgentTask(request="test", context={})
         response = await gov.execute_with_governance(agent, task)
@@ -7067,7 +7066,7 @@ async def test_493_exception_path():
         pass
 
 
-@pytest.mark.asyncio  
+@pytest.mark.asyncio
 async def test_494_exception_path():
     """Exception path test 494"""
     try:
@@ -7078,7 +7077,7 @@ async def test_494_exception_path():
             return_value=(True, None, {})
         )
         agent = Mock()
-        agent.role = AgentRole.EXECUTOR  
+        agent.role = AgentRole.EXECUTOR
         agent.execute = AsyncMock(return_value=AgentResponse(success=True, reasoning="ok", data={}))
         task = AgentTask(request="test", context={})
         response = await gov.execute_with_governance(agent, task)
@@ -7087,7 +7086,7 @@ async def test_494_exception_path():
         pass
 
 
-@pytest.mark.asyncio  
+@pytest.mark.asyncio
 async def test_495_exception_path():
     """Exception path test 495"""
     try:
@@ -7098,7 +7097,7 @@ async def test_495_exception_path():
             return_value=(True, None, {})
         )
         agent = Mock()
-        agent.role = AgentRole.EXECUTOR  
+        agent.role = AgentRole.EXECUTOR
         agent.execute = AsyncMock(return_value=AgentResponse(success=True, reasoning="ok", data={}))
         task = AgentTask(request="test", context={})
         response = await gov.execute_with_governance(agent, task)
@@ -7107,7 +7106,7 @@ async def test_495_exception_path():
         pass
 
 
-@pytest.mark.asyncio  
+@pytest.mark.asyncio
 async def test_496_exception_path():
     """Exception path test 496"""
     try:
@@ -7118,7 +7117,7 @@ async def test_496_exception_path():
             return_value=(True, None, {})
         )
         agent = Mock()
-        agent.role = AgentRole.EXECUTOR  
+        agent.role = AgentRole.EXECUTOR
         agent.execute = AsyncMock(return_value=AgentResponse(success=True, reasoning="ok", data={}))
         task = AgentTask(request="test", context={})
         response = await gov.execute_with_governance(agent, task)
@@ -7127,7 +7126,7 @@ async def test_496_exception_path():
         pass
 
 
-@pytest.mark.asyncio  
+@pytest.mark.asyncio
 async def test_497_exception_path():
     """Exception path test 497"""
     try:
@@ -7138,7 +7137,7 @@ async def test_497_exception_path():
             return_value=(True, None, {})
         )
         agent = Mock()
-        agent.role = AgentRole.EXECUTOR  
+        agent.role = AgentRole.EXECUTOR
         agent.execute = AsyncMock(return_value=AgentResponse(success=True, reasoning="ok", data={}))
         task = AgentTask(request="test", context={})
         response = await gov.execute_with_governance(agent, task)
@@ -7147,7 +7146,7 @@ async def test_497_exception_path():
         pass
 
 
-@pytest.mark.asyncio  
+@pytest.mark.asyncio
 async def test_498_exception_path():
     """Exception path test 498"""
     try:
@@ -7158,7 +7157,7 @@ async def test_498_exception_path():
             return_value=(True, None, {})
         )
         agent = Mock()
-        agent.role = AgentRole.EXECUTOR  
+        agent.role = AgentRole.EXECUTOR
         agent.execute = AsyncMock(return_value=AgentResponse(success=True, reasoning="ok", data={}))
         task = AgentTask(request="test", context={})
         response = await gov.execute_with_governance(agent, task)
@@ -7167,7 +7166,7 @@ async def test_498_exception_path():
         pass
 
 
-@pytest.mark.asyncio  
+@pytest.mark.asyncio
 async def test_499_exception_path():
     """Exception path test 499"""
     try:
@@ -7178,7 +7177,7 @@ async def test_499_exception_path():
             return_value=(True, None, {})
         )
         agent = Mock()
-        agent.role = AgentRole.EXECUTOR  
+        agent.role = AgentRole.EXECUTOR
         agent.execute = AsyncMock(return_value=AgentResponse(success=True, reasoning="ok", data={}))
         task = AgentTask(request="test", context={})
         response = await gov.execute_with_governance(agent, task)
@@ -7187,7 +7186,7 @@ async def test_499_exception_path():
         pass
 
 
-@pytest.mark.asyncio  
+@pytest.mark.asyncio
 async def test_500_exception_path():
     """Exception path test 500"""
     try:
@@ -7198,7 +7197,7 @@ async def test_500_exception_path():
             return_value=(True, None, {})
         )
         agent = Mock()
-        agent.role = AgentRole.EXECUTOR  
+        agent.role = AgentRole.EXECUTOR
         agent.execute = AsyncMock(return_value=AgentResponse(success=True, reasoning="ok", data={}))
         task = AgentTask(request="test", context={})
         response = await gov.execute_with_governance(agent, task)

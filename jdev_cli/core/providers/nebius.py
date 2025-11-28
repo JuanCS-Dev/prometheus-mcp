@@ -1,10 +1,8 @@
 """Nebius API provider implementation."""
 
 import os
-import asyncio
 from typing import Dict, List, Optional, AsyncGenerator
 import logging
-import json
 
 logger = logging.getLogger(__name__)
 
@@ -12,7 +10,7 @@ logger = logging.getLogger(__name__)
 
 class NebiusProvider:
     """Nebius AI Studio provider (OpenAI-compatible)."""
-    
+
     def __init__(self, api_key: Optional[str] = None):
         """Initialize Nebius provider.
         
@@ -23,7 +21,7 @@ class NebiusProvider:
         self.model_name = os.getenv("NEBIUS_MODEL", "Qwen/Qwen2.5-Coder-32B-Instruct")
         self._client = None
         self._openai = None
-        
+
     def _ensure_openai(self):
         """Lazy load openai SDK."""
         if self._openai is None:
@@ -51,11 +49,11 @@ class NebiusProvider:
                     logger.error(f"Failed to initialize Nebius: {e}")
                     self._client = None
         return self._client
-    
+
     def is_available(self) -> bool:
         """Check if provider is available."""
         return self.client is not None
-    
+
     async def generate(
         self,
         messages: List[Dict[str, str]],
@@ -75,7 +73,7 @@ class NebiusProvider:
         """
         if not self.is_available():
             raise RuntimeError("Nebius provider not available")
-        
+
         try:
             response = await self.client.chat.completions.create(
                 model=self.model_name,
@@ -84,13 +82,13 @@ class NebiusProvider:
                 temperature=temperature,
                 extra_body={"top_p": 0.9}
             )
-            
+
             return response.choices[0].message.content
-        
+
         except Exception as e:
             logger.error(f"Nebius generation failed: {e}")
             raise
-    
+
     async def stream_generate(
         self,
         messages: List[Dict[str, str]],
@@ -110,7 +108,7 @@ class NebiusProvider:
         """
         if not self.is_available():
             raise RuntimeError("Nebius provider not available")
-        
+
         try:
             stream = await self.client.chat.completions.create(
                 model=self.model_name,
@@ -120,15 +118,15 @@ class NebiusProvider:
                 stream=True,
                 extra_body={"top_p": 0.9}
             )
-            
+
             async for chunk in stream:
                 if chunk.choices and chunk.choices[0].delta.content:
                     yield chunk.choices[0].delta.content
-        
+
         except Exception as e:
             logger.error(f"Nebius chat error: {e}")
             raise
-    
+
     async def stream_chat(
         self,
         messages: List[Dict[str, str]],

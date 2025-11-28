@@ -23,12 +23,8 @@ Philosophy (Boris Cherny):
     "Test code is production code. Zero compromises."
 """
 
-import ast
-import json
 import pytest
-from pathlib import Path
-from typing import Dict, List
-from unittest.mock import AsyncMock, MagicMock, patch
+from unittest.mock import AsyncMock, MagicMock
 
 from jdev_cli.agents.testing import (
     TestingAgent,
@@ -37,11 +33,9 @@ from jdev_cli.agents.testing import (
     TestFramework,
     CoverageReport,
     MutationResult,
-    FlakyTest,
 )
 from jdev_cli.agents.base import (
     AgentTask,
-    TaskStatus,
     AgentRole,
     AgentCapability,
 )
@@ -53,12 +47,12 @@ from jdev_cli.agents.base import (
 
 class TestTestGeneration:
     """Tests for automatic test generation functionality."""
-    
+
     @pytest.fixture
     def agent(self):
         """Create TestingAgent instance."""
         return TestingAgent(model=MagicMock())
-    
+
     @pytest.mark.asyncio
     async def test_generate_tests_for_simple_function(self, agent):
         """Should generate tests for a simple function."""
@@ -70,14 +64,14 @@ def add(a, b):
             request="Generate tests",
             context={"action": "generate_tests", "source_code": source},
         )
-        
+
         agent._execute_tool = AsyncMock(return_value={"content": source})
         response = await agent.execute(task)
-        
+
         assert response.success is True
         assert "test_cases" in response.data
         assert len(response.data["test_cases"]) >= 2  # basic + edge cases
-    
+
     @pytest.mark.asyncio
     async def test_generate_tests_for_function_with_parameters(self, agent):
         """Should generate tests with mock parameter values."""
@@ -89,13 +83,13 @@ def create_user(name, email, is_active=True):
             request="Generate tests",
             context={"action": "generate_tests", "source_code": source},
         )
-        
+
         response = await agent.execute(task)
-        
+
         assert response.success is True
         test_cases = response.data["test_cases"]
         assert any("test_create_user" in tc["name"] for tc in test_cases)
-    
+
     @pytest.mark.asyncio
     async def test_generate_tests_for_class(self, agent):
         """Should generate integration tests for classes."""
@@ -112,14 +106,14 @@ class Calculator:
             request="Generate tests",
             context={"action": "generate_tests", "source_code": source},
         )
-        
+
         response = await agent.execute(task)
-        
+
         assert response.success is True
         test_cases = response.data["test_cases"]
         # Should include instantiation test
         assert any("instantiation" in tc["name"] for tc in test_cases)
-    
+
     @pytest.mark.asyncio
     async def test_generate_edge_case_tests(self, agent):
         """Should generate edge case tests (None, empty, etc.)."""
@@ -131,15 +125,15 @@ def process_list(items):
             request="Generate tests",
             context={"action": "generate_tests", "source_code": source},
         )
-        
+
         response = await agent.execute(task)
-        
+
         assert response.success is True
         test_cases = response.data["test_cases"]
         # Should have edge case tests
         edge_tests = [tc for tc in test_cases if tc["type"] == "edge_case"]
         assert len(edge_tests) >= 1
-    
+
     @pytest.mark.asyncio
     async def test_generate_tests_skips_private_functions(self, agent):
         """Should not generate tests for private functions."""
@@ -154,14 +148,14 @@ def public_api():
             request="Generate tests",
             context={"action": "generate_tests", "source_code": source},
         )
-        
+
         response = await agent.execute(task)
-        
+
         assert response.success is True
         test_cases = response.data["test_cases"]
         # No tests for _internal_helper
         assert not any("_internal_helper" in tc["name"] for tc in test_cases)
-    
+
     @pytest.mark.asyncio
     async def test_generate_tests_with_assertions_count(self, agent):
         """Should track assertion count in tests."""
@@ -173,13 +167,13 @@ def validate_email(email):
             request="Generate tests",
             context={"action": "generate_tests", "source_code": source},
         )
-        
+
         response = await agent.execute(task)
-        
+
         assert response.success is True
         test_cases = response.data["test_cases"]
         assert all(tc["assertions"] > 0 for tc in test_cases)
-    
+
     @pytest.mark.asyncio
     async def test_generate_tests_with_complexity_estimate(self, agent):
         """Should estimate test complexity."""
@@ -195,13 +189,13 @@ def complex_logic(x, y, z):
             request="Generate tests",
             context={"action": "generate_tests", "source_code": source},
         )
-        
+
         response = await agent.execute(task)
-        
+
         assert response.success is True
         test_cases = response.data["test_cases"]
         assert all(1 <= tc["complexity"] <= 10 for tc in test_cases)
-    
+
     @pytest.mark.asyncio
     async def test_generate_tests_handles_syntax_error(self, agent):
         """Should handle source code with syntax errors gracefully."""
@@ -213,30 +207,30 @@ def broken_func(
             request="Generate tests",
             context={"action": "generate_tests", "source_code": source},
         )
-        
+
         response = await agent.execute(task)
-        
+
         # Should succeed but return empty test list
         assert response.success is True
         assert len(response.data["test_cases"]) == 0
-    
+
     @pytest.mark.asyncio
     async def test_generate_tests_from_file_path(self, agent):
         """Should generate tests by reading from file path."""
         agent._execute_tool = AsyncMock(
             return_value={"content": "def foo(): pass"}
         )
-        
+
         task = AgentTask(
             request="Generate tests",
             context={"action": "generate_tests", "file_path": "src/module.py"},
         )
-        
+
         response = await agent.execute(task)
-        
+
         assert response.success is True
         agent._execute_tool.assert_called_once()
-    
+
     @pytest.mark.asyncio
     async def test_generate_tests_calculates_metrics(self, agent):
         """Should calculate test metrics (count, assertions, complexity)."""
@@ -248,15 +242,15 @@ def func2(): pass
             request="Generate tests",
             context={"action": "generate_tests", "source_code": source},
         )
-        
+
         response = await agent.execute(task)
-        
+
         assert response.success is True
         metrics = response.data["metrics"]
         assert "total_tests" in metrics
         assert "total_assertions" in metrics
         assert "avg_complexity" in metrics
-    
+
     @pytest.mark.asyncio
     async def test_generate_tests_for_async_function(self, agent):
         """Should generate tests for async functions."""
@@ -268,12 +262,12 @@ async def fetch_data():
             request="Generate tests",
             context={"action": "generate_tests", "source_code": source},
         )
-        
+
         response = await agent.execute(task)
-        
+
         assert response.success is True
         assert len(response.data["test_cases"]) > 0
-    
+
     @pytest.mark.asyncio
     async def test_generate_tests_for_generator_function(self, agent):
         """Should generate tests for generator functions."""
@@ -286,11 +280,11 @@ def generate_numbers():
             request="Generate tests",
             context={"action": "generate_tests", "source_code": source},
         )
-        
+
         response = await agent.execute(task)
-        
+
         assert response.success is True
-    
+
     @pytest.mark.asyncio
     async def test_generate_tests_for_property_method(self, agent):
         """Should generate tests for @property methods."""
@@ -307,11 +301,11 @@ class User:
             request="Generate tests",
             context={"action": "generate_tests", "source_code": source},
         )
-        
+
         response = await agent.execute(task)
-        
+
         assert response.success is True
-    
+
     @pytest.mark.asyncio
     async def test_generate_tests_for_classmethod(self, agent):
         """Should generate tests for @classmethod."""
@@ -325,11 +319,11 @@ class Factory:
             request="Generate tests",
             context={"action": "generate_tests", "source_code": source},
         )
-        
+
         response = await agent.execute(task)
-        
+
         assert response.success is True
-    
+
     @pytest.mark.asyncio
     async def test_generate_tests_for_staticmethod(self, agent):
         """Should generate tests for @staticmethod."""
@@ -343,11 +337,11 @@ class Utils:
             request="Generate tests",
             context={"action": "generate_tests", "source_code": source},
         )
-        
+
         response = await agent.execute(task)
-        
+
         assert response.success is True
-    
+
     @pytest.mark.asyncio
     async def test_generate_tests_for_nested_functions(self, agent):
         """Should handle nested function definitions."""
@@ -361,11 +355,11 @@ def outer():
             request="Generate tests",
             context={"action": "generate_tests", "source_code": source},
         )
-        
+
         response = await agent.execute(task)
-        
+
         assert response.success is True
-    
+
     @pytest.mark.asyncio
     async def test_generate_tests_for_decorated_function(self, agent):
         """Should generate tests for decorated functions."""
@@ -383,11 +377,11 @@ def decorated_func():
             request="Generate tests",
             context={"action": "generate_tests", "source_code": source},
         )
-        
+
         response = await agent.execute(task)
-        
+
         assert response.success is True
-    
+
     @pytest.mark.asyncio
     async def test_generate_tests_for_function_with_type_hints(self, agent):
         """Should generate tests for type-hinted functions."""
@@ -399,11 +393,11 @@ def typed_func(x: int, y: str) -> bool:
             request="Generate tests",
             context={"action": "generate_tests", "source_code": source},
         )
-        
+
         response = await agent.execute(task)
-        
+
         assert response.success is True
-    
+
     @pytest.mark.asyncio
     async def test_generate_tests_for_function_with_defaults(self, agent):
         """Should generate tests for functions with default args."""
@@ -415,9 +409,9 @@ def func_with_defaults(a, b=10, c="hello"):
             request="Generate tests",
             context={"action": "generate_tests", "source_code": source},
         )
-        
+
         response = await agent.execute(task)
-        
+
         assert response.success is True
 
 
@@ -427,12 +421,12 @@ def func_with_defaults(a, b=10, c="hello"):
 
 class TestCoverageAnalysis:
     """Tests for code coverage analysis functionality."""
-    
+
     @pytest.fixture
     def agent(self):
         """Create TestingAgent instance."""
         return TestingAgent(model=MagicMock())
-    
+
     @pytest.mark.asyncio
     async def test_analyze_coverage_runs_pytest_cov(self, agent):
         """Should run pytest with coverage flags."""
@@ -447,18 +441,18 @@ class TestCoverageAnalysis:
                 branches_covered=18,
             )
         )
-        
+
         task = AgentTask(
             request="Analyze coverage",
             context={"action": "analyze_coverage"},
         )
-        
+
         response = await agent.execute(task)
-        
+
         assert response.success is True
         assert "coverage" in response.data
         assert response.data["coverage"]["coverage_percentage"] == 90.0
-    
+
     @pytest.mark.asyncio
     async def test_coverage_calculates_branch_coverage(self, agent):
         """Should calculate branch coverage separately."""
@@ -473,17 +467,17 @@ class TestCoverageAnalysis:
                 branches_covered=16,
             )
         )
-        
+
         task = AgentTask(
             request="Analyze coverage",
             context={"action": "analyze_coverage"},
         )
-        
+
         response = await agent.execute(task)
-        
+
         assert response.success is True
         assert response.data["coverage"]["branch_coverage"] == 80.0
-    
+
     @pytest.mark.asyncio
     async def test_coverage_checks_threshold(self, agent):
         """Should check if coverage meets threshold."""
@@ -499,17 +493,17 @@ class TestCoverageAnalysis:
                 branches_covered=9,
             )
         )
-        
+
         task = AgentTask(
             request="Analyze coverage",
             context={"action": "analyze_coverage"},
         )
-        
+
         response = await agent.execute(task)
-        
+
         assert response.success is True
         assert response.data["meets_threshold"] is True
-    
+
     @pytest.mark.asyncio
     async def test_coverage_fails_below_threshold(self, agent):
         """Should flag coverage below threshold."""
@@ -525,17 +519,17 @@ class TestCoverageAnalysis:
                 branches_covered=8,
             )
         )
-        
+
         task = AgentTask(
             request="Analyze coverage",
             context={"action": "analyze_coverage"},
         )
-        
+
         response = await agent.execute(task)
-        
+
         assert response.success is True
         assert response.data["meets_threshold"] is False
-    
+
     @pytest.mark.asyncio
     async def test_coverage_calculates_quality_score(self, agent):
         """Should calculate quality score from coverage."""
@@ -550,18 +544,18 @@ class TestCoverageAnalysis:
                 branches_covered=18,
             )
         )
-        
+
         task = AgentTask(
             request="Analyze coverage",
             context={"action": "analyze_coverage"},
         )
-        
+
         response = await agent.execute(task)
-        
+
         assert response.success is True
         assert "quality_score" in response.data
         assert 0 <= response.data["quality_score"] <= 100
-    
+
     @pytest.mark.asyncio
     async def test_coverage_handles_missing_coverage_json(self, agent):
         """Should handle missing coverage.json gracefully."""
@@ -569,17 +563,17 @@ class TestCoverageAnalysis:
         agent._parse_coverage_json = AsyncMock(
             side_effect=Exception("File not found")
         )
-        
+
         task = AgentTask(
             request="Analyze coverage",
             context={"action": "analyze_coverage"},
         )
-        
+
         response = await agent.execute(task)
-        
+
         assert response.success is False
         assert ("error" in response.error.lower() or "file not found" in response.error.lower())
-    
+
     @pytest.mark.asyncio
     async def test_coverage_reports_missing_lines_count(self, agent):
         """Should report count of uncovered lines."""
@@ -594,17 +588,17 @@ class TestCoverageAnalysis:
                 branches_covered=9,
             )
         )
-        
+
         task = AgentTask(
             request="Analyze coverage",
             context={"action": "analyze_coverage"},
         )
-        
+
         response = await agent.execute(task)
-        
+
         assert response.success is True
         assert response.data["coverage"]["missing_lines_count"] == 5
-    
+
     @pytest.mark.asyncio
     async def test_coverage_with_custom_paths(self, agent):
         """Should accept custom test and source paths."""
@@ -619,7 +613,7 @@ class TestCoverageAnalysis:
                 branches_covered=5,
             )
         )
-        
+
         task = AgentTask(
             request="Analyze coverage",
             context={
@@ -628,11 +622,11 @@ class TestCoverageAnalysis:
                 "source_path": "src/app/",
             },
         )
-        
+
         response = await agent.execute(task)
-        
+
         assert response.success is True
-    
+
     @pytest.mark.asyncio
     async def test_coverage_perfect_100_percent(self, agent):
         """Should handle 100% coverage correctly."""
@@ -647,17 +641,17 @@ class TestCoverageAnalysis:
                 branches_covered=20,
             )
         )
-        
+
         task = AgentTask(
             request="Analyze coverage",
             context={"action": "analyze_coverage"},
         )
-        
+
         response = await agent.execute(task)
-        
+
         assert response.success is True
         assert response.data["quality_score"] == 100
-    
+
     @pytest.mark.asyncio
     async def test_coverage_zero_coverage(self, agent):
         """Should handle zero coverage edge case."""
@@ -672,17 +666,17 @@ class TestCoverageAnalysis:
                 branches_covered=0,
             )
         )
-        
+
         task = AgentTask(
             request="Analyze coverage",
             context={"action": "analyze_coverage"},
         )
-        
+
         response = await agent.execute(task)
-        
+
         assert response.success is True
         assert response.data["coverage"]["coverage_percentage"] == 0.0
-    
+
     @pytest.mark.asyncio
     async def test_coverage_includes_metadata(self, agent):
         """Should include tool metadata in response."""
@@ -697,14 +691,14 @@ class TestCoverageAnalysis:
                 branches_covered=9,
             )
         )
-        
+
         task = AgentTask(
             request="Analyze coverage",
             context={"action": "analyze_coverage", "test_path": "tests/"},
         )
-        
+
         response = await agent.execute(task)
-        
+
         assert response.success is True
         assert "tool" in response.metadata
         assert response.metadata["tool"] == "pytest-cov"
@@ -716,48 +710,48 @@ class TestCoverageAnalysis:
 
 class TestMutationTesting:
     """Tests for mutation testing functionality."""
-    
+
     @pytest.fixture
     def agent(self):
         """Create TestingAgent instance."""
         return TestingAgent(model=MagicMock())
-    
+
     @pytest.mark.asyncio
     async def test_mutation_testing_runs_mutmut(self, agent):
         """Should run mutmut with correct parameters."""
         agent._execute_tool = AsyncMock(
             return_value={"output": "KILLED KILLED SURVIVED"}
         )
-        
+
         task = AgentTask(
             request="Run mutation testing",
             context={"action": "mutation_testing", "source_path": "src/"},
         )
-        
+
         response = await agent.execute(task)
-        
+
         assert response.success is True
         assert "mutation_testing" in response.data
-    
+
     @pytest.mark.asyncio
     async def test_mutation_testing_calculates_score(self, agent):
         """Should calculate mutation score correctly."""
         agent._execute_tool = AsyncMock(
             return_value={"output": "KILLED KILLED KILLED SURVIVED"}
         )
-        
+
         task = AgentTask(
             request="Run mutation testing",
             context={"action": "mutation_testing"},
         )
-        
+
         response = await agent.execute(task)
-        
+
         assert response.success is True
         # 3 killed out of 4 total = 75%
         mutation_score = response.data["mutation_testing"]["mutation_score"]
         assert 70 <= mutation_score <= 80  # Allow some parsing variance
-    
+
     @pytest.mark.asyncio
     async def test_mutation_testing_checks_threshold(self, agent):
         """Should check if mutation score meets threshold."""
@@ -765,116 +759,116 @@ class TestMutationTesting:
         agent._execute_tool = AsyncMock(
             return_value={"output": "KILLED KILLED KILLED KILLED SURVIVED"}
         )
-        
+
         task = AgentTask(
             request="Run mutation testing",
             context={"action": "mutation_testing"},
         )
-        
+
         response = await agent.execute(task)
-        
+
         assert response.success is True
         # 4 killed out of 5 = 80%
         assert response.data["meets_threshold"] is True
-    
+
     @pytest.mark.asyncio
     async def test_mutation_testing_tracks_survived_mutants(self, agent):
         """Should track mutants that survived (weakness in tests)."""
         agent._execute_tool = AsyncMock(
             return_value={"output": "KILLED SURVIVED SURVIVED KILLED"}
         )
-        
+
         task = AgentTask(
             request="Run mutation testing",
             context={"action": "mutation_testing"},
         )
-        
+
         response = await agent.execute(task)
-        
+
         assert response.success is True
         assert response.data["mutation_testing"]["survived_mutants"] == 2
-    
+
     @pytest.mark.asyncio
     async def test_mutation_testing_handles_timeout(self, agent):
         """Should handle mutations that timeout."""
         agent._execute_tool = AsyncMock(
             return_value={"output": "KILLED TIMEOUT SURVIVED"}
         )
-        
+
         task = AgentTask(
             request="Run mutation testing",
             context={"action": "mutation_testing"},
         )
-        
+
         response = await agent.execute(task)
-        
+
         assert response.success is True
         assert response.data["mutation_testing"]["timeout_mutants"] == 1
-    
+
     @pytest.mark.asyncio
     async def test_mutation_testing_perfect_score(self, agent):
         """Should handle 100% mutation score."""
         agent._execute_tool = AsyncMock(
             return_value={"output": "KILLED KILLED KILLED KILLED"}
         )
-        
+
         task = AgentTask(
             request="Run mutation testing",
             context={"action": "mutation_testing"},
         )
-        
+
         response = await agent.execute(task)
-        
+
         assert response.success is True
         assert response.data["mutation_testing"]["mutation_score"] == 100.0
-    
+
     @pytest.mark.asyncio
     async def test_mutation_testing_zero_mutants_killed(self, agent):
         """Should handle worst case (zero mutants killed)."""
         agent._execute_tool = AsyncMock(
             return_value={"output": "SURVIVED SURVIVED SURVIVED"}
         )
-        
+
         task = AgentTask(
             request="Run mutation testing",
             context={"action": "mutation_testing"},
         )
-        
+
         response = await agent.execute(task)
-        
+
         assert response.success is True
         assert response.data["mutation_testing"]["killed_mutants"] == 0
-    
+
     @pytest.mark.asyncio
     async def test_mutation_testing_with_custom_source_path(self, agent):
         """Should accept custom source path."""
         agent._execute_tool = AsyncMock(
             return_value={"output": "KILLED KILLED"}
         )
-        
+
         task = AgentTask(
             request="Run mutation testing",
             context={"action": "mutation_testing", "source_path": "src/core/"},
         )
-        
+
         response = await agent.execute(task)
-        
+
         assert response.success is True
-    
+
     @pytest.mark.asyncio
     async def test_mutation_testing_includes_metadata(self, agent):
         """Should include tool metadata."""
         agent._execute_tool = AsyncMock(
             return_value={"output": "KILLED KILLED"}
         )
-        
+
         task = AgentTask(
             request="Run mutation testing",
             context={"action": "mutation_testing"},
         )
-        
+
         response = await agent.execute(task)
-        
+
         assert response.success is True
         assert "tool" in response.metadata
         assert response.metadata["tool"] == "mutmut"
@@ -886,27 +880,27 @@ class TestMutationTesting:
 
 class TestFlakyDetection:
     """Tests for flaky test detection functionality."""
-    
+
     @pytest.fixture
     def agent(self):
         """Create TestingAgent instance."""
         return TestingAgent(model=MagicMock())
-    
+
     @pytest.mark.asyncio
     async def test_flaky_detection_runs_multiple_times(self, agent):
         """Should run tests multiple times to detect flakiness."""
         agent._execute_tool = AsyncMock(return_value={"output": "PASSED"})
-        
+
         task = AgentTask(
             request="Detect flaky tests",
             context={"action": "detect_flaky", "runs": 3},
         )
-        
+
         response = await agent.execute(task)
-        
+
         assert response.success is True
         assert agent._execute_tool.call_count >= 3
-    
+
     @pytest.mark.asyncio
     async def test_flaky_detection_identifies_intermittent_failures(self, agent):
         """Should identify tests that fail intermittently."""
@@ -917,17 +911,17 @@ class TestFlakyDetection:
             {"output": "test_flaky::PASSED"},
         ]
         agent._execute_tool = AsyncMock(side_effect=outputs)
-        
+
         task = AgentTask(
             request="Detect flaky tests",
             context={"action": "detect_flaky", "runs": 3},
         )
-        
+
         response = await agent.execute(task)
-        
+
         assert response.success is True
         assert response.data["flaky_count"] >= 1
-    
+
     @pytest.mark.asyncio
     async def test_flaky_detection_calculates_failure_rate(self, agent):
         """Should calculate failure rate for flaky tests."""
@@ -940,19 +934,19 @@ class TestFlakyDetection:
             {"output": "test_flaky::PASSED"},
         ]
         agent._execute_tool = AsyncMock(side_effect=outputs)
-        
+
         task = AgentTask(
             request="Detect flaky tests",
             context={"action": "detect_flaky", "runs": 5},
         )
-        
+
         response = await agent.execute(task)
-        
+
         if response.data["flaky_count"] > 0:
             flaky_test = response.data["flaky_tests"][0]
             # 2 failures out of 5 = 40%
             assert 35 <= flaky_test["failure_rate"] <= 45
-    
+
     @pytest.mark.asyncio
     async def test_flaky_detection_no_flaky_tests(self, agent):
         """Should report zero flaky tests when all pass consistently."""
@@ -962,17 +956,17 @@ class TestFlakyDetection:
             {"output": "test_stable::PASSED"},
         ]
         agent._execute_tool = AsyncMock(side_effect=outputs)
-        
+
         task = AgentTask(
             request="Detect flaky tests",
             context={"action": "detect_flaky", "runs": 3},
         )
-        
+
         response = await agent.execute(task)
-        
+
         assert response.success is True
         assert response.data["flaky_count"] == 0
-    
+
     @pytest.mark.asyncio
     async def test_flaky_detection_all_tests_flaky(self, agent):
         """Should detect multiple flaky tests."""
@@ -982,18 +976,18 @@ class TestFlakyDetection:
             {"output": "test_a::PASSED\ntest_b::FAILED"},
         ]
         agent._execute_tool = AsyncMock(side_effect=outputs)
-        
+
         task = AgentTask(
             request="Detect flaky tests",
             context={"action": "detect_flaky", "runs": 3},
         )
-        
+
         response = await agent.execute(task)
-        
+
         assert response.success is True
         # Both tests are flaky
         assert response.data["flaky_count"] >= 2
-    
+
     @pytest.mark.asyncio
     async def test_flaky_detection_provides_suspected_cause(self, agent):
         """Should provide suspected cause for flakiness."""
@@ -1002,31 +996,31 @@ class TestFlakyDetection:
             {"output": "test_flaky::FAILED"},
         ]
         agent._execute_tool = AsyncMock(side_effect=outputs)
-        
+
         task = AgentTask(
             request="Detect flaky tests",
             context={"action": "detect_flaky", "runs": 2},
         )
-        
+
         response = await agent.execute(task)
-        
+
         if response.data["flaky_count"] > 0:
             flaky_test = response.data["flaky_tests"][0]
             assert "suspected_cause" in flaky_test
             assert len(flaky_test["suspected_cause"]) > 0
-    
+
     @pytest.mark.asyncio
     async def test_flaky_detection_custom_runs_count(self, agent):
         """Should respect custom runs count."""
         agent._execute_tool = AsyncMock(return_value={"output": "test::PASSED"})
-        
+
         task = AgentTask(
             request="Detect flaky tests",
             context={"action": "detect_flaky", "runs": 10},
         )
-        
+
         response = await agent.execute(task)
-        
+
         assert response.success is True
         assert response.metadata["runs"] == 10
 
@@ -1037,12 +1031,12 @@ class TestFlakyDetection:
 
 class TestQualityScoring:
     """Tests for comprehensive quality scoring."""
-    
+
     @pytest.fixture
     def agent(self):
         """Create TestingAgent instance."""
         return TestingAgent(model=MagicMock())
-    
+
     @pytest.mark.asyncio
     async def test_quality_score_aggregates_metrics(self, agent):
         """Should aggregate coverage, mutation, and other metrics."""
@@ -1058,18 +1052,18 @@ class TestQualityScoring:
                 data={"mutation_testing": {"mutation_score": 85.0}},
             )
         )
-        
+
         task = AgentTask(
             request="Calculate quality score",
             context={"action": "test_quality_score"},
         )
-        
+
         response = await agent.execute(task)
-        
+
         assert response.success is True
         assert "quality_score" in response.data
         assert 0 <= response.data["quality_score"] <= 100
-    
+
     @pytest.mark.asyncio
     async def test_quality_score_has_breakdown(self, agent):
         """Should provide breakdown of score components."""
@@ -1085,20 +1079,20 @@ class TestQualityScoring:
                 data={"mutation_testing": {"mutation_score": 80.0}},
             )
         )
-        
+
         task = AgentTask(
             request="Calculate quality score",
             context={"action": "test_quality_score"},
         )
-        
+
         response = await agent.execute(task)
-        
+
         assert response.success is True
         assert "breakdown" in response.data
         breakdown = response.data["breakdown"]
         assert "coverage" in breakdown
         assert "mutation" in breakdown
-    
+
     @pytest.mark.asyncio
     async def test_quality_score_converts_to_grade(self, agent):
         """Should convert score to letter grade."""
@@ -1114,18 +1108,18 @@ class TestQualityScoring:
                 data={"mutation_testing": {"mutation_score": 100.0}},
             )
         )
-        
+
         task = AgentTask(
             request="Calculate quality score",
             context={"action": "test_quality_score"},
         )
-        
+
         response = await agent.execute(task)
-        
+
         assert response.success is True
         assert "grade" in response.data
         assert response.data["grade"] in ["A+", "A", "B+", "B", "C+", "C", "D"]
-    
+
     @pytest.mark.asyncio
     async def test_quality_score_perfect_a_plus(self, agent):
         """Should give A+ for perfect score."""
@@ -1141,18 +1135,18 @@ class TestQualityScoring:
                 data={"mutation_testing": {"mutation_score": 100.0}},
             )
         )
-        
+
         task = AgentTask(
             request="Calculate quality score",
             context={"action": "test_quality_score"},
         )
-        
+
         response = await agent.execute(task)
-        
+
         assert response.success is True
         assert response.data["quality_score"] >= 95
         assert response.data["grade"] == "A+"
-    
+
     @pytest.mark.asyncio
     async def test_quality_score_handles_mutation_failure(self, agent):
         """Should handle mutation testing failure gracefully."""
@@ -1165,18 +1159,18 @@ class TestQualityScoring:
         agent._handle_mutation_testing = AsyncMock(
             side_effect=Exception("Mutation testing failed")
         )
-        
+
         task = AgentTask(
             request="Calculate quality score",
             context={"action": "test_quality_score"},
         )
-        
+
         response = await agent.execute(task)
-        
+
         assert response.success is True
         # Should still provide score based on coverage alone
         assert "quality_score" in response.data
-    
+
     @pytest.mark.asyncio
     async def test_quality_score_weights_coverage_heavily(self, agent):
         """Should weight coverage at 40% of total score."""
@@ -1192,14 +1186,14 @@ class TestQualityScoring:
                 data={"mutation_testing": {"mutation_score": 0.0}},
             )
         )
-        
+
         task = AgentTask(
             request="Calculate quality score",
             context={"action": "test_quality_score"},
         )
-        
+
         response = await agent.execute(task)
-        
+
         assert response.success is True
         # Even with 0% mutation, should have ~40 points from coverage + 15 + 15
         assert response.data["quality_score"] >= 55
@@ -1211,12 +1205,12 @@ class TestQualityScoring:
 
 class TestEdgeCases:
     """Tests for edge cases and error handling."""
-    
+
     @pytest.fixture
     def agent(self):
         """Create TestingAgent instance."""
         return TestingAgent(model=MagicMock())
-    
+
     @pytest.mark.asyncio
     async def test_handles_empty_source_code(self, agent):
         """Should handle empty source code gracefully."""
@@ -1224,12 +1218,12 @@ class TestEdgeCases:
             request="Generate tests",
             context={"action": "generate_tests", "source_code": ""},
         )
-        
+
         response = await agent.execute(task)
-        
+
         assert response.success is False
         assert "source_code" in response.error.lower() or "required" in response.error.lower()
-    
+
     @pytest.mark.asyncio
     async def test_handles_invalid_python_syntax(self, agent):
         """Should handle invalid Python syntax."""
@@ -1237,27 +1231,27 @@ class TestEdgeCases:
             request="Generate tests",
             context={"action": "generate_tests", "source_code": "def broken("},
         )
-        
+
         response = await agent.execute(task)
-        
+
         # Should succeed but return no tests
         assert response.success is True
         assert len(response.data["test_cases"]) == 0
-    
+
     @pytest.mark.asyncio
     async def test_handles_missing_file_path(self, agent):
         """Should handle missing file path."""
         agent._execute_tool = AsyncMock(side_effect=FileNotFoundError())
-        
+
         task = AgentTask(
             request="Generate tests",
             context={"action": "generate_tests", "file_path": "nonexistent.py"},
         )
-        
+
         response = await agent.execute(task)
-        
+
         assert response.success is False
-    
+
     @pytest.mark.asyncio
     async def test_handles_unknown_action(self, agent):
         """Should handle unknown action type."""
@@ -1265,12 +1259,12 @@ class TestEdgeCases:
             request="Do something",
             context={"action": "invalid_action"},
         )
-        
+
         response = await agent.execute(task)
-        
+
         assert response.success is False
         assert "unknown action" in response.reasoning.lower()
-    
+
     @pytest.mark.asyncio
     async def test_test_case_validates_name_prefix(self, agent):
         """TestCase should enforce test_ prefix."""
@@ -1282,9 +1276,9 @@ class TestEdgeCases:
             assertions=1,
             complexity=2,
         )
-        
+
         assert tc.name.startswith("test_")
-    
+
     @pytest.mark.asyncio
     async def test_test_case_validates_assertions_positive(self, agent):
         """TestCase should reject negative assertions count."""
@@ -1297,7 +1291,7 @@ class TestEdgeCases:
                 assertions=-1,  # Invalid
                 complexity=2,
             )
-    
+
     @pytest.mark.asyncio
     async def test_test_case_validates_complexity_range(self, agent):
         """TestCase should enforce complexity range 1-10."""
@@ -1310,7 +1304,7 @@ class TestEdgeCases:
                 assertions=1,
                 complexity=15,  # Invalid (> 10)
             )
-    
+
     @pytest.mark.asyncio
     async def test_coverage_report_branch_coverage_with_zero_branches(self, agent):
         """CoverageReport should handle zero branches correctly."""
@@ -1322,10 +1316,10 @@ class TestEdgeCases:
             branches_total=0,  # No branches
             branches_covered=0,
         )
-        
+
         # Should return 100% when no branches exist
         assert report.branch_coverage == 100.0
-    
+
     @pytest.mark.asyncio
     async def test_mutation_result_score_with_zero_mutants(self, agent):
         """MutationResult should handle zero mutants correctly."""
@@ -1335,45 +1329,45 @@ class TestEdgeCases:
             survived_mutants=0,
             timeout_mutants=0,
         )
-        
+
         # Should return 100% when no mutants
         assert result.mutation_score == 100.0
-    
+
     @pytest.mark.asyncio
     async def test_handles_non_python_files(self, agent):
         """Should handle non-Python file paths gracefully."""
         agent._execute_tool = AsyncMock(
             return_value={"content": "function test() { return true; }"}
         )
-        
+
         task = AgentTask(
             request="Generate tests",
             context={"action": "generate_tests", "file_path": "script.js"},
         )
-        
+
         response = await agent.execute(task)
-        
+
         # Should fail to parse as Python
         assert response.success is True
         assert len(response.data["test_cases"]) == 0
-    
+
     @pytest.mark.asyncio
     async def test_handles_very_large_file(self, agent):
         """Should handle very large source files."""
         # Generate large source code
         large_source = "\n".join([f"def func{i}(): pass" for i in range(1000)])
-        
+
         task = AgentTask(
             request="Generate tests",
             context={"action": "generate_tests", "source_code": large_source},
         )
-        
+
         response = await agent.execute(task)
-        
+
         assert response.success is True
         # Should generate tests for many functions
         assert len(response.data["test_cases"]) > 100
-    
+
     @pytest.mark.asyncio
     async def test_handles_unicode_in_source(self, agent):
         """Should handle Unicode characters in source code."""
@@ -1386,11 +1380,11 @@ def process_text(text):
             request="Generate tests",
             context={"action": "generate_tests", "source_code": source},
         )
-        
+
         response = await agent.execute(task)
-        
+
         assert response.success is True
-    
+
     @pytest.mark.asyncio
     async def test_handles_complex_inheritance(self, agent):
         """Should handle complex class inheritance."""
@@ -1411,11 +1405,11 @@ class Final(Derived):
             request="Generate tests",
             context={"action": "generate_tests", "source_code": source},
         )
-        
+
         response = await agent.execute(task)
-        
+
         assert response.success is True
-    
+
     @pytest.mark.asyncio
     async def test_handles_multiple_classes_same_file(self, agent):
         """Should generate tests for multiple classes."""
@@ -1433,36 +1427,36 @@ class Order:
             request="Generate tests",
             context={"action": "generate_tests", "source_code": source},
         )
-        
+
         response = await agent.execute(task)
-        
+
         assert response.success is True
         # Should have tests for all classes
         test_cases = response.data["test_cases"]
         targets = {tc["target"] for tc in test_cases}
         assert "User" in targets or "Product" in targets or "Order" in targets
-    
+
     @pytest.mark.asyncio
     async def test_test_framework_configuration(self, agent):
         """Should respect test framework configuration."""
         agent.test_framework = TestFramework.PYTEST
         assert agent.test_framework == TestFramework.PYTEST
-        
+
         agent.test_framework = TestFramework.UNITTEST
         assert agent.test_framework == TestFramework.UNITTEST
-    
+
     @pytest.mark.asyncio
     async def test_coverage_threshold_configuration(self, agent):
         """Should respect coverage threshold configuration."""
         agent.min_coverage_threshold = 95.0
         assert agent.min_coverage_threshold == 95.0
-    
+
     @pytest.mark.asyncio
     async def test_mutation_threshold_configuration(self, agent):
         """Should respect mutation threshold configuration."""
         agent.min_mutation_score = 85.0
         assert agent.min_mutation_score == 85.0
-    
+
     @pytest.mark.asyncio
     async def test_flaky_detection_runs_configuration(self, agent):
         """Should respect flaky detection runs configuration."""
@@ -1476,12 +1470,12 @@ class Order:
 
 class TestIntegration:
     """Integration tests with real-world scenarios."""
-    
+
     @pytest.fixture
     def agent(self):
         """Create TestingAgent instance."""
         return TestingAgent(model=MagicMock())
-    
+
     @pytest.mark.asyncio
     async def test_full_workflow_generate_and_score(self, agent):
         """Should complete full workflow: generate → coverage → score."""
@@ -1497,7 +1491,7 @@ class TestIntegration:
                 branches_covered=9,
             )
         )
-        
+
         # Step 1: Generate tests
         gen_task = AgentTask(
             request="Generate tests",
@@ -1508,7 +1502,7 @@ class TestIntegration:
         )
         gen_response = await agent.execute(gen_task)
         assert gen_response.success is True
-        
+
         # Step 2: Analyze coverage
         cov_task = AgentTask(
             request="Analyze coverage",
@@ -1516,7 +1510,7 @@ class TestIntegration:
         )
         cov_response = await agent.execute(cov_task)
         assert cov_response.success is True
-        
+
         # Step 3: Calculate quality score
         score_task = AgentTask(
             request="Quality score",
@@ -1532,7 +1526,7 @@ class TestIntegration:
         score_response = await agent.execute(score_task)
         assert score_response.success is True
         assert score_response.data["quality_score"] >= 85
-    
+
     @pytest.mark.asyncio
     async def test_real_world_fastapi_endpoint_testing(self, agent):
         """Should generate tests for FastAPI endpoint."""
@@ -1551,14 +1545,14 @@ async def get_user(user_id: int):
             request="Generate tests",
             context={"action": "generate_tests", "source_code": source},
         )
-        
+
         response = await agent.execute(task)
-        
+
         assert response.success is True
         # Should generate tests for get_user endpoint
         test_cases = response.data["test_cases"]
         assert any("get_user" in tc["name"] for tc in test_cases)
-    
+
     @pytest.mark.asyncio
     async def test_real_world_database_model_testing(self, agent):
         """Should generate tests for database models."""
@@ -1585,14 +1579,14 @@ class User(Base):
             request="Generate tests",
             context={"action": "generate_tests", "source_code": source},
         )
-        
+
         response = await agent.execute(task)
-        
+
         assert response.success is True
         test_cases = response.data["test_cases"]
         # Should have tests for User class methods
         assert any("User" in tc["target"] for tc in test_cases)
-    
+
     @pytest.mark.asyncio
     async def test_real_world_api_client_testing(self, agent):
         """Should generate tests for API client."""
@@ -1619,12 +1613,12 @@ class APIClient:
             request="Generate tests",
             context={"action": "generate_tests", "source_code": source},
         )
-        
+
         response = await agent.execute(task)
-        
+
         assert response.success is True
         assert len(response.data["test_cases"]) > 0
-    
+
     @pytest.mark.asyncio
     async def test_real_world_data_processing_testing(self, agent):
         """Should generate tests for data processing functions."""
@@ -1651,41 +1645,41 @@ def aggregate_data(df: pd.DataFrame) -> dict:
             request="Generate tests",
             context={"action": "generate_tests", "source_code": source},
         )
-        
+
         response = await agent.execute(task)
-        
+
         assert response.success is True
         # Should have tests for all data processing functions
         test_cases = response.data["test_cases"]
         targets = {tc["target"] for tc in test_cases}
         assert len(targets) >= 3
-    
+
     @pytest.mark.asyncio
     async def test_execution_count_increments(self, agent):
         """Should increment execution count on each task."""
         initial_count = agent.execution_count
-        
+
         task = AgentTask(
             request="Generate tests",
             context={"action": "generate_tests", "source_code": "def foo(): pass"},
         )
-        
+
         await agent.execute(task)
-        
+
         assert agent.execution_count == initial_count + 1
-    
+
     @pytest.mark.asyncio
     async def test_agent_role_is_testing(self, agent):
         """Should have TESTING role."""
         assert agent.role == AgentRole.TESTING
-    
+
     @pytest.mark.asyncio
     async def test_agent_capabilities_correct(self, agent):
         """Should have READ_ONLY and BASH_EXEC capabilities."""
         assert AgentCapability.READ_ONLY in agent.capabilities
         assert AgentCapability.BASH_EXEC in agent.capabilities
         assert AgentCapability.FILE_EDIT not in agent.capabilities
-    
+
     @pytest.mark.asyncio
     async def test_agent_name_is_set(self, agent):
         """Should have correct agent name."""
@@ -1700,13 +1694,13 @@ def test_total_test_count():
     """Verify we have 100+ tests."""
     import sys
     import inspect
-    
+
     current_module = sys.modules[__name__]
     test_classes = [
         obj for name, obj in inspect.getmembers(current_module)
         if inspect.isclass(obj) and name.startswith("Test")
     ]
-    
+
     total_tests = 0
     for test_class in test_classes:
         test_methods = [
@@ -1714,11 +1708,11 @@ def test_total_test_count():
             if method.startswith("test_")
         ]
         total_tests += len(test_methods)
-    
+
     print(f"\n{'='*70}")
     print(f"Total test methods: {total_tests}")
-    print(f"Target: 100+")
+    print("Target: 100+")
     print(f"Status: {'✅ PASS' if total_tests >= 100 else '❌ FAIL'}")
     print(f"{'='*70}\n")
-    
+
     assert total_tests >= 100, f"Expected 100+ tests, found {total_tests}"

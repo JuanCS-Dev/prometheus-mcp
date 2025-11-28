@@ -13,7 +13,7 @@ Date: 2025-11-26
 """
 
 from dataclasses import dataclass
-from typing import Any, Callable, Coroutine, Dict, Optional, Tuple, TYPE_CHECKING
+from typing import Any, Callable, Coroutine, Dict, Optional, TYPE_CHECKING
 
 if TYPE_CHECKING:
     from jdev_cli.shell_main import InteractiveShell

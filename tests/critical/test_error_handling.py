@@ -12,7 +12,6 @@ Data: 2025-11-25
 """
 
 import pytest
-import logging
 from unittest.mock import MagicMock
 
 
@@ -32,7 +31,6 @@ class TestErrorUtilsModule:
             format_error_for_user,
             create_error_result,
             is_retryable_error,
-            ErrorContext,
         )
 
         assert callable(log_error)

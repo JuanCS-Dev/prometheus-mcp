@@ -4,10 +4,6 @@ Tests for async file operations.
 SCALE & SUSTAIN Phase 3.1 validation.
 """
 
-import asyncio
-import json
-import tempfile
-from pathlib import Path
 
 import pytest
 

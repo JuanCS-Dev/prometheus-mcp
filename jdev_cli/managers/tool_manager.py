@@ -13,7 +13,7 @@ import asyncio
 import time
 from dataclasses import dataclass, field
 from enum import Enum, auto
-from typing import Any, Callable, Dict, List, Optional, Set, Union
+from typing import Any, Callable, Dict, List, Optional, Set
 import threading
 
 

@@ -14,7 +14,7 @@ Key improvements:
 - ReAct pattern integration
 """
 
-from typing import List, Dict, Any
+from typing import List, Dict
 
 
 def build_enhanced_system_prompt(tool_schemas: List[Dict], context: Dict = None) -> str:
@@ -33,7 +33,7 @@ def build_enhanced_system_prompt(tool_schemas: List[Dict], context: Dict = None)
     Returns:
         Production-grade system prompt string
     """
-    
+
     # Format context section
     context_section = ""
     if context:
@@ -50,7 +50,7 @@ def build_enhanced_system_prompt(tool_schemas: List[Dict], context: Dict = None)
             context_section += f"- **Git Branch**: `{context['git_branch']}`\n"
     else:
         context_section = "## [C] CURRENT CONTEXT\n\n- Context not available\n"
-    
+
     # Group tools by category
     tools_by_category = {}
     for schema in tool_schemas:
@@ -58,7 +58,7 @@ def build_enhanced_system_prompt(tool_schemas: List[Dict], context: Dict = None)
         if category not in tools_by_category:
             tools_by_category[category] = []
         tools_by_category[category].append(schema)
-    
+
     # Format tool listings
     tools_section = ""
     for category in sorted(tools_by_category.keys()):
@@ -69,7 +69,7 @@ def build_enhanced_system_prompt(tool_schemas: List[Dict], context: Dict = None)
             params = tool['parameters'].get('required', [])
             param_str = f" ({', '.join(params)})" if params else ""
             tools_section += f"- **{name}**{param_str}: {desc}\n"
-    
+
     # Build PTCF-structured prompt
     prompt = f"""# AI CODE ASSISTANT - PRODUCTION MODE
 
@@ -275,7 +275,7 @@ Higher temperatures (0.7+) may cause:
 
 **Remember**: Think step-by-step, use context, return valid format, recover gracefully.
 """
-    
+
     return prompt
 
 
@@ -291,7 +291,7 @@ def build_fallback_simple_prompt(tool_schemas: List[Dict]) -> str:
     tool_list = []
     for schema in tool_schemas:
         tool_list.append(f"- {schema['name']}: {schema['description']}")
-    
+
     return f"""You are an AI code assistant with access to development tools.
 
 Available tools:

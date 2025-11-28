@@ -132,10 +132,10 @@ class ArchitectAgent(BaseAgent):
         try:
             # Build analysis prompt
             analysis_prompt = self._build_analysis_prompt(task)
-            
+
             # Call LLM for analysis
             llm_response = await self._call_llm(analysis_prompt)
-            
+
             # Parse JSON response
             import json
             try:
@@ -143,7 +143,7 @@ class ArchitectAgent(BaseAgent):
             except json.JSONDecodeError:
                 # LLM didn't return valid JSON, extract decision manually
                 decision_data = self._extract_decision_fallback(llm_response)
-            
+
             # Validate decision format
             if "decision" not in decision_data:
                 return AgentResponse(
@@ -151,22 +151,22 @@ class ArchitectAgent(BaseAgent):
                     reasoning="LLM response missing 'decision' field",
                     error="Invalid LLM response format",
                 )
-            
+
             decision = decision_data["decision"].upper()
-            
+
             # Normalize variations
             if decision == "APPROVE":
                 decision = "APPROVED"
             elif decision == "VETO":
                 decision = "VETOED"
-                
+
             if decision not in ("APPROVED", "VETOED"):
                 return AgentResponse(
                     success=False,
                     reasoning=f"Invalid decision: {decision}",
                     error="Decision must be APPROVED or VETOED",
                 )
-            
+
             # Return successful analysis
             return AgentResponse(
                 success=True,
@@ -179,7 +179,7 @@ class ArchitectAgent(BaseAgent):
                     ),
                 },
             )
-            
+
         except Exception as e:
             return AgentResponse(
                 success=False,
@@ -207,11 +207,11 @@ CONTEXT:
             prompt += f"\nProject files available: {len(task.context['files'])} files\n"
             for file_info in task.context.get("files", [])[:5]:  # First 5 files
                 prompt += f"- {file_info}\n"
-        
+
         # Add constraints if provided
         if "constraints" in task.context:
             prompt += f"\nConstraints: {task.context['constraints']}\n"
-        
+
         prompt += """
 Analyze and respond with your decision in JSON format.
 Remember: Be skeptical. Better to veto early than fail late.
@@ -229,14 +229,14 @@ Remember: Be skeptical. Better to veto early than fail late.
         """
         # Simple heuristic extraction
         response_lower = llm_response.lower()
-        
+
         if "approved" in response_lower or "approve" in response_lower:
             decision = "APPROVED"
         elif "veto" in response_lower or "rejected" in response_lower:
             decision = "VETOED"
         else:
             decision = "UNKNOWN"
-        
+
         return {
             "decision": decision,
             "reasoning": llm_response[:500],  # First 500 chars

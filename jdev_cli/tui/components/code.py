@@ -21,14 +21,12 @@ Created: 2025-11-18 20:50 UTC
 from typing import Optional
 from pathlib import Path
 
-from rich.console import Console
 from rich.syntax import Syntax
 from rich.panel import Panel
 from rich.text import Text
 
-from ..theme import COLORS, get_theme, ThemeVariant
+from ..theme import COLORS, ThemeVariant
 from ..styles import PRESET_STYLES
-from ..spacing import SPACING
 
 
 class CodeBlock:
@@ -42,7 +40,7 @@ class CodeBlock:
         )
         console.print(code.render())
     """
-    
+
     # Language icons/badges
     LANGUAGE_ICONS = {
         'python': '🐍',
@@ -67,7 +65,7 @@ class CodeBlock:
         'markdown': '📝',
         'xml': '📋',
     }
-    
+
     def __init__(
         self,
         code: str,
@@ -103,13 +101,13 @@ class CodeBlock:
         self.show_language = show_language
         self.copyable = copyable
         self.max_width = max_width
-    
+
     def _get_language_display(self) -> str:
         """Get language display name with icon."""
         icon = self.LANGUAGE_ICONS.get(self.language, '📄')
         lang_name = self.language.upper() if len(self.language) <= 4 else self.language.capitalize()
         return f"{icon} {lang_name}"
-    
+
     def _create_syntax(self) -> Syntax:
         """
         Create Rich Syntax object.
@@ -119,7 +117,7 @@ class CodeBlock:
         """
         # Map our theme to Pygments theme
         pygments_theme = "monokai" if self.theme == ThemeVariant.DARK else "github-dark"
-        
+
         return Syntax(
             self.code,
             lexer=self.language,
@@ -130,7 +128,7 @@ class CodeBlock:
             word_wrap=True,
             background_color=COLORS['bg_secondary'],
         )
-    
+
     def _create_header(self) -> Optional[Text]:
         """
         Create code block header with language and copy indicator.
@@ -140,27 +138,27 @@ class CodeBlock:
         """
         if not (self.show_language or self.copyable):
             return None
-        
+
         parts = []
-        
+
         # Language badge
         if self.show_language:
             lang_display = self._get_language_display()
             parts.append(Text(lang_display, style=PRESET_STYLES.INFO))
-        
+
         # Copy indicator
         if self.copyable:
             if parts:
                 parts.append(Text(" • ", style=PRESET_STYLES.TERTIARY))
             parts.append(Text("📋 Copyable", style=PRESET_STYLES.TERTIARY))
-        
+
         # Combine
         result = Text()
         for part in parts:
             result.append(part)
-        
+
         return result
-    
+
     def render(self) -> Panel:
         """
         Render code block as Panel.
@@ -170,7 +168,7 @@ class CodeBlock:
         """
         syntax = self._create_syntax()
         header = self._create_header()
-        
+
         return Panel(
             syntax,
             title=header if header else None,
@@ -180,7 +178,7 @@ class CodeBlock:
             expand=False,
             width=self.max_width,
         )
-    
+
     def render_inline(self) -> Text:
         """
         Render as inline code (single line, no panel).
@@ -199,7 +197,7 @@ class InlineCode:
         inline = InlineCode("print('hello')")
         text = Text("Use ") + inline.render() + Text(" to print")
     """
-    
+
     def __init__(self, code: str):
         """
         Initialize inline code.
@@ -208,7 +206,7 @@ class InlineCode:
             code: Code content
         """
         self.code = code
-    
+
     def render(self) -> Text:
         """
         Render inline code.
@@ -232,7 +230,7 @@ class CodeSnippet:
         )
         console.print(snippet.render())
     """
-    
+
     def __init__(
         self,
         code: str,
@@ -255,17 +253,17 @@ class CodeSnippet:
         self.file_path = file_path
         self.start_line = start_line
         self.end_line = end_line or (start_line + code.count('\n'))
-        
+
         # Auto-detect language from file path
         if language is None and file_path:
             self.language = self._detect_language(file_path)
         else:
             self.language = language or "text"
-    
+
     def _detect_language(self, file_path: str) -> str:
         """Detect language from file extension."""
         ext = Path(file_path).suffix.lstrip('.')
-        
+
         # Map extensions to language names
         lang_map = {
             'py': 'python',
@@ -296,33 +294,33 @@ class CodeSnippet:
             'md': 'markdown',
             'xml': 'xml',
         }
-        
+
         return lang_map.get(ext, 'text')
-    
+
     def _create_title(self) -> Optional[Text]:
         """Create title with file path and line range."""
         if not self.file_path:
             return None
-        
+
         parts = []
-        
+
         # File path
         parts.append(Text(self.file_path, style=PRESET_STYLES.PATH))
-        
+
         # Line range
         if self.start_line:
             line_range = f":{self.start_line}"
             if self.end_line and self.end_line != self.start_line:
                 line_range += f"-{self.end_line}"
             parts.append(Text(line_range, style=PRESET_STYLES.TERTIARY))
-        
+
         # Combine
         result = Text()
         for part in parts:
             result.append(part)
-        
+
         return result
-    
+
     def render(self) -> Panel:
         """
         Render code snippet.
@@ -336,9 +334,9 @@ class CodeSnippet:
             show_line_numbers=True,
             start_line=self.start_line,
         )
-        
+
         title = self._create_title()
-        
+
         return Panel(
             code_block._create_syntax(),
             title=title if title else None,
@@ -406,5 +404,5 @@ def detect_language_from_content(code: str) -> str:
         return 'rust'
     elif 'func ' in code or 'package ' in code:
         return 'go'
-    
+
     return 'text'

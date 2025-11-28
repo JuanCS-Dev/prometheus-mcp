@@ -38,18 +38,16 @@ References:
 """
 
 import asyncio
-import hashlib
 import json
 import logging
 import re
 import time
 import uuid
-from dataclasses import dataclass, field, asdict
+from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
-from pathlib import Path
 from typing import (
-    Dict, Any, List, Optional, Set, Callable,
+    Dict, Any, List, Optional, Callable,
     AsyncIterator, Tuple
 )
 
@@ -532,7 +530,7 @@ class NextGenExecutorAgent(BaseAgent):
                         "execution_time": result.execution_time,
                         "observation": observation
                     },
-                    reasoning=f"✅ Executed successfully",
+                    reasoning="✅ Executed successfully",
                     suggestions=suggestions
                 )
             else:

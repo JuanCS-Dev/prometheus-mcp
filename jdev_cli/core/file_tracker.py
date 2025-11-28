@@ -8,7 +8,6 @@ Integrates with agents to capture read/write/analyze operations.
 import asyncio
 from typing import Optional, Callable, Dict, Any
 from pathlib import Path
-from collections import defaultdict
 import time
 
 

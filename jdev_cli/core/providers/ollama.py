@@ -1,7 +1,6 @@
 """Ollama local LLM provider implementation."""
 
 import os
-import asyncio
 import logging
 from typing import Dict, List, Optional, AsyncGenerator
 import aiohttp
@@ -11,7 +10,7 @@ logger = logging.getLogger(__name__)
 
 class OllamaProvider:
     """Ollama local LLM provider."""
-    
+
     def __init__(self, base_url: Optional[str] = None, model: Optional[str] = None):
         """Initialize Ollama provider.
         
@@ -23,13 +22,13 @@ class OllamaProvider:
         self.model_name = model or os.getenv("OLLAMA_MODEL", "qwen2.5-coder:latest")
         self._session: Optional[aiohttp.ClientSession] = None
         logger.info(f"Ollama provider initialized: {self.base_url} / {self.model_name}")
-    
+
     async def _get_session(self) -> aiohttp.ClientSession:
         """Get or create aiohttp session."""
         if self._session is None or self._session.closed:
             self._session = aiohttp.ClientSession()
         return self._session
-    
+
     async def is_available(self) -> bool:
         """Check if Ollama is running and model is available."""
         try:
@@ -47,7 +46,7 @@ class OllamaProvider:
         except Exception as e:
             logger.debug(f"Ollama not available: {e}")
             return False
-    
+
     async def generate(
         self,
         messages: List[Dict[str, str]],
@@ -67,10 +66,10 @@ class OllamaProvider:
         """
         if not await self.is_available():
             raise RuntimeError("Ollama provider not available")
-        
+
         try:
             session = await self._get_session()
-            
+
             # Ollama chat API format
             payload = {
                 "model": self.model_name,
@@ -81,7 +80,7 @@ class OllamaProvider:
                     "temperature": temperature,
                 }
             }
-            
+
             async with session.post(
                 f"{self.base_url}/api/chat",
                 json=payload,
@@ -90,14 +89,14 @@ class OllamaProvider:
                 if resp.status != 200:
                     error_text = await resp.text()
                     raise RuntimeError(f"Ollama error {resp.status}: {error_text}")
-                
+
                 data = await resp.json()
                 return data.get("message", {}).get("content", "")
-        
+
         except Exception as e:
             logger.error(f"Ollama generation failed: {e}")
             raise
-    
+
     async def stream_generate(
         self,
         messages: List[Dict[str, str]],
@@ -117,10 +116,10 @@ class OllamaProvider:
         """
         if not await self.is_available():
             raise RuntimeError("Ollama provider not available")
-        
+
         try:
             session = await self._get_session()
-            
+
             payload = {
                 "model": self.model_name,
                 "messages": messages,
@@ -130,7 +129,7 @@ class OllamaProvider:
                     "temperature": temperature,
                 }
             }
-            
+
             async with session.post(
                 f"{self.base_url}/api/chat",
                 json=payload,
@@ -139,7 +138,7 @@ class OllamaProvider:
                 if resp.status != 200:
                     error_text = await resp.text()
                     raise RuntimeError(f"Ollama error {resp.status}: {error_text}")
-                
+
                 # Stream line by line (NDJSON)
                 async for line in resp.content:
                     if line:
@@ -151,11 +150,11 @@ class OllamaProvider:
                                 yield content
                         except json.JSONDecodeError:
                             continue
-        
+
         except Exception as e:
             logger.error(f"Ollama streaming failed: {e}")
             raise
-    
+
     async def stream_chat(
         self,
         messages: List[Dict[str, str]],
@@ -168,7 +167,7 @@ class OllamaProvider:
         """
         async for chunk in self.stream_generate(messages, max_tokens, temperature, **kwargs):
             yield chunk
-    
+
     def get_model_info(self) -> Dict[str, str | bool | int]:
         """Get model information."""
         return {
@@ -177,7 +176,7 @@ class OllamaProvider:
             'base_url': self.base_url,
             'supports_streaming': True
         }
-    
+
     async def close(self):
         """Close aiohttp session."""
         if self._session and not self._session.closed:

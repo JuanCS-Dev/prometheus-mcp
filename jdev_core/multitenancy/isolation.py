@@ -11,7 +11,7 @@ Date: 2025-11-26
 
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import Any, Callable, Dict, List, Optional, Set
+from typing import Any, Callable, Dict, List, Optional
 
 from .context import get_current_tenant, TenantContext
 from .tenant import Tenant

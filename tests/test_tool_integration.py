@@ -13,10 +13,7 @@ NO Textual pilot tests (known to cause issues with Claude Code).
 """
 
 import pytest
-import json
 from io import StringIO
-from typing import Dict, Any, List
-from unittest.mock import AsyncMock, MagicMock, patch
 
 from rich.console import Console
 

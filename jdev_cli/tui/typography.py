@@ -13,7 +13,6 @@ Philosophy:
 Created: 2025-11-18 20:05 UTC
 """
 
-from typing import Dict
 
 
 # ============================================================================
@@ -31,7 +30,7 @@ FONTS = {
         'Courier New',     # Universal fallback
         'monospace',       # System fallback
     ],
-    
+
     # Sans-serif fonts (UI, headings, labels)
     'sans': [
         'Inter',                      # Modern, optimized for screens
@@ -104,14 +103,14 @@ class LineHeights:
     - Larger text needs less line-height (compactness)
     - Code needs tight line-height (scanning)
     """
-    
+
     # Absolute values (unitless multipliers)
     TIGHT = 1.2      # Code blocks, compact lists
     SNUG = 1.375     # UI elements, buttons
     NORMAL = 1.5     # Body text (default, most readable)
     RELAXED = 1.625  # Long-form content
     LOOSE = 2.0      # Headings, very large text
-    
+
     # Contextual mapping (size → line-height)
     BY_SIZE = {
         'xs': NORMAL,      # 12px needs normal spacing
@@ -122,7 +121,7 @@ class LineHeights:
         '2xl': TIGHT,      # 24px tight for headers
         '3xl': TIGHT,      # 30px very tight
     }
-    
+
     # By content type
     CODE = TIGHT       # Code blocks: 1.2
     UI = SNUG         # Buttons, labels: 1.375
@@ -140,14 +139,14 @@ class LetterSpacing:
     
     Negative tracking tightens, positive tracking loosens.
     """
-    
+
     TIGHTER = '-0.05em'   # Very tight (large headings)
     TIGHT = '-0.025em'    # Tight (headings)
     NORMAL = '0em'        # Normal (body text)
     WIDE = '0.025em'      # Wide (small caps, labels)
     WIDER = '0.05em'      # Very wide (all caps)
     WIDEST = '0.1em'      # Extremely wide (stylistic only)
-    
+
     # By context
     HEADING = TIGHT       # Headings look better tight
     BODY = NORMAL         # Body text at normal
@@ -171,7 +170,7 @@ class TypographyPresets:
     - line_height
     - letter_spacing
     """
-    
+
     # Headings
     HEADING_XL = {
         'family': FONT_SANS,
@@ -180,7 +179,7 @@ class TypographyPresets:
         'line_height': LineHeights.HEADING,
         'letter_spacing': LetterSpacing.HEADING,
     }
-    
+
     HEADING_LG = {
         'family': FONT_SANS,
         'size': SIZES['xl'],
@@ -188,7 +187,7 @@ class TypographyPresets:
         'line_height': LineHeights.HEADING,
         'letter_spacing': LetterSpacing.HEADING,
     }
-    
+
     HEADING_MD = {
         'family': FONT_SANS,
         'size': SIZES['lg'],
@@ -196,7 +195,7 @@ class TypographyPresets:
         'line_height': LineHeights.SNUG,
         'letter_spacing': LetterSpacing.NORMAL,
     }
-    
+
     # Body text
     BODY = {
         'family': FONT_SANS,
@@ -205,7 +204,7 @@ class TypographyPresets:
         'line_height': LineHeights.BODY,
         'letter_spacing': LetterSpacing.BODY,
     }
-    
+
     BODY_SMALL = {
         'family': FONT_SANS,
         'size': SIZES['sm'],
@@ -213,7 +212,7 @@ class TypographyPresets:
         'line_height': LineHeights.NORMAL,
         'letter_spacing': LetterSpacing.NORMAL,
     }
-    
+
     # UI elements
     LABEL = {
         'family': FONT_SANS,
@@ -222,7 +221,7 @@ class TypographyPresets:
         'line_height': LineHeights.UI,
         'letter_spacing': LetterSpacing.LABEL,
     }
-    
+
     BUTTON = {
         'family': FONT_SANS,
         'size': SIZES['base'],
@@ -230,7 +229,7 @@ class TypographyPresets:
         'line_height': LineHeights.UI,
         'letter_spacing': LetterSpacing.NORMAL,
     }
-    
+
     # Code
     CODE = {
         'family': FONT_MONO,
@@ -239,7 +238,7 @@ class TypographyPresets:
         'line_height': LineHeights.CODE,
         'letter_spacing': LetterSpacing.CODE,
     }
-    
+
     CODE_INLINE = {
         'family': FONT_MONO,
         'size': SIZES['sm'],
@@ -247,7 +246,7 @@ class TypographyPresets:
         'line_height': 'inherit',  # Inherit from surrounding text
         'letter_spacing': LetterSpacing.CODE,
     }
-    
+
     # Metadata
     CAPTION = {
         'family': FONT_SANS,
@@ -256,7 +255,7 @@ class TypographyPresets:
         'line_height': LineHeights.NORMAL,
         'letter_spacing': LetterSpacing.NORMAL,
     }
-    
+
     TIMESTAMP = {
         'family': FONT_MONO,
         'size': SIZES['xs'],
@@ -285,7 +284,7 @@ def get_font_css(preset_name: str) -> str:
         'font-family: Inter, -apple-system, ...; font-size: 1rem; ...'
     """
     preset = getattr(TypographyPresets, preset_name, TypographyPresets.BODY)
-    
+
     return (
         f"font-family: {preset['family']}; "
         f"font-size: {preset['size']}; "
@@ -325,8 +324,8 @@ def validate_typography():
     print(f"  - Font sizes: {len(SIZES)} (xs → 3xl)")
     print(f"  - Font weights: {len(WEIGHTS)} (normal → bold)")
     print(f"  - Presets: {len([k for k in dir(TypographyPresets) if not k.startswith('_')])}")
-    print(f"  - Line heights optimized for readability")
-    print(f"  - Letter spacing tuned for different contexts")
+    print("  - Line heights optimized for readability")
+    print("  - Letter spacing tuned for different contexts")
 
 
 if __name__ == "__main__":

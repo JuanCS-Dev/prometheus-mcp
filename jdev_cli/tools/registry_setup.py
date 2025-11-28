@@ -198,7 +198,7 @@ def setup_default_tools(
 
             # Initialize provider lazily
             provider = PrometheusProvider()
-            
+
             tools = [
                 PrometheusExecuteTool(provider),
                 PrometheusMemoryQueryTool(provider),
@@ -213,7 +213,7 @@ def setup_default_tools(
             for tool in tools:
                 registry.register(tool)
                 tools_registered += 1
-            
+
             logger.debug(f"Registered {len(tools)} PROMETHEUS tools")
 
         except ImportError as e:

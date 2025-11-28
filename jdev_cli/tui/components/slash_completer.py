@@ -1,6 +1,6 @@
 """Slash Command Completer - Dropdown autocomplete for / commands."""
 
-from typing import List, Optional
+from typing import Optional
 from prompt_toolkit.completion import Completer, Completion
 from prompt_toolkit.document import Document
 

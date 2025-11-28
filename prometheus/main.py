@@ -26,7 +26,6 @@ References:
 """
 
 import os
-import sys
 import asyncio
 from typing import AsyncIterator, Optional
 

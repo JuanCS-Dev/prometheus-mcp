@@ -255,11 +255,11 @@ class ValidationResult(TypedDict):
 @runtime_checkable
 class Serializable(Protocol):
     """Protocol for objects that can be serialized."""
-    
+
     def to_dict(self) -> Dict[str, Any]:
         """Convert to dictionary representation."""
         ...
-    
+
     @classmethod
     def from_dict(cls: type[T], data: Dict[str, Any]) -> T:
         """Create instance from dictionary."""
@@ -269,7 +269,7 @@ class Serializable(Protocol):
 @runtime_checkable
 class Validatable(Protocol):
     """Protocol for objects that can be validated."""
-    
+
     def validate(self) -> ValidationResult:
         """Validate the object's state."""
         ...
@@ -278,7 +278,7 @@ class Validatable(Protocol):
 @runtime_checkable
 class AsyncExecutable(Protocol[T_co]):
     """Protocol for async executable objects."""
-    
+
     async def execute(self) -> T_co:
         """Execute the operation asynchronously."""
         ...
@@ -287,7 +287,7 @@ class AsyncExecutable(Protocol[T_co]):
 @runtime_checkable
 class Streamable(Protocol[T_co]):
     """Protocol for objects that can stream data."""
-    
+
     async def stream(self) -> Coroutine[Any, Any, T_co]:
         """Stream data asynchronously."""
         ...
@@ -358,20 +358,20 @@ class AppConfig(TypedDict, total=False):
     nebius_api_key: str
     gemini_api_key: str
     ollama_enabled: bool
-    
+
     # Models
     hf_model: str
     gemini_model: str
-    
+
     # Limits
     max_context_tokens: int
     max_output_tokens: int
-    
+
     # Features
     enable_sandbox: bool
     enable_hooks: bool
     enable_recovery: bool
-    
+
     # UI
     gradio_port: int
     gradio_share: bool
@@ -418,8 +418,8 @@ def is_message(obj: Any) -> bool:
     if not isinstance(obj, dict):
         return False
     return (
-        'role' in obj and 
-        'content' in obj and 
+        'role' in obj and
+        'content' in obj and
         isinstance(obj['role'], str) and
         isinstance(obj['content'], str)
     )
@@ -444,14 +444,14 @@ def is_file_path(obj: Any) -> bool:
 __all__ = [
     # Type vars
     'T', 'T_co', 'T_contra',
-    
+
     # Enums
     'MessageRole', 'ErrorCategory', 'WorkflowState',
-    
+
     # Type aliases
     'FilePath', 'FileContent', 'FileEncoding',
     'MessageList', 'ProgressCallback', 'ErrorCallback', 'TokenCallback',
-    
+
     # TypedDicts
     'Message', 'ToolParameter', 'ToolDefinition', 'ToolCall', 'ToolResult',
     'FileEdit', 'FileOperation', 'ContextEntry', 'SessionState',
@@ -459,13 +459,13 @@ __all__ = [
     'LLMResponse', 'ValidationRule', 'ValidationResult',
     'WorkflowStep', 'WorkflowDefinition', 'WorkflowExecution',
     'ProviderConfig', 'AppConfig',
-    
+
     # Protocols
     'Serializable', 'Validatable', 'AsyncExecutable', 'Streamable',
-    
+
     # Dataclasses
     'CodeSpan', 'DiffHunk',
-    
+
     # Type guards
     'is_message', 'is_message_list', 'is_file_path',
 ]

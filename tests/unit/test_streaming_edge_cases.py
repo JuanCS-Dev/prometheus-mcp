@@ -21,8 +21,6 @@ Date: 2025-11-26
 """
 
 import pytest
-import asyncio
-from unittest.mock import Mock, AsyncMock, patch, MagicMock
 
 from jdev_tui.core.output_formatter import (
     tool_executing_markup,
@@ -31,7 +29,6 @@ from jdev_tui.core.output_formatter import (
     agent_routing_markup,
     Colors,
     Icons,
-    OutputFormatter,
 )
 
 

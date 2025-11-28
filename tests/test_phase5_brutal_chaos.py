@@ -26,17 +26,15 @@
 
 import pytest
 import asyncio
-import sys
-from unittest.mock import Mock, AsyncMock, patch, MagicMock
-from typing import Any, Dict, Optional
+from unittest.mock import Mock, AsyncMock
 
 # Import everything that could break
 from jdev_cli.maestro_governance import MaestroGovernance, render_sofia_counsel
 from jdev_cli.core.governance_pipeline import GovernancePipeline
 from jdev_cli.agents.justica_agent import JusticaIntegratedAgent
 from jdev_cli.agents.sofia_agent import SofiaIntegratedAgent
-from jdev_cli.agents.base import AgentTask, AgentResponse, AgentRole, BaseAgent
-from jdev_cli.core.agent_identity import AgentPermission, get_agent_identity, AGENT_IDENTITIES
+from jdev_cli.agents.base import AgentTask, AgentResponse, AgentRole
+from jdev_cli.core.agent_identity import get_agent_identity, AGENT_IDENTITIES
 
 
 # ============================================================================

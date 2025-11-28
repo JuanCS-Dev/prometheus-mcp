@@ -15,7 +15,6 @@ import pytest
 import warnings
 from datetime import datetime
 from unittest.mock import AsyncMock, MagicMock
-from typing import Dict, Any
 
 from jdev_cli.agents.base import (
     AgentRole,

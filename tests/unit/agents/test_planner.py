@@ -13,8 +13,7 @@ Based on Anthropic Claude Code testing standards.
 """
 import pytest
 import json
-from unittest.mock import AsyncMock, MagicMock, patch
-from typing import Dict, Any, List
+from unittest.mock import AsyncMock, MagicMock
 
 from jdev_cli.agents.planner import (
     WorldState,
@@ -36,7 +35,6 @@ from jdev_cli.agents.base import (
     AgentRole,
     AgentCapability,
     AgentTask,
-    AgentResponse,
 )
 
 

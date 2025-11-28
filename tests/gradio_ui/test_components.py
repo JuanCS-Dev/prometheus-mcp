@@ -9,7 +9,6 @@ Following Boris Cherny testing philosophy:
 """
 from __future__ import annotations
 
-import pytest
 
 from gradio_ui.components import (
     render_gauge,
@@ -26,7 +25,7 @@ class TestRenderGauge:
     def test_normal_range(self) -> None:
         """Gauge renders correctly for values in [0, 100]."""
         html = render_gauge(50.0, "TEST", "100K")
-        
+
         assert "50%" in html
         assert "TEST" in html.upper()
         assert "100K" in html
@@ -38,14 +37,14 @@ class TestRenderGauge:
         # Orange warning at 75%
         html_75 = render_gauge(75.0, "TOKEN", "1M")
         assert "#F59E0B" in html_75  # Orange
-        
+
         html_80 = render_gauge(80.0, "TOKEN", "1M")
         assert "#F59E0B" in html_80
-        
+
         # Red danger at 90%
         html_90 = render_gauge(90.0, "TOKEN", "1M")
         assert "#EF4444" in html_90  # Red
-        
+
         html_95 = render_gauge(95.0, "TOKEN", "1M")
         assert "#EF4444" in html_95
 
@@ -54,15 +53,15 @@ class TestRenderGauge:
         # Zero
         html_0 = render_gauge(0.0, "EMPTY", "0")
         assert "0%" in html_0
-        
+
         # Exact 100
         html_100 = render_gauge(100.0, "FULL", "1M")
         assert "100%" in html_100
-        
+
         # Above 100 (should clamp)
         html_over = render_gauge(150.0, "OVER", "1M")
         assert "100%" in html_over  # Clamped to 100
-        
+
         # Negative (should clamp to 0)
         html_neg = render_gauge(-10.0, "NEG", "0")
         assert "0%" in html_neg
@@ -75,12 +74,12 @@ class TestRenderGauge:
     def test_svg_structure(self) -> None:
         """SVG structure is valid and complete."""
         html = render_gauge(50.0, "TEST", "100")
-        
+
         # Must contain SVG with circles
         assert "<svg" in html
         assert "</svg>" in html
         assert "<circle" in html
-        
+
         # Must have both background and progress circles
         assert html.count("<circle") >= 2
 
@@ -92,7 +91,7 @@ class TestRenderBarChart:
         """Bar chart renders correctly for normalized [0.0, 1.0] values."""
         values = [0.85, 0.9, 0.88, 0.95, 0.92, 0.94]
         html = render_bar_chart(values, "SAFETY")
-        
+
         assert "SAFETY" in html.upper()
         assert "SAFE" in html
         assert "RISK" in html
@@ -104,11 +103,11 @@ class TestRenderBarChart:
         # Safe: >= 0.5
         html_safe = render_bar_chart([0.8], "TEST")
         assert "bg-cyber-accent" in html_safe
-        
+
         # Warning: [0.3, 0.5)
         html_warn = render_bar_chart([0.4], "TEST")
         assert "bg-cyber-warning" in html_warn
-        
+
         # Danger: < 0.3
         html_danger = render_bar_chart([0.2], "TEST")
         assert "bg-cyber-danger" in html_danger
@@ -124,7 +123,7 @@ class TestRenderBarChart:
         """Multiple bars render with correct structure."""
         values = [0.1, 0.4, 0.8]  # danger, warning, safe
         html = render_bar_chart(values, "MIXED")
-        
+
         assert "bg-cyber-danger" in html
         assert "bg-cyber-warning" in html
         assert "bg-cyber-accent" in html
@@ -136,19 +135,19 @@ class TestRenderDualGauge:
     def test_both_gauges(self) -> None:
         """Dual gauge renders both left and right components."""
         html = render_dual_gauge(75.0, "MODEL", 100.0, "ENV")
-        
+
         assert "MODEL" in html
         assert "ENV" in html
         assert "75" in html
         assert "100" in html
-        
+
         # Should have two SVGs (one per gauge)
         assert html.count("<svg") >= 2
 
     def test_different_colors(self) -> None:
         """Left and right gauges have different colors."""
         html = render_dual_gauge(50.0, "LEFT", 50.0, "RIGHT")
-        
+
         # Left = cyan, Right = green
         assert "#00D9FF" in html
         assert "#10B981" in html
@@ -156,7 +155,7 @@ class TestRenderDualGauge:
     def test_edge_values(self) -> None:
         """Dual gauge handles 0 and 100 correctly."""
         html = render_dual_gauge(0.0, "ZERO", 100.0, "FULL")
-        
+
         assert "0" in html
         assert "100" in html
 
@@ -173,7 +172,7 @@ class TestRenderTerminalLogs:
             "10:00:03 - [WARN] High memory usage",
         ]
         html = render_terminal_logs(logs)
-        
+
         assert "text-blue-400" in html      # INFO
         assert "text-green-400" in html     # SUCCESS
         assert "text-red-400" in html       # ERROR
@@ -183,7 +182,7 @@ class TestRenderTerminalLogs:
         """Timestamps are styled differently from message content."""
         logs = ["12:34:56 - [INFO] Message"]
         html = render_terminal_logs(logs)
-        
+
         # Timestamp should have gray styling
         assert "text-gray-600" in html
         # Message should have level-specific color
@@ -192,14 +191,14 @@ class TestRenderTerminalLogs:
     def test_cursor_presence(self) -> None:
         """Terminal includes blinking cursor at end."""
         html = render_terminal_logs(["Test log"])
-        
+
         assert "cursor-blink" in html
         assert "root@gemini-cli" in html
 
     def test_empty_logs(self) -> None:
         """Empty log list still renders valid structure."""
         html = render_terminal_logs([])
-        
+
         assert "font-mono" in html
         assert "cursor-blink" in html
         # Should have terminal prompt even with no logs
@@ -209,7 +208,7 @@ class TestRenderTerminalLogs:
         """Logs without timestamp separator are still rendered."""
         logs = ["Plain message without timestamp"]
         html = render_terminal_logs(logs)
-        
+
         assert "Plain message without timestamp" in html
 
 
@@ -219,7 +218,7 @@ class TestRenderTailwindHeader:
     def test_script_tag(self) -> None:
         """Header contains Tailwind CDN script."""
         html = render_tailwind_header()
-        
+
         assert "<script" in html
         assert "cdn.tailwindcss.com" in html
         assert "</script>" in html
@@ -227,7 +226,7 @@ class TestRenderTailwindHeader:
     def test_config_object(self) -> None:
         """Tailwind config defines custom color palette."""
         html = render_tailwind_header()
-        
+
         assert "tailwind.config" in html
         assert "darkMode" in html
         assert "cyber-bg" in html
@@ -237,7 +236,7 @@ class TestRenderTailwindHeader:
     def test_font_family(self) -> None:
         """Tailwind config includes JetBrains Mono font."""
         html = render_tailwind_header()
-        
+
         assert "JetBrains Mono" in html
         assert "monospace" in html
 
@@ -253,7 +252,7 @@ class TestComponentIntegration:
         dual = render_dual_gauge(50.0, "A", 50.0, "B")
         logs = render_terminal_logs(["test"])
         header = render_tailwind_header()
-        
+
         for html in [gauge, bar, dual, logs, header]:
             assert isinstance(html, str)
             assert len(html) > 0
@@ -264,10 +263,10 @@ class TestComponentIntegration:
         """Components use Tailwind utility classes."""
         gauge = render_gauge(50.0, "TEST", "100")
         logs = render_terminal_logs(["test"])
-        
+
         # Check for common Tailwind patterns
         tailwind_patterns = ["flex", "text-", "bg-", "p-", "font-"]
-        
+
         for component in [gauge, logs]:
             assert any(pattern in component for pattern in tailwind_patterns)
 
@@ -276,7 +275,7 @@ class TestComponentIntegration:
         # Attempt XSS via label
         malicious_label = "<script>alert('xss')</script>"
         html = render_gauge(50.0, malicious_label, "100")
-        
+
         # Script should be escaped or absent
         # (In production, use proper HTML escaping - this tests current behavior)
         assert "<script>" not in html or "alert" not in html

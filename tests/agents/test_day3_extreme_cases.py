@@ -4,7 +4,6 @@ Tests de casos extremos e situações limites.
 """
 import pytest
 from pathlib import Path
-from unittest.mock import Mock
 from jdev_cli.agents.planner import PlannerAgent
 from jdev_cli.agents.refactorer import RefactorerAgent
 from jdev_cli.agents.base import TaskContext, TaskStatus
@@ -14,7 +13,7 @@ import random
 
 class TestExtremeInputSizes:
     """Tests com tamanhos extremos de input"""
-    
+
     @pytest.mark.asyncio
     async def test_planner_handles_empty_description(self):
         """Planner com descrição vazia"""
@@ -23,7 +22,7 @@ class TestExtremeInputSizes:
         result = await agent.execute(context)
         # AgentResponse has .success, not .status
         assert isinstance(result.success, bool)
-    
+
     @pytest.mark.asyncio
     async def test_planner_handles_single_char_description(self):
         """Planner com descrição de 1 caractere"""
@@ -31,7 +30,7 @@ class TestExtremeInputSizes:
         context = TaskContext(task_id="one", description="x", working_dir=Path("/tmp"))
         result = await agent.execute(context)
         assert isinstance(result.success, bool)
-    
+
     @pytest.mark.asyncio
     async def test_planner_handles_max_description(self):
         """Planner com descrição máxima"""
@@ -40,14 +39,14 @@ class TestExtremeInputSizes:
         context = TaskContext(task_id="max", description=desc, working_dir=Path("/tmp"))
         result = await agent.execute(context)
         assert isinstance(result.success, bool)
-    
+
     def test_refactorer_handles_empty_description(self):
         """Refactorer com descrição vazia"""
         agent = RefactorerAgent()
         context = TaskContext(task_id="empty", description="", working_dir=Path("/tmp"))
         result = agent.execute(context)
         assert result.status in [TaskStatus.SUCCESS, TaskStatus.FAILED]
-    
+
     def test_refactorer_handles_max_description(self):
         """Refactorer com descrição máxima"""
         agent = RefactorerAgent()
@@ -59,7 +58,7 @@ class TestExtremeInputSizes:
 
 class TestExtremeMetadata:
     """Tests com metadata extrema"""
-    
+
     def test_planner_handles_empty_metadata(self):
         """Planner com metadata vazio"""
         agent = PlannerAgent()
@@ -71,7 +70,7 @@ class TestExtremeMetadata:
         )
         result = agent.execute(context)
         assert result.status == TaskStatus.SUCCESS
-    
+
     def test_planner_handles_large_metadata(self):
         """Planner com metadata gigante"""
         agent = PlannerAgent()
@@ -84,7 +83,7 @@ class TestExtremeMetadata:
         )
         result = agent.execute(context)
         assert result.status in [TaskStatus.SUCCESS, TaskStatus.FAILED]
-    
+
     def test_planner_handles_nested_metadata(self):
         """Planner com metadata profundamente aninhado"""
         agent = PlannerAgent()
@@ -97,7 +96,7 @@ class TestExtremeMetadata:
         )
         result = agent.execute(context)
         assert result.status == TaskStatus.SUCCESS
-    
+
     def test_refactorer_handles_null_metadata_values(self):
         """Refactorer com valores None em metadata"""
         agent = RefactorerAgent()
@@ -109,7 +108,7 @@ class TestExtremeMetadata:
         )
         result = agent.execute(context)
         assert result.status in [TaskStatus.SUCCESS, TaskStatus.FAILED]
-    
+
     def test_refactorer_handles_mixed_type_metadata(self):
         """Refactorer com tipos mistos em metadata"""
         agent = RefactorerAgent()
@@ -132,7 +131,7 @@ class TestExtremeMetadata:
 
 class TestExtremeUnicode:
     """Tests com Unicode extremo"""
-    
+
     def test_planner_handles_emoji_description(self):
         """Planner com descrição só de emojis"""
         agent = PlannerAgent()
@@ -143,7 +142,7 @@ class TestExtremeUnicode:
         )
         result = agent.execute(context)
         assert result.status in [TaskStatus.SUCCESS, TaskStatus.FAILED]
-    
+
     def test_planner_handles_mixed_languages(self):
         """Planner com múltiplas linguagens"""
         agent = PlannerAgent()
@@ -154,7 +153,7 @@ class TestExtremeUnicode:
         )
         result = agent.execute(context)
         assert result.status == TaskStatus.SUCCESS
-    
+
     def test_planner_handles_rtl_text(self):
         """Planner com texto right-to-left"""
         agent = PlannerAgent()
@@ -165,7 +164,7 @@ class TestExtremeUnicode:
         )
         result = agent.execute(context)
         assert result.status == TaskStatus.SUCCESS
-    
+
     def test_refactorer_handles_special_characters(self):
         """Refactorer com caracteres especiais"""
         agent = RefactorerAgent()
@@ -176,7 +175,7 @@ class TestExtremeUnicode:
         )
         result = agent.execute(context)
         assert result.status in [TaskStatus.SUCCESS, TaskStatus.FAILED]
-    
+
     def test_refactorer_handles_control_characters(self):
         """Refactorer com caracteres de controle"""
         agent = RefactorerAgent()
@@ -191,7 +190,7 @@ class TestExtremeUnicode:
 
 class TestExtremePaths:
     """Tests com paths extremos"""
-    
+
     def test_planner_handles_very_long_path(self):
         """Planner com path muito longo"""
         agent = PlannerAgent()
@@ -203,7 +202,7 @@ class TestExtremePaths:
         )
         result = agent.execute(context)
         assert result.status in [TaskStatus.SUCCESS, TaskStatus.FAILED]
-    
+
     def test_planner_handles_special_chars_in_path(self):
         """Planner com caracteres especiais no path"""
         agent = PlannerAgent()
@@ -215,7 +214,7 @@ class TestExtremePaths:
         )
         result = agent.execute(context)
         assert result.status in [TaskStatus.SUCCESS, TaskStatus.FAILED]
-    
+
     def test_planner_handles_unicode_in_path(self):
         """Planner com Unicode no path"""
         agent = PlannerAgent()
@@ -227,7 +226,7 @@ class TestExtremePaths:
         )
         result = agent.execute(context)
         assert result.status in [TaskStatus.SUCCESS, TaskStatus.FAILED]
-    
+
     def test_refactorer_handles_relative_path(self):
         """Refactorer com path relativo"""
         agent = RefactorerAgent()
@@ -238,7 +237,7 @@ class TestExtremePaths:
         )
         result = agent.execute(context)
         assert result.status in [TaskStatus.SUCCESS, TaskStatus.FAILED]
-    
+
     def test_refactorer_handles_symlink_path(self):
         """Refactorer com symlink (simulado)"""
         agent = RefactorerAgent()
@@ -253,7 +252,7 @@ class TestExtremePaths:
 
 class TestExtremeTaskIds:
     """Tests com task IDs extremos"""
-    
+
     def test_planner_handles_empty_task_id(self):
         """Planner com task_id vazio"""
         agent = PlannerAgent()
@@ -264,7 +263,7 @@ class TestExtremeTaskIds:
         )
         result = agent.execute(context)
         assert result.status in [TaskStatus.SUCCESS, TaskStatus.FAILED]
-    
+
     def test_planner_handles_very_long_task_id(self):
         """Planner com task_id muito longo"""
         agent = PlannerAgent()
@@ -275,7 +274,7 @@ class TestExtremeTaskIds:
         )
         result = agent.execute(context)
         assert result.status in [TaskStatus.SUCCESS, TaskStatus.FAILED]
-    
+
     def test_planner_handles_special_chars_in_task_id(self):
         """Planner com caracteres especiais em task_id"""
         agent = PlannerAgent()
@@ -286,7 +285,7 @@ class TestExtremeTaskIds:
         )
         result = agent.execute(context)
         assert result.status in [TaskStatus.SUCCESS, TaskStatus.FAILED]
-    
+
     def test_refactorer_handles_uuid_task_id(self):
         """Refactorer com UUID como task_id"""
         agent = RefactorerAgent()
@@ -297,7 +296,7 @@ class TestExtremeTaskIds:
         )
         result = agent.execute(context)
         assert result.status in [TaskStatus.SUCCESS, TaskStatus.FAILED]
-    
+
     def test_refactorer_handles_numeric_task_id(self):
         """Refactorer com task_id numérico"""
         agent = RefactorerAgent()
@@ -312,7 +311,7 @@ class TestExtremeTaskIds:
 
 class TestConcurrencyEdgeCases:
     """Tests de edge cases de concorrência"""
-    
+
     def test_planner_handles_rapid_sequential_calls(self):
         """Planner com chamadas sequenciais rápidas"""
         agent = PlannerAgent()
@@ -326,7 +325,7 @@ class TestConcurrencyEdgeCases:
             results.append(agent.execute(context))
         assert len(results) == 10
         assert all(r.status in [TaskStatus.SUCCESS, TaskStatus.FAILED] for r in results)
-    
+
     def test_planner_handles_identical_contexts(self):
         """Planner com contextos idênticos"""
         agent = PlannerAgent()
@@ -339,25 +338,25 @@ class TestConcurrencyEdgeCases:
         result2 = agent.execute(context)
         assert result1.status in [TaskStatus.SUCCESS, TaskStatus.FAILED]
         assert result2.status in [TaskStatus.SUCCESS, TaskStatus.FAILED]
-    
+
     def test_refactorer_handles_interleaved_calls(self):
         """Refactorer com chamadas intercaladas"""
         agent1 = RefactorerAgent()
         agent2 = RefactorerAgent()
-        
+
         context1 = TaskContext(task_id="1", description="Task 1", working_dir=Path("/tmp"))
         context2 = TaskContext(task_id="2", description="Task 2", working_dir=Path("/tmp"))
-        
+
         result1 = agent1.execute(context1)
         result2 = agent2.execute(context2)
-        
+
         assert result1.status in [TaskStatus.SUCCESS, TaskStatus.FAILED]
         assert result2.status in [TaskStatus.SUCCESS, TaskStatus.FAILED]
 
 
 class TestMemoryPressure:
     """Tests sob pressão de memória"""
-    
+
     def test_planner_handles_many_small_tasks(self):
         """Planner com muitas tarefas pequenas"""
         agent = PlannerAgent()
@@ -369,7 +368,7 @@ class TestMemoryPressure:
             )
             result = agent.execute(context)
             assert result.status in [TaskStatus.SUCCESS, TaskStatus.FAILED]
-    
+
     def test_planner_handles_few_large_tasks(self):
         """Planner com poucas tarefas grandes"""
         agent = PlannerAgent()
@@ -382,7 +381,7 @@ class TestMemoryPressure:
             )
             result = agent.execute(context)
             assert result.status in [TaskStatus.SUCCESS, TaskStatus.FAILED]
-    
+
     def test_refactorer_handles_repeated_execution(self):
         """Refactorer com execuções repetidas"""
         agent = RefactorerAgent()
@@ -398,7 +397,7 @@ class TestMemoryPressure:
 
 class TestBoundaryValues:
     """Tests com valores de fronteira"""
-    
+
     def test_planner_with_min_valid_context(self):
         """Planner com contexto mínimo válido"""
         agent = PlannerAgent()
@@ -409,7 +408,7 @@ class TestBoundaryValues:
         )
         result = agent.execute(context)
         assert result.status in [TaskStatus.SUCCESS, TaskStatus.FAILED]
-    
+
     def test_planner_with_max_valid_context(self):
         """Planner com contexto máximo válido"""
         agent = PlannerAgent()
@@ -421,7 +420,7 @@ class TestBoundaryValues:
         )
         result = agent.execute(context)
         assert result.status in [TaskStatus.SUCCESS, TaskStatus.FAILED]
-    
+
     def test_refactorer_with_zero_timeout(self):
         """Refactorer com timeout zero"""
         agent = RefactorerAgent()
@@ -433,7 +432,7 @@ class TestBoundaryValues:
         )
         result = agent.execute(context)
         assert result.status in [TaskStatus.SUCCESS, TaskStatus.FAILED]
-    
+
     def test_refactorer_with_negative_values(self):
         """Refactorer com valores negativos"""
         agent = RefactorerAgent()
@@ -449,7 +448,7 @@ class TestBoundaryValues:
 
 class TestErrorRecovery:
     """Tests de recuperação de erros"""
-    
+
     def test_planner_recovers_from_partial_failure(self):
         """Planner deve recuperar de falha parcial"""
         agent = PlannerAgent()
@@ -460,7 +459,7 @@ class TestErrorRecovery:
         )
         result = agent.execute(context)
         assert result.status in [TaskStatus.SUCCESS, TaskStatus.FAILED]
-    
+
     def test_planner_handles_retry_after_failure(self):
         """Planner deve permitir retry após falha"""
         agent = PlannerAgent()
@@ -479,7 +478,7 @@ class TestErrorRecovery:
         )
         result2 = agent.execute(context2)
         assert result2.status in [TaskStatus.SUCCESS, TaskStatus.FAILED]
-    
+
     def test_refactorer_handles_cascading_failures(self):
         """Refactorer deve tratar falhas em cascata"""
         agent = RefactorerAgent()
@@ -496,7 +495,7 @@ class TestErrorRecovery:
 
 class TestRandomizedInputs:
     """Tests com inputs randomizados"""
-    
+
     def test_planner_handles_random_descriptions(self):
         """Planner com descrições aleatórias"""
         agent = PlannerAgent()
@@ -509,13 +508,13 @@ class TestRandomizedInputs:
             )
             result = agent.execute(context)
             assert result.status in [TaskStatus.SUCCESS, TaskStatus.FAILED]
-    
+
     def test_refactorer_handles_random_metadata(self):
         """Refactorer com metadata aleatório"""
         agent = RefactorerAgent()
         for _ in range(10):
             random_meta = {
-                ''.join(random.choices(string.ascii_letters, k=10)): 
+                ''.join(random.choices(string.ascii_letters, k=10)):
                 ''.join(random.choices(string.ascii_letters + string.digits, k=20))
                 for _ in range(5)
             }
@@ -531,7 +530,7 @@ class TestRandomizedInputs:
 
 class TestTypeCoercion:
     """Tests de coerção de tipos"""
-    
+
     def test_planner_handles_numeric_description(self):
         """Planner com descrição numérica (como string)"""
         agent = PlannerAgent()
@@ -542,7 +541,7 @@ class TestTypeCoercion:
         )
         result = agent.execute(context)
         assert result.status in [TaskStatus.SUCCESS, TaskStatus.FAILED]
-    
+
     def test_planner_handles_boolean_in_metadata(self):
         """Planner com booleanos em metadata"""
         agent = PlannerAgent()
@@ -554,7 +553,7 @@ class TestTypeCoercion:
         )
         result = agent.execute(context)
         assert result.status == TaskStatus.SUCCESS
-    
+
     def test_refactorer_handles_stringified_numbers(self):
         """Refactorer com números como strings"""
         agent = RefactorerAgent()
@@ -570,7 +569,7 @@ class TestTypeCoercion:
 
 class TestImmutability:
     """Tests de imutabilidade"""
-    
+
     def test_planner_does_not_modify_input_context(self):
         """Planner não deve modificar contexto de entrada"""
         agent = PlannerAgent()
@@ -582,7 +581,7 @@ class TestImmutability:
         original_desc = context.description
         agent.execute(context)
         assert context.description == original_desc
-    
+
     def test_refactorer_does_not_modify_input_context(self):
         """Refactorer não deve modificar contexto de entrada"""
         agent = RefactorerAgent()

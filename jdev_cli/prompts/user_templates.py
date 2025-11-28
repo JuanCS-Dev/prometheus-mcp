@@ -13,7 +13,7 @@ def format_tool_schemas(tool_schemas: List[Dict]) -> str:
         Formatted tool schemas string
     """
     formatted = []
-    
+
     # Group by category
     by_category = {}
     for schema in tool_schemas:
@@ -21,27 +21,27 @@ def format_tool_schemas(tool_schemas: List[Dict]) -> str:
         if category not in by_category:
             by_category[category] = []
         by_category[category].append(schema)
-    
+
     # Format each category
     for category, schemas in sorted(by_category.items()):
         formatted.append(f"\n**{category.upper()}:**")
         for schema in schemas:
             name = schema['name']
             desc = schema['description']
-            
+
             # Get required parameters
             params = schema['parameters'].get('properties', {})
             required = schema['parameters'].get('required', [])
-            
+
             param_str = ""
             if params:
                 required_params = [f"{p}*" for p in required]
                 optional_params = [p for p in params.keys() if p not in required]
                 all_params = required_params + optional_params
                 param_str = f" ({', '.join(all_params)})"
-            
+
             formatted.append(f"  • {name}{param_str}: {desc}")
-    
+
     return "\n".join(formatted)
 
 
@@ -55,24 +55,24 @@ def format_context(context: Dict[str, Any]) -> str:
         Formatted context string
     """
     parts = []
-    
+
     if 'cwd' in context:
         parts.append(f"📁 Current directory: `{context['cwd']}`")
-    
+
     if 'recent_files' in context and context['recent_files']:
         files = list(context['recent_files'])[:5]
         parts.append(f"📄 Recent files: {', '.join(f'`{f}`' for f in files)}")
-    
+
     if 'modified_files' in context and context['modified_files']:
         files = list(context['modified_files'])[:5]
         parts.append(f"✏️  Modified: {', '.join(f'`{f}`' for f in files)}")
-    
+
     if 'last_command' in context:
         parts.append(f"⚡ Last command: `{context['last_command']}`")
-    
+
     if 'git_branch' in context:
         parts.append(f"🔀 Git branch: `{context['git_branch']}`")
-    
+
     return "\n".join(parts) if parts else "No context available"
 
 
@@ -88,19 +88,19 @@ def format_conversation_history(history: List[Dict], max_turns: int = 5) -> str:
     """
     if not history:
         return ""
-    
+
     # Take last N turns
     recent = history[-max_turns:]
-    
+
     formatted = []
     for turn in recent:
         role = turn.get('role', 'user')
         content = turn.get('content', '')
-        
+
         # Truncate long content
         if len(content) > 200:
             content = content[:200] + "..."
-        
+
         if role == 'user':
             formatted.append(f"User: {content}")
         elif role == 'assistant':
@@ -110,7 +110,7 @@ def format_conversation_history(history: List[Dict], max_turns: int = 5) -> str:
             success = turn.get('success', False)
             status = "✓" if success else "✗"
             formatted.append(f"Tool {status}: {tool_name}")
-    
+
     return "\n".join(formatted)
 
 
@@ -128,15 +128,15 @@ def format_error_context(error: str, previous_action: str = None) -> str:
         "❌ **Error occurred:**",
         f"```\n{error}\n```"
     ]
-    
+
     if previous_action:
         parts.append(f"\n**Previous action:** {previous_action}")
-    
+
     parts.append("\n**Please analyze this error and suggest:**")
     parts.append("1. What went wrong")
     parts.append("2. How to fix it")
     parts.append("3. Alternative approach if applicable")
-    
+
     return "\n".join(parts)
 
 
@@ -162,13 +162,13 @@ def build_user_prompt(
         Complete formatted user prompt
     """
     sections = []
-    
+
     # Add context if available
     if context:
         sections.append("## CURRENT CONTEXT")
         sections.append(format_context(context))
         sections.append("")
-    
+
     # Add conversation history if available
     if conversation_history:
         history_text = format_conversation_history(conversation_history)
@@ -176,14 +176,14 @@ def build_user_prompt(
             sections.append("## CONVERSATION HISTORY")
             sections.append(history_text)
             sections.append("")
-    
+
     # Add few-shot examples if provided
     if few_shot_examples:
         sections.append("## EXAMPLES")
         from .few_shot_examples import format_examples_for_prompt
         sections.append(format_examples_for_prompt(few_shot_examples))
         sections.append("")
-    
+
     # Add error context if this is recovery
     if error_context:
         sections.append(format_error_context(
@@ -191,13 +191,13 @@ def build_user_prompt(
             error_context.get('previous_action')
         ))
         sections.append("")
-    
+
     # Add tool schemas in concise format
     if tool_schemas:
         sections.append("## AVAILABLE TOOLS")
         sections.append(format_tool_schemas(tool_schemas))
         sections.append("")
-    
+
     # Add user input
     sections.append("## USER REQUEST")
     sections.append(user_input)
@@ -205,7 +205,7 @@ def build_user_prompt(
     sections.append("**Respond with either:**")
     sections.append("1. JSON array of tool calls: `[{\"tool\": \"name\", \"args\": {...}}]`")
     sections.append("2. Helpful text response if no tools needed")
-    
+
     return "\n".join(sections)
 
 
@@ -217,7 +217,7 @@ TEMPLATES = {
 Available tools: {tool_names}
 
 Respond with JSON tool call(s) or helpful text.""",
-    
+
     "with_context": """## CONTEXT
 {context}
 
@@ -227,7 +227,7 @@ Respond with JSON tool call(s) or helpful text.""",
 {tools_section}
 
 Respond with appropriate tool calls or text.""",
-    
+
     "error_recovery": """## PREVIOUS ERROR
 {error}
 
@@ -236,7 +236,7 @@ Respond with appropriate tool calls or text.""",
 
 Analyze the error and suggest a fix using available tools:
 {tool_names}""",
-    
+
     "multi_step": """## WORKFLOW REQUEST
 {user_input}
 
@@ -300,8 +300,8 @@ def build_chain_of_thought_prompt(user_input: str, context: Dict = None) -> str:
         "",
         "Then respond with tool calls or explanation."
     ]
-    
+
     if context:
         prompt.insert(0, f"## CONTEXT\n{format_context(context)}\n")
-    
+
     return "\n".join(prompt)

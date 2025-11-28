@@ -9,15 +9,12 @@ Coverage Targets:
 
 import json
 import pytest
-from unittest.mock import MagicMock, AsyncMock, patch, Mock
-from typing import List
+from unittest.mock import MagicMock
 
 from jdev_cli.agents.planner import (
     PlannerAgent,
     DependencyAnalyzer,
     SOPStep,
-    ExecutionStrategy,
-    AgentPriority,
 )
 
 

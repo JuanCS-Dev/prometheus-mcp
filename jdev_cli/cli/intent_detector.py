@@ -10,7 +10,7 @@ from typing import Optional, Tuple
 
 class IntentDetector:
     """Detecta intenção do usuário para rotear para agent correto."""
-    
+
     def __init__(self):
         # Keywords por agent
         self.intent_patterns = {
@@ -131,7 +131,7 @@ class IntentDetector:
                 ]
             }
         }
-    
+
     def detect(self, message: str) -> Optional[str]:
         """
         Detecta qual agent deve ser usado baseado na mensagem.
@@ -140,37 +140,37 @@ class IntentDetector:
             Nome do agent ou None se não detectar nada específico.
         """
         message_lower = message.lower()
-        
+
         # Score por agent
         scores = {}
-        
+
         for agent, patterns in self.intent_patterns.items():
             score = 0
-            
+
             # Check keywords
             for keyword in patterns["keywords"]:
                 if keyword in message_lower:
                     score += 2
-            
+
             # Check regex patterns
             for pattern in patterns["patterns"]:
                 if re.search(pattern, message_lower):
                     score += 5  # Patterns valem mais
-            
+
             if score > 0:
                 scores[agent] = score
-        
+
         # Retorna agent com maior score
         if scores:
             best_agent = max(scores, key=scores.get)
             best_score = scores[best_agent]
-            
+
             # Apenas retorna se score for significativo
             if best_score >= 3:
                 return best_agent
-        
+
         return None
-    
+
     def should_use_agent(self, message: str) -> Tuple[bool, Optional[str]]:
         """
         Verifica se deve usar um agent e qual.

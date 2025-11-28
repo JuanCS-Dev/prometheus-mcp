@@ -1,14 +1,13 @@
 """Full unrestricted web access tools for CLI."""
 import logging
-import re
 from pathlib import Path
-from typing import Optional, Dict, Any, List
+from typing import Optional, Dict
 from urllib.parse import urlparse
 
 import httpx
 from bs4 import BeautifulSoup
 
-from .base import Tool, ToolResult, ToolCategory
+from .base import ToolResult, ToolCategory
 from .validated import ValidatedTool
 
 logger = logging.getLogger(__name__)
@@ -16,7 +15,7 @@ logger = logging.getLogger(__name__)
 
 class PackageSearchTool(ValidatedTool):
     """Search package registries (PyPI, npm) for package information."""
-    
+
     def __init__(self):
         super().__init__()
         self.category = ToolCategory.SEARCH
@@ -33,10 +32,10 @@ class PackageSearchTool(ValidatedTool):
                 "required": False
             }
         }
-    
+
     def get_validators(self):
         return {}
-    
+
     async def _execute_validated(
         self,
         package_name: str,
@@ -58,28 +57,28 @@ class PackageSearchTool(ValidatedTool):
                     success=False,
                     error=f"Invalid registry '{registry}'. Must be 'pypi' or 'npm'"
                 )
-            
+
             logger.info(f"Searching {registry} for package: {package_name}")
-            
+
             # Build URL
             if registry == "pypi":
                 url = f"https://pypi.org/pypi/{package_name}/json"
             else:  # npm
                 url = f"https://registry.npmjs.org/{package_name}"
-            
+
             # Fetch package data
             async with httpx.AsyncClient(timeout=10.0) as client:
                 resp = await client.get(url)
-            
+
             if resp.status_code == 404:
                 return ToolResult(
                     success=False,
                     error=f"Package '{package_name}' not found in {registry}"
                 )
-            
+
             resp.raise_for_status()
             data = resp.json()
-            
+
             # Extract key info based on registry
             if registry == "pypi":
                 info = {
@@ -106,9 +105,9 @@ class PackageSearchTool(ValidatedTool):
                     "package_url": f"https://www.npmjs.com/package/{package_name}",
                     "dependencies": list(data.get("versions", {}).get(data.get("dist-tags", {}).get("latest", ""), {}).get("dependencies", {}).keys())[:10]
                 }
-            
+
             logger.info(f"Found {package_name} v{info['version']} in {registry}")
-            
+
             return ToolResult(
                 success=True,
                 data=info,
@@ -117,7 +116,7 @@ class PackageSearchTool(ValidatedTool):
                     "package_name": package_name
                 }
             )
-        
+
         except httpx.HTTPStatusError as e:
             logger.error(f"HTTP error: {e.response.status_code}")
             return ToolResult(
@@ -134,7 +133,7 @@ class PackageSearchTool(ValidatedTool):
 
 class FetchURLTool(ValidatedTool):
     """Fetch content from any URL (HTML, JSON, text, etc.)."""
-    
+
     def __init__(self):
         super().__init__()
         self.name = "fetch_url"  # Override auto-generated name
@@ -157,10 +156,10 @@ class FetchURLTool(ValidatedTool):
                 "required": False
             }
         }
-    
+
     def get_validators(self):
         return {}
-    
+
     async def _execute_validated(
         self,
         url: str,
@@ -186,9 +185,9 @@ class FetchURLTool(ValidatedTool):
                     success=False,
                     error=f"Invalid URL: {url}"
                 )
-            
+
             logger.info(f"Fetching URL: {url}")
-            
+
             # Fetch content
             async with httpx.AsyncClient(
                 timeout=30.0,
@@ -196,34 +195,34 @@ class FetchURLTool(ValidatedTool):
                 headers={"User-Agent": "Mozilla/5.0 (compatible; QwenDevCLI/1.0)"}
             ) as client:
                 resp = await client.get(url)
-            
+
             resp.raise_for_status()
-            
+
             # Detect content type
             content_type = resp.headers.get("content-type", "").lower()
-            
+
             # Process based on content type
             if "application/json" in content_type:
                 # JSON response
                 content = resp.json()
                 content_str = str(content)[:max_length]
                 data_type = "json"
-            
+
             elif "text/html" in content_type:
                 # HTML response
                 html = resp.text
-                
+
                 if extract_text:
                     # Extract clean text
                     soup = BeautifulSoup(html, "html.parser")
-                    
+
                     # Remove script and style elements
                     for script in soup(["script", "style"]):
                         script.decompose()
-                    
+
                     # Get text
                     text = soup.get_text()
-                    
+
                     # Clean up whitespace
                     lines = (line.strip() for line in text.splitlines())
                     chunks = (phrase.strip() for line in lines for phrase in line.split("  "))
@@ -232,17 +231,17 @@ class FetchURLTool(ValidatedTool):
                 else:
                     content_str = html[:max_length]
                     data_type = "html"
-            
+
             else:
                 # Plain text or other
                 content_str = resp.text[:max_length]
                 data_type = "text"
-            
+
             # Check if truncated
             was_truncated = len(resp.text) > max_length
-            
+
             logger.info(f"Fetched {len(content_str)} chars from {url} (type: {data_type})")
-            
+
             return ToolResult(
                 success=True,
                 data={
@@ -260,7 +259,7 @@ class FetchURLTool(ValidatedTool):
                     "size": len(content_str)
                 }
             )
-        
+
         except httpx.HTTPStatusError as e:
             logger.error(f"HTTP error: {e.response.status_code}")
             return ToolResult(
@@ -277,7 +276,7 @@ class FetchURLTool(ValidatedTool):
 
 class DownloadFileTool(ValidatedTool):
     """Download file from URL to local filesystem."""
-    
+
     def __init__(self):
         super().__init__()
         self.category = ToolCategory.SEARCH
@@ -294,10 +293,10 @@ class DownloadFileTool(ValidatedTool):
                 "required": False
             }
         }
-    
+
     def get_validators(self):
         return {}
-    
+
     async def _execute_validated(
         self,
         url: str,
@@ -321,7 +320,7 @@ class DownloadFileTool(ValidatedTool):
                     success=False,
                     error=f"Invalid URL: {url}"
                 )
-            
+
             # Auto-generate destination if not provided
             if not destination:
                 # Extract filename from URL
@@ -329,12 +328,12 @@ class DownloadFileTool(ValidatedTool):
                 if not filename:
                     filename = "downloaded_file"
                 destination = f"./downloads/{filename}"
-            
+
             dest_path = Path(destination)
             dest_path.parent.mkdir(parents=True, exist_ok=True)
-            
+
             logger.info(f"Downloading {url} to {dest_path}")
-            
+
             # Download file
             async with httpx.AsyncClient(
                 timeout=60.0,
@@ -342,21 +341,21 @@ class DownloadFileTool(ValidatedTool):
             ) as client:
                 async with client.stream("GET", url) as resp:
                     resp.raise_for_status()
-                    
+
                     # Get file size if available
                     total_size = int(resp.headers.get("content-length", 0))
-                    
+
                     # Write to file
                     with open(dest_path, "wb") as f:
                         downloaded = 0
                         async for chunk in resp.aiter_bytes(chunk_size=8192):
                             f.write(chunk)
                             downloaded += len(chunk)
-            
+
             file_size = dest_path.stat().st_size
-            
+
             logger.info(f"Downloaded {file_size} bytes to {dest_path}")
-            
+
             return ToolResult(
                 success=True,
                 data={
@@ -371,7 +370,7 @@ class DownloadFileTool(ValidatedTool):
                     "size": file_size
                 }
             )
-        
+
         except httpx.HTTPStatusError as e:
             logger.error(f"HTTP error: {e.response.status_code}")
             return ToolResult(
@@ -388,7 +387,7 @@ class DownloadFileTool(ValidatedTool):
 
 class HTTPRequestTool(ValidatedTool):
     """Make arbitrary HTTP requests (GET, POST, PUT, DELETE, etc.)."""
-    
+
     def __init__(self):
         super().__init__()
         self.name = "http_request"  # Override auto-generated name
@@ -421,10 +420,10 @@ class HTTPRequestTool(ValidatedTool):
                 "required": False
             }
         }
-    
+
     def get_validators(self):
         return {}
-    
+
     async def _execute_validated(
         self,
         url: str,
@@ -455,7 +454,7 @@ class HTTPRequestTool(ValidatedTool):
                     success=False,
                     error=f"Invalid HTTP method: {method}. Must be one of {valid_methods}"
                 )
-            
+
             # Validate URL
             parsed = urlparse(url)
             if not parsed.scheme or not parsed.netloc:
@@ -463,9 +462,9 @@ class HTTPRequestTool(ValidatedTool):
                     success=False,
                     error=f"Invalid URL: {url}"
                 )
-            
+
             logger.info(f"HTTP {method} {url}")
-            
+
             # Build request
             request_kwargs = {
                 "method": method,
@@ -473,13 +472,13 @@ class HTTPRequestTool(ValidatedTool):
                 "timeout": 30.0,
                 "follow_redirects": True
             }
-            
+
             if headers:
                 request_kwargs["headers"] = headers
-            
+
             if params:
                 request_kwargs["params"] = params
-            
+
             if body:
                 # Try to parse as JSON first
                 try:
@@ -504,9 +503,9 @@ class HTTPRequestTool(ValidatedTool):
                     response_data = resp.text
             else:
                 response_data = resp.text[:10000]  # Limit text responses
-            
+
             logger.info(f"HTTP {method} {url} -> {resp.status_code}")
-            
+
             return ToolResult(
                 success=True,
                 data={
@@ -524,7 +523,7 @@ class HTTPRequestTool(ValidatedTool):
                     "status": resp.status_code
                 }
             )
-        
+
         except httpx.HTTPStatusError as e:
             logger.error(f"HTTP error: {e.response.status_code}")
             return ToolResult(

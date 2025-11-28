@@ -17,7 +17,7 @@ class SafeCommandWhitelist:
     3. Are commonly used in CI/CD pipelines
     4. Are performance-critical (run on every file save)
     """
-    
+
     # Python tools
     PYTHON_SAFE = [
         "python",
@@ -32,7 +32,7 @@ class SafeCommandWhitelist:
         "coverage",
         "bandit",
     ]
-    
+
     # JavaScript/TypeScript tools
     JS_SAFE = [
         "eslint",
@@ -42,7 +42,7 @@ class SafeCommandWhitelist:
         "yarn test",
         "jest",
     ]
-    
+
     # Rust tools
     RUST_SAFE = [
         "cargo fmt",
@@ -50,14 +50,14 @@ class SafeCommandWhitelist:
         "cargo clippy",
         "cargo test",
     ]
-    
+
     # Go tools
     GO_SAFE = [
         "gofmt",
         "go",
         "golint",
     ]
-    
+
     # Generic tools
     GENERIC_SAFE = [
         "echo",
@@ -66,7 +66,7 @@ class SafeCommandWhitelist:
         "grep",
         "find",
     ]
-    
+
     @classmethod
     def all_safe_commands(cls) -> List[str]:
         """Get complete list of safe commands."""
@@ -77,7 +77,7 @@ class SafeCommandWhitelist:
             + cls.GO_SAFE
             + cls.GENERIC_SAFE
         )
-    
+
     @classmethod
     def is_safe(cls, command: str) -> Tuple[bool, Optional[str]]:
         """Check if a command is safe to execute directly.
@@ -99,13 +99,13 @@ class SafeCommandWhitelist:
             (False, "Dangerous pattern: pipe to shell")
         """
         command = command.strip()
-        
+
         if not command:
             return False, "Empty command"
-        
+
         # Extract base command (first word)
         base_command = command.split()[0]
-        
+
         # Check for dangerous patterns first
         dangerous_patterns = [
             (r"\|.*bash", "pipe to shell"),
@@ -118,18 +118,18 @@ class SafeCommandWhitelist:
             (r"dd\s+if=", "disk duplication"),
             (r":(.*\|.*&)", "fork bomb"),
         ]
-        
+
         for pattern, reason in dangerous_patterns:
             if re.search(pattern, command):
                 return False, f"Dangerous pattern: {reason}"
-        
+
         # Check if base command is in whitelist
         safe_commands = cls.all_safe_commands()
-        
+
         # Check exact matches first
         if base_command in safe_commands:
             return True, None
-        
+
         # Check multi-word commands (e.g., "cargo fmt")
         for safe_cmd in safe_commands:
             if command.startswith(safe_cmd):
@@ -138,9 +138,9 @@ class SafeCommandWhitelist:
                 rest = command[len(safe_cmd):].strip()
                 if not rest or rest[0] in [' ', '-', '{']:
                     return True, None
-        
+
         return False, f"Command '{base_command}' not in whitelist"
-    
+
     @classmethod
     def add_custom_safe_command(cls, command: str) -> None:
         """Add a custom safe command to the whitelist.

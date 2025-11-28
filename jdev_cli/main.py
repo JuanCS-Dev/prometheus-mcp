@@ -19,9 +19,6 @@ Date: 2025-11-25
 from __future__ import annotations
 
 import asyncio
-import sys
-import os
-from pathlib import Path
 from typing import Optional, List
 
 import typer
@@ -201,7 +198,7 @@ def ui(
         demo = create_ui()
         demo.launch(server_port=port, share=share)
     except ImportError as e:
-        console.print(f"[red]Error:[/red] Gradio not installed")
+        console.print("[red]Error:[/red] Gradio not installed")
         console.print("[dim]Install with: pip install gradio>=6.0.0[/dim]")
         raise typer.Exit(1)
     except Exception as e:
@@ -221,7 +218,7 @@ def serve(
         from jdev_cli.cli_mcp import main as mcp_main
         asyncio.run(mcp_main())
     except ImportError as e:
-        console.print(f"[red]Error:[/red] MCP dependencies not installed")
+        console.print("[red]Error:[/red] MCP dependencies not installed")
         console.print(f"[dim]Details: {e}[/dim]")
         raise typer.Exit(1)
     except Exception as e:

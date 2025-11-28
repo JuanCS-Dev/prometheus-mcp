@@ -20,7 +20,7 @@ import time
 import urllib.error
 import urllib.parse
 import urllib.request
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Dict, List, Tuple
 
 from jdev_cli.tools.base import Tool, ToolCategory, ToolResult
 from jdev_cli.tools._parity_utils import (

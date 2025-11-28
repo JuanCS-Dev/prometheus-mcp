@@ -11,8 +11,6 @@ Based on pytest patterns from Anthropic's Claude Code.
 """
 import pytest
 import json
-from pathlib import Path
-from datetime import datetime
 
 from jdev_tui.core.history_manager import HistoryManager
 

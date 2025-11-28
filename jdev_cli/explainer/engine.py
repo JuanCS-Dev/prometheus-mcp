@@ -4,8 +4,7 @@ Combines Claude's adaptive detail with structured breakdown.
 Boris Cherny: Clear, testable, no magic.
 """
 
-import re
-from typing import Optional, Dict, List, Callable
+from typing import Optional, Dict, Callable
 
 from .types import (
     Explanation,
@@ -25,11 +24,11 @@ class ExplanationEngine:
     - Command complexity
     - Risk level
     """
-    
+
     def __init__(self):
         self._explainers: Dict[str, Callable] = {}
         self._register_builtin_explainers()
-    
+
     def explain(
         self,
         command: str,
@@ -46,15 +45,15 @@ class ExplanationEngine:
         """
         # Determine detail level
         level = self._get_detail_level(command, context)
-        
+
         # Try specific explainer first
         cmd_base = command.split()[0] if command else ""
         if cmd_base in self._explainers:
             return self._explainers[cmd_base](command, level)
-        
+
         # Fallback to generic explanation
         return self._generic_explain(command, level)
-    
+
     def _get_detail_level(
         self,
         command: str,
@@ -77,7 +76,7 @@ class ExplanationEngine:
                 level = ExplanationLevel.BALANCED
         else:
             level = ExplanationLevel.BALANCED
-        
+
         # Upgrade detail for risky commands
         risk = assess_risk(command)
         if risk.level in [RiskLevel.HIGH, RiskLevel.CRITICAL]:
@@ -85,9 +84,9 @@ class ExplanationEngine:
                 level = ExplanationLevel.BALANCED
             elif level == ExplanationLevel.BALANCED:
                 level = ExplanationLevel.DETAILED
-        
+
         return level
-    
+
     def register_explainer(
         self,
         command: str,
@@ -95,7 +94,7 @@ class ExplanationEngine:
     ):
         """Register custom explainer for specific command."""
         self._explainers[command] = explainer_fn
-    
+
     def _generic_explain(
         self,
         command: str,
@@ -109,14 +108,14 @@ class ExplanationEngine:
                 summary="Empty command",
                 level=level
             )
-        
+
         cmd = parts[0]
         args = parts[1:] if len(parts) > 1 else []
-        
+
         summary = f"Execute '{cmd}'"
         if args:
             summary += f" with {len(args)} argument(s)"
-        
+
         breakdown = None
         if level != ExplanationLevel.CONCISE:
             breakdown_parts = [
@@ -127,14 +126,14 @@ class ExplanationEngine:
                     CommandPart(arg, "Argument", "argument")
                 )
             breakdown = CommandBreakdown(breakdown_parts)
-        
+
         return Explanation(
             command=command,
             summary=summary,
             breakdown=breakdown,
             level=level
         )
-    
+
     def _register_builtin_explainers(self):
         """Register explanations for common commands."""
         self.register_explainer("git", self._explain_git)
@@ -143,7 +142,7 @@ class ExplanationEngine:
         self.register_explainer("docker", self._explain_docker)
         self.register_explainer("npm", self._explain_npm)
         self.register_explainer("pip", self._explain_pip)
-    
+
     def _explain_git(
         self,
         command: str,
@@ -157,9 +156,9 @@ class ExplanationEngine:
                 summary="Git version control system",
                 level=level
             )
-        
+
         subcommand = parts[1]
-        
+
         summaries = {
             "add": "Stage files for commit",
             "commit": "Record changes to repository",
@@ -172,9 +171,9 @@ class ExplanationEngine:
             "checkout": "Switch branches or restore files",
             "merge": "Join two or more development histories",
         }
-        
+
         summary = summaries.get(subcommand, f"Git {subcommand} operation")
-        
+
         # Build breakdown
         breakdown = None
         if level != ExplanationLevel.CONCISE:
@@ -182,7 +181,7 @@ class ExplanationEngine:
                 CommandPart("git", "Version control system", "command"),
                 CommandPart(subcommand, summary, "subcommand")
             ]
-            
+
             for arg in parts[2:]:
                 if arg.startswith('-'):
                     breakdown_parts.append(
@@ -192,16 +191,16 @@ class ExplanationEngine:
                     breakdown_parts.append(
                         CommandPart(arg, "Argument", "argument")
                     )
-            
+
             breakdown = CommandBreakdown(breakdown_parts)
-        
+
         # Add warnings for dangerous operations
         warnings = []
         if "push" in command and "-f" in command:
             warnings.append("Force push can overwrite remote history")
         if "reset" in command and "--hard" in command:
             warnings.append("Hard reset discards all changes permanently")
-        
+
         # Add examples for beginners
         examples = []
         if level == ExplanationLevel.DETAILED:
@@ -216,7 +215,7 @@ class ExplanationEngine:
                     "git commit -m 'Your message'",
                     "git commit -am 'Add and commit'",
                 ]
-        
+
         return Explanation(
             command=command,
             summary=f"Git: {summary}",
@@ -225,7 +224,7 @@ class ExplanationEngine:
             examples=examples,
             level=level
         )
-    
+
     def _explain_rm(
         self,
         command: str,
@@ -233,24 +232,24 @@ class ExplanationEngine:
     ) -> Explanation:
         """Explain rm commands with safety warnings."""
         summary = "Remove files or directories"
-        
+
         warnings = []
         if "-rf" in command or "-fr" in command:
             warnings.append("⚠️  DESTRUCTIVE: Recursive force delete (no confirmation)")
             warnings.append("⚠️  Cannot be undone!")
         elif "-r" in command:
             warnings.append("Recursive: deletes directories and contents")
-        
+
         if "/" in command:
             warnings.append("🔴 DANGER: Operating on root paths!")
-        
+
         breakdown = None
         if level != ExplanationLevel.CONCISE:
             parts = command.split()
             breakdown_parts = [
                 CommandPart("rm", "Remove files/directories", "command")
             ]
-            
+
             for part in parts[1:]:
                 if part.startswith('-'):
                     if 'r' in part:
@@ -269,11 +268,11 @@ class ExplanationEngine:
                     breakdown_parts.append(
                         CommandPart(part, "Target file/directory", "argument")
                     )
-            
+
             breakdown = CommandBreakdown(breakdown_parts)
-        
+
         see_also = ["mv", "trash-put", "trash-cli"] if level == ExplanationLevel.DETAILED else []
-        
+
         return Explanation(
             command=command,
             summary=summary,
@@ -282,29 +281,29 @@ class ExplanationEngine:
             see_also=see_also,
             level=level
         )
-    
+
     def _explain_chmod(self, command: str, level: ExplanationLevel) -> Explanation:
         """Explain chmod commands."""
         summary = "Change file permissions"
-        
+
         warnings = []
         if "777" in command:
             warnings.append("777 = Full permissions for everyone (security risk)")
         if "-R" in command:
             warnings.append("Recursive: affects all subdirectories")
-        
+
         return Explanation(
             command=command,
             summary=summary,
             warnings=warnings,
             level=level
         )
-    
+
     def _explain_docker(self, command: str, level: ExplanationLevel) -> Explanation:
         """Explain docker commands."""
         parts = command.split()
         subcommand = parts[1] if len(parts) > 1 else ""
-        
+
         summaries = {
             "run": "Create and start a container",
             "build": "Build image from Dockerfile",
@@ -313,18 +312,18 @@ class ExplanationEngine:
             "pull": "Download image from registry",
             "push": "Upload image to registry",
         }
-        
+
         return Explanation(
             command=command,
             summary=summaries.get(subcommand, "Docker operation"),
             level=level
         )
-    
+
     def _explain_npm(self, command: str, level: ExplanationLevel) -> Explanation:
         """Explain npm commands."""
         parts = command.split()
         subcommand = parts[1] if len(parts) > 1 else ""
-        
+
         summaries = {
             "install": "Install dependencies from package.json",
             "start": "Run start script",
@@ -332,25 +331,25 @@ class ExplanationEngine:
             "run": "Run custom script",
             "build": "Run build script",
         }
-        
+
         return Explanation(
             command=command,
             summary=summaries.get(subcommand, "NPM operation"),
             level=level
         )
-    
+
     def _explain_pip(self, command: str, level: ExplanationLevel) -> Explanation:
         """Explain pip commands."""
         parts = command.split()
         subcommand = parts[1] if len(parts) > 1 else ""
-        
+
         summaries = {
             "install": "Install Python package(s)",
             "uninstall": "Remove Python package(s)",
             "list": "List installed packages",
             "freeze": "Output installed packages in requirements format",
         }
-        
+
         return Explanation(
             command=command,
             summary=summaries.get(subcommand, "Pip operation"),

@@ -29,8 +29,7 @@
 """
 
 import pytest
-from jdev_cli.agents.sofia_agent import create_sofia_agent, SofiaIntegratedAgent
-from jdev_governance.sofia import ThinkingMode, CounselType
+from jdev_cli.agents.sofia_agent import create_sofia_agent
 
 
 # ════════════════════════════════════════════════════════════════════════════════

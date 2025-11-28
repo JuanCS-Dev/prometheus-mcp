@@ -13,7 +13,6 @@ Author: JuanCS Dev
 Date: 2025-11-26
 """
 
-import asyncio
 import logging
 import subprocess
 from pathlib import Path

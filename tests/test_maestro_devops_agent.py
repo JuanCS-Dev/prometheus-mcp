@@ -65,7 +65,7 @@ async def test_devops_agent():
 
         if 'dockerfile' in response.data:
             dockerfile = response.data['dockerfile']
-            print(f"\n📄 Dockerfile (first 200 chars):")
+            print("\n📄 Dockerfile (first 200 chars):")
             print(dockerfile[:200] + "...")
 
             # Verify security features

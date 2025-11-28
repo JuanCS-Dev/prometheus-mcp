@@ -19,7 +19,6 @@ Based on 2025 best practices:
 - FastAPI-style async patterns
 """
 
-import asyncio
 import sys
 import logging
 from pathlib import Path
@@ -41,9 +40,6 @@ from rich.table import Table
 from rich.progress import Progress, SpinnerColumn, TextColumn
 from rich.syntax import Syntax
 from rich.markdown import Markdown
-from rich.live import Live
-from rich.spinner import Spinner
-from rich import print as rprint
 from rich.prompt import Confirm
 
 # Real agents v6.0 integration
@@ -129,7 +125,7 @@ def render_plan(data: dict, format: OutputFormat = OutputFormat.table):
         table.add_column("Stage", style="cyan")
         table.add_column("Steps", style="white")
         table.add_column("Status", style="green")
-        
+
         for idx, stage in enumerate(data.get("stages", []), 1):
             steps_list = stage.get("steps", [])
             if isinstance(steps_list, list):
@@ -139,20 +135,20 @@ def render_plan(data: dict, format: OutputFormat = OutputFormat.table):
                     steps = "\n".join(f"• {s}" for s in steps_list)
             else:
                 steps = str(steps_list)
-            
+
             table.add_row(
                 str(idx),
                 stage.get("name", "Unknown"),
                 steps,
                 "✓ Ready"
             )
-        
+
         console.print(table)
-    
+
     elif format == OutputFormat.json:
         import json
         console.print_json(json.dumps(data, indent=2))
-    
+
     elif format == OutputFormat.markdown:
         md = f"# {data.get('goal', 'Plan')}\n\n"
         for stage in data.get("stages", []):
@@ -161,7 +157,7 @@ def render_plan(data: dict, format: OutputFormat = OutputFormat.table):
                 md += f"- {step}\n"
             md += "\n"
         console.print(Markdown(md))
-    
+
     else:  # plain
         console.print(data)
 
@@ -288,18 +284,18 @@ async def ensure_initialized():
     """Hydrate the Swarm - Real initialization with v6.0 agents"""
     if state.initialized:
         return
-    
+
     console.print("\n[dim]🔌 Connecting to Matrix (LLM & MCP)...[/dim]")
-    
+
     try:
         # 1. Core Infrastructure
         with console.status("[bold green]Bootstrapping Neural Core...[/bold green]"):
             state.llm_client = LLMClient()  # Uses config from .env
-            
+
             # Initialize tool registry and MCP adapter
             registry = ToolRegistry()
             state.mcp_client = MCPClient(registry)
-        
+
         # 2. Wake up the Agents v6.0
         with console.status("[bold green]Bootstrapping Neural Agents...[/bold green]"):
             state.agents = {
@@ -329,12 +325,12 @@ async def ensure_initialized():
             await state.governance.initialize()
         except Exception as e:
             logger.warning(f"Governance initialization failed: {e}")
-            console.print(f"[yellow]⚠️  Running without governance (degraded mode)[/yellow]")
+            console.print("[yellow]⚠️  Running without governance (degraded mode)[/yellow]")
             state.governance = None
 
         state.initialized = True
         console.print("[green]✓[/green] [bold]Vértice-MAXIMUS Online[/bold]\n")
-        
+
     except Exception as e:
         render_error("Bootstrap Failed", str(e))
         logger.exception("Initialization error details")
@@ -358,12 +354,12 @@ async def agent_plan(
         maestro agent plan "Refactor database layer" --output json
     """
     await ensure_initialized()
-    
+
     context = {}
     if context_file and context_file.exists():
         # Load context from file
         pass
-    
+
     result = await execute_agent_task("planner", goal, context)
     render_plan(result, output)
 
@@ -381,20 +377,20 @@ async def agent_review(
         maestro agent review . --deep
     """
     await ensure_initialized()
-    
+
     target_path = Path(target)
     if not target_path.exists():
         render_error(f"Path not found: {target}")
         raise typer.Exit(1)
-    
+
     context = {
         "files": [str(target_path)],
         "deep_mode": deep,
         "auto_fix": fix
     }
-    
+
     result = await execute_agent_task("reviewer", f"Review {target}", context)
-    
+
     # Render results
     if "issues" in result:
         table = Table(title="🔍 Review Results", border_style="yellow")
@@ -402,7 +398,7 @@ async def agent_review(
         table.add_column("File", style="cyan")
         table.add_column("Line", style="dim")
         table.add_column("Issue", style="white")
-        
+
         for issue in result.get("issues", [])[:20]:  # Limit to 20
             table.add_row(
                 issue.get("severity", "UNKNOWN"),
@@ -410,7 +406,7 @@ async def agent_review(
                 str(issue.get("line", "")),
                 issue.get("message", "")[:60]
             )
-        
+
         console.print(table)
         console.print(f"\n[dim]Score: {result.get('score', 0)}/100[/dim]")
 
@@ -435,18 +431,18 @@ async def agent_explore(
         maestro agent explore search "database transaction handlers"
     """
     await ensure_initialized()
-    
+
     context = {
         "operation": operation,
         "root_dir": str(root)
     }
-    
+
     if target:
         context["target"] = target
-    
+
     prompt = f"{operation} {target or ''}"
     result = await execute_agent_task("explorer", prompt, context)
-    
+
     # Render based on operation
     if operation == "map":
         console.print(Panel(
@@ -458,12 +454,12 @@ async def agent_explore(
 💀 Dead Code: {result.get('dead_code', 0)} entities""",
             border_style="cyan"
         ))
-        
+
         if result.get('hotspots'):
             console.print("\n[bold yellow]🔥 Hotspots (High Coupling):[/bold yellow]")
             for hotspot in result['hotspots'][:5]:
                 console.print(f"  • {hotspot}")
-    
+
     elif operation == "blast-radius":
         console.print(Panel(
             f"""[bold]Blast Radius Analysis[/bold]
@@ -474,7 +470,7 @@ async def agent_explore(
 🔗 Dependencies: {len(result.get('transitive_dependencies', []))}""",
             border_style="red" if result.get('risk_level') == 'HIGH' else "yellow"
         ))
-    
+
     else:
         console.print(result)
 
@@ -586,7 +582,7 @@ def config_show():
     table = Table(title="⚙️  Configuration", border_style="blue")
     table.add_column("Key", style="cyan")
     table.add_column("Value", style="white")
-    
+
     # Mock config
     config = {
         "log_file": "maestro.log",
@@ -594,10 +590,10 @@ def config_show():
         "python_version": sys.version.split()[0],
         "context_size": len(state.context)
     }
-    
+
     for key, value in config.items():
         table.add_row(key, value)
-    
+
     console.print(table)
 
 @config_app.command("reset")
@@ -610,7 +606,7 @@ def config_reset(
         if not confirmed:
             console.print("[yellow]Cancelled[/yellow]")
             raise typer.Exit(0)
-    
+
     state.context.clear()
     state.initialized = False
     render_success("Configuration reset")
@@ -671,7 +667,7 @@ def main(
             "Type [cyan]maestro --help[/cyan] for all commands",
             border_style="cyan"
         ))
-    
+
     if verbose:
         logging.getLogger().setLevel(logging.DEBUG)
         console.print("[dim]Verbose mode enabled[/dim]")

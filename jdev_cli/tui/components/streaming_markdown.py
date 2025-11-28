@@ -24,12 +24,12 @@ Atualizado: 2025-11-25 (Correção Air Gaps)
 
 import time
 import asyncio
-from typing import Optional, AsyncIterator, Callable, List, Union
-from dataclasses import dataclass, field
+from typing import Optional, AsyncIterator, Callable, List
+from dataclasses import dataclass
 from enum import Enum
 
 from textual.widget import Widget
-from textual.widgets import Static, Markdown
+from textual.widgets import Static
 from textual.reactive import reactive
 from textual.message import Message
 from textual.containers import ScrollableContainer
@@ -43,7 +43,7 @@ from rich.console import RenderableType, Group
 
 from .block_detector import BlockDetector, BlockInfo, BlockType
 from .streaming_code_block import IncrementalSyntaxHighlighter, create_code_block_panel
-from .streaming_table import StreamingTableRenderer, parse_markdown_table
+from .streaming_table import StreamingTableRenderer
 from .interactive_checklist import ChecklistParser, render_checklist_text
 
 
@@ -154,10 +154,9 @@ class BlockWidgetFactory:
         Formato Claude: • Read /path/to/file
         """
         import re
-        from rich.table import Table
 
         content = block.content.strip()
-        
+
         # Gemini Native Format
         if content.startswith('[TOOL_CALL:'):
             try:
@@ -166,21 +165,21 @@ class BlockWidgetFactory:
                 inner = content[11:]
                 if inner.endswith(']'):
                     inner = inner[:-1]
-                
+
                 if ':' in inner:
                     tool_name, args = inner.split(':', 1)
                 else:
                     tool_name = inner
                     args = "{}"
-                
+
                 # Ícones por tool
                 tool_icons = {
                     "code_execution": ("🐍", "bright_green"),
                     "google_search_retrieval": ("🔍", "bright_blue"),
                 }
-                
+
                 icon, color = tool_icons.get(tool_name, ("🛠️", "bright_cyan"))
-                
+
                 result = Text()
                 result.append(f"{icon} ", style="bold")
                 result.append(tool_name, style=f"bold {color}")

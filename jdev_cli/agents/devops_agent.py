@@ -32,10 +32,8 @@ Capabilities:
 
 import asyncio
 import hashlib
-import json
-import os
 import yaml
-from typing import List, Dict, Any, Optional, AsyncIterator
+from typing import List, Dict, Any
 from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
@@ -94,7 +92,7 @@ class IncidentDetection:
     can_auto_remediate: bool
     time_to_detect: float  # seconds
     predicted_impact: str
-    
+
     def to_dict(self) -> Dict[str, Any]:
         return {
             "incident_id": self.incident_id,
@@ -121,7 +119,7 @@ class DeploymentPlan:
     estimated_downtime: float  # seconds
     health_check_endpoint: str
     success_criteria: List[str]
-    
+
     def to_dict(self) -> Dict[str, Any]:
         return {
             "deployment_id": self.deployment_id,
@@ -145,7 +143,7 @@ class InfrastructureHealth:
     predicted_issues: List[str]
     recommendations: List[str]
     last_updated: datetime = field(default_factory=datetime.utcnow)
-    
+
     def to_dict(self) -> Dict[str, Any]:
         return {
             "overall_score": self.overall_score,
@@ -181,7 +179,7 @@ class DevOpsAgent(BaseAgent):
     Philosophy:
         "Detect. Decide. Deploy. Done. All in 30 seconds."
     """
-    
+
     def __init__(
         self,
         llm_client: Any,
@@ -201,23 +199,23 @@ class DevOpsAgent(BaseAgent):
             mcp_client=mcp_client,
             system_prompt=self._build_system_prompt(),
         )
-        
+
         self.auto_remediate = auto_remediate
         self.policy_mode = policy_mode
-        
+
         # Infrastructure templates (production-grade)
         self.templates = self._load_templates()
-        
+
         # Incident tracking
         self.incidents: List[IncidentDetection] = []
         self.remediation_history: List[Dict[str, Any]] = []
-        
+
         # Performance tracking
         self.mttr_seconds: List[float] = []  # Mean Time To Recovery
         self.deployment_success_rate: float = 1.0
-        
+
         self.logger = logging.getLogger("agent.devops_guardian")
-    
+
     def _build_system_prompt(self) -> str:
         """Build system prompt for DevOps operations"""
         return """You are the Infrastructure Guardian, an elite DevOps AI Agent.
@@ -252,7 +250,7 @@ CRITICAL RULES:
 • Learn from every incident
 
 Remember: You're the last line of defense. NEVER FAIL."""
-    
+
     def _load_templates(self) -> Dict[str, Any]:
         """Load production-grade infrastructure templates"""
         return {
@@ -277,7 +275,7 @@ Remember: You're the last line of defense. NEVER FAIL."""
                     "cmd": '["./app"]',
                 },
             },
-            
+
             # Kubernetes templates
             "k8s": {
                 "deployment_rolling": {
@@ -291,7 +289,7 @@ Remember: You're the last line of defense. NEVER FAIL."""
                     "increment": "10%",
                 },
             },
-            
+
             # ArgoCD GitOps patterns
             "argocd": {
                 "auto_sync": True,
@@ -299,11 +297,11 @@ Remember: You're the last line of defense. NEVER FAIL."""
                 "prune": True,
             },
         }
-    
+
     # ========================================================================
     # MAIN EXECUTION
     # ========================================================================
-    
+
     async def execute(self, task: AgentTask) -> AgentResponse:
         """
         Main execution with autonomous decision-making.
@@ -311,9 +309,9 @@ Remember: You're the last line of defense. NEVER FAIL."""
         Bits AI investigates alerts, gathers telemetry, tests hypotheses in 30 seconds
         """
         self.logger.info(f"🚀 DevOpsAgent executing: {task.request}")
-        
+
         start_time = datetime.utcnow()
-        
+
         try:
             # Route to appropriate handler
             if "incident" in task.request.lower() or "outage" in task.request.lower():
@@ -334,9 +332,9 @@ Remember: You're the last line of defense. NEVER FAIL."""
                 # General query
                 response_text = await self._call_llm(task.request)
                 result = {"response": response_text}
-            
+
             execution_time = (datetime.utcnow() - start_time).total_seconds()
-            
+
             return AgentResponse(
                 success=True,
                 data=result,
@@ -347,7 +345,7 @@ Remember: You're the last line of defense. NEVER FAIL."""
                     "deployment_success_rate": self.deployment_success_rate,
                 },
             )
-            
+
         except Exception as e:
             self.logger.error(f"❌ Execution failed: {e}")
             return AgentResponse(
@@ -355,11 +353,11 @@ Remember: You're the last line of defense. NEVER FAIL."""
                 error=str(e),
                 reasoning=f"Failed: {str(e)}",
             )
-    
+
     # ========================================================================
     # AUTONOMOUS INCIDENT RESPONSE
     # ========================================================================
-    
+
     async def _handle_incident(self, task: AgentTask) -> Dict[str, Any]:
         """
         Autonomous incident response in 30 seconds.
@@ -368,26 +366,26 @@ Remember: You're the last line of defense. NEVER FAIL."""
         GitOps-backed operator detects failing pod, generates remediation, creates PR
         """
         self.logger.info("🚨 INCIDENT DETECTED - Initiating autonomous response...")
-        
+
         start_detect = datetime.utcnow()
-        
+
         # Phase 1: Detect & Classify (5 seconds)
         incident = await self._detect_incident(task)
-        
+
         time_to_detect = (datetime.utcnow() - start_detect).total_seconds()
         incident.time_to_detect = time_to_detect
-        
+
         self.incidents.append(incident)
-        
+
         # Phase 2: Autonomous Remediation (if enabled and safe)
         if incident.can_auto_remediate and self.auto_remediate:
             self.logger.info("✅ AUTO-REMEDIATION APPROVED - Executing fix...")
-            
+
             remediation_result = await self._execute_remediation(incident)
-            
+
             mttr = (datetime.utcnow() - start_detect).total_seconds()
             self.mttr_seconds.append(mttr)
-            
+
             return {
                 "incident": incident.to_dict(),
                 "remediation": remediation_result,
@@ -396,13 +394,13 @@ Remember: You're the last line of defense. NEVER FAIL."""
             }
         else:
             self.logger.info("⚠️ Manual approval required for remediation")
-            
+
             return {
                 "incident": incident.to_dict(),
                 "status": "REQUIRES_APPROVAL",
                 "next_steps": incident.recommended_actions,
             }
-    
+
     async def _detect_incident(self, task: AgentTask) -> IncidentDetection:
         """
         Detect incident using AI-powered analysis.
@@ -425,24 +423,24 @@ Provide structured incident analysis:
 
 Be precise and actionable.
 """
-        
+
         analysis = await self._call_llm(analysis_prompt)
-        
+
         # Parse analysis (simplified - real version would use structured output)
         # For demo, we'll create a sample incident
-        
+
         incident_id = hashlib.md5(task.request.encode()).hexdigest()[:8]
-        
+
         # Detect severity from keywords
         severity = IncidentSeverity.P3
         if any(word in task.request.lower() for word in ["critical", "down", "p0", "outage"]):
             severity = IncidentSeverity.P0
         elif any(word in task.request.lower() for word in ["high", "p1", "degraded"]):
             severity = IncidentSeverity.P1
-        
+
         # Determine if safe to auto-remediate
         can_auto_remediate = severity in [IncidentSeverity.P2, IncidentSeverity.P3]
-        
+
         return IncidentDetection(
             incident_id=incident_id,
             severity=severity,
@@ -454,7 +452,7 @@ Be precise and actionable.
             time_to_detect=0.0,  # Will be set by caller
             predicted_impact="Users experiencing 500 errors on checkout",
         )
-    
+
     async def _execute_remediation(self, incident: IncidentDetection) -> Dict[str, Any]:
         """
         Execute autonomous remediation with safety checks.
@@ -462,10 +460,10 @@ Be precise and actionable.
         AI-generated manifests pass through OPA Gatekeeper for policy enforcement
         """
         results = []
-        
+
         for action in incident.recommended_actions:
             self.logger.info(f"🔧 Executing: {action.value}")
-            
+
             # Execute via MCP if available
             if self.mcp_client:
                 try:
@@ -484,7 +482,7 @@ Be precise and actionable.
             else:
                 # Simulate success
                 results.append({"success": True, "action": action.value})
-        
+
         # Track remediation
         self.remediation_history.append({
             "incident_id": incident.incident_id,
@@ -492,17 +490,17 @@ Be precise and actionable.
             "results": results,
             "timestamp": datetime.utcnow().isoformat(),
         })
-        
+
         return {
             "actions_executed": len(results),
             "successful": sum(1 for r in results if r.get("success", False)),
             "details": results,
         }
-    
+
     # ========================================================================
     # DEPLOYMENT ORCHESTRATION
     # ========================================================================
-    
+
     async def _handle_deployment(self, task: AgentTask) -> Dict[str, Any]:
         """
         Zero-downtime deployment with ArgoCD/Flux.
@@ -510,10 +508,10 @@ Be precise and actionable.
         ArgoCD auto-deploys, restores drift, self-heals
         """
         self.logger.info("🚀 Planning zero-downtime deployment...")
-        
+
         # Generate deployment plan
         plan = await self._create_deployment_plan(task)
-        
+
         # Execute if approved
         if self.policy_mode == "fully_autonomous":
             result = await self._execute_deployment(plan)
@@ -527,11 +525,11 @@ Be precise and actionable.
                 "plan": plan.to_dict(),
                 "status": "AWAITING_APPROVAL",
             }
-    
+
     async def _create_deployment_plan(self, task: AgentTask) -> DeploymentPlan:
         """Create safe deployment plan"""
         deployment_id = f"deploy-{datetime.utcnow().strftime('%Y%m%d-%H%M%S')}"
-        
+
         return DeploymentPlan(
             deployment_id=deployment_id,
             strategy=DeploymentStrategy.ROLLING_UPDATE,
@@ -563,17 +561,17 @@ Be precise and actionable.
                 "Error rate < 0.1%",
             ],
         )
-    
+
     async def _execute_deployment(self, plan: DeploymentPlan) -> Dict[str, Any]:
         """Execute deployment plan"""
         self.logger.info(f"Executing deployment: {plan.deployment_id}")
-        
+
         # Simulate deployment execution
         await asyncio.sleep(1)  # Simulate deployment time
-        
+
         # Update success rate
         self.deployment_success_rate = (self.deployment_success_rate * 0.99 + 1.0 * 0.01)
-        
+
         return {
             "deployment_id": plan.deployment_id,
             "success": True,
@@ -581,11 +579,11 @@ Be precise and actionable.
             "pods_updated": 12,
             "health_status": "healthy",
         }
-    
+
     # ========================================================================
     # DOCKERFILE GENERATION (Security-First)
     # ========================================================================
-    
+
     async def _generate_dockerfile(self, task: AgentTask) -> Dict[str, Any]:
         """
         Generate production-grade, multi-stage Dockerfile.
@@ -598,11 +596,11 @@ Be precise and actionable.
         • Health checks
         """
         self.logger.info("🐳 Generating production Dockerfile...")
-        
+
         # Detect stack (simplified)
         stack = "python_fastapi"  # Would detect from context
         template = self.templates["docker"][stack]
-        
+
         dockerfile = f"""# Multi-stage Dockerfile - Production Grade
 # Generated by DevOpsAgent Ultimate v1.0
 
@@ -655,7 +653,7 @@ EXPOSE $PORT
 # Run application
 CMD {template['cmd']}
 """
-        
+
         return {
             "dockerfile": dockerfile,
             "stack": stack,
@@ -667,11 +665,11 @@ CMD {template['cmd']}
                 "No secrets in layers",
             ],
         }
-    
+
     # ========================================================================
     # KUBERNETES MANIFESTS (GitOps-Ready)
     # ========================================================================
-    
+
     async def _generate_k8s_manifests(self, task: AgentTask) -> Dict[str, Any]:
         """
         Generate Kubernetes manifests with ArgoCD integration.
@@ -679,11 +677,11 @@ CMD {template['cmd']}
         ArgoCD syncs continuously - Git as source of truth
         """
         self.logger.info("☸️ Generating Kubernetes manifests...")
-        
+
         app_name = "api-service"  # Would be extracted from task
         namespace = "default"
         replicas = 3
-        
+
         # Deployment manifest
         deployment = {
             "apiVersion": "apps/v1",
@@ -729,7 +727,7 @@ CMD {template['cmd']}
                 },
             },
         }
-        
+
         # Service manifest
         service = {
             "apiVersion": "v1",
@@ -744,7 +742,7 @@ CMD {template['cmd']}
                 "type": "ClusterIP",
             },
         }
-        
+
         # ArgoCD Application (GitOps)
         argocd_app = {
             "apiVersion": "argoproj.io/v1alpha1",
@@ -771,7 +769,7 @@ CMD {template['cmd']}
                 },
             },
         }
-        
+
         return {
             "deployment.yaml": yaml.dump(deployment),
             "service.yaml": yaml.dump(service),
@@ -785,11 +783,11 @@ CMD {template['cmd']}
                 "Self-healing enabled",
             ],
         }
-    
+
     # ========================================================================
     # CI/CD PIPELINE GENERATION
     # ========================================================================
-    
+
     async def _generate_ci_cd_pipeline(self, task: AgentTask) -> Dict[str, Any]:
         """
         Generate CI/CD pipeline (GitHub Actions, GitLab CI, etc.)
@@ -797,9 +795,9 @@ CMD {template['cmd']}
         GitLab CI/CD tools adopted by 1.5M developers for 30% faster releases
         """
         self.logger.info("🔄 Generating CI/CD pipeline...")
-        
+
         provider = "github"  # Would detect from task
-        
+
         if provider == "github":
             pipeline = """name: Production CI/CD Pipeline
 # Generated by DevOpsAgent Ultimate v1.0
@@ -922,7 +920,7 @@ jobs:
           echo "🚀 ArgoCD will auto-sync in ~30 seconds"
           echo "Monitor: https://argocd.example.com/applications/api-service-gitops"
 """
-            
+
             return {
                 "pipeline": pipeline,
                 "provider": provider,
@@ -934,17 +932,17 @@ jobs:
                     "Auto-rollback on failure",
                 ],
             }
-        
+
         return {"error": "Unsupported CI/CD provider"}
-    
+
     # ========================================================================
     # TERRAFORM / IAC GENERATION
     # ========================================================================
-    
+
     async def _generate_terraform(self, task: AgentTask) -> Dict[str, Any]:
         """Generate Terraform IaC"""
         self.logger.info("🏗️ Generating Terraform configuration...")
-        
+
         terraform = """# Terraform Configuration - Production Grade
 # Generated by DevOpsAgent Ultimate v1.0
 
@@ -1036,7 +1034,7 @@ output "cluster_name" {
   value = module.eks.cluster_name
 }
 """
-        
+
         return {
             "main.tf": terraform,
             "features": [
@@ -1046,11 +1044,11 @@ output "cluster_name" {
                 "Production-ready configuration",
             ],
         }
-    
+
     # ========================================================================
     # INFRASTRUCTURE HEALTH CHECK
     # ========================================================================
-    
+
     async def _check_infrastructure_health(self) -> Dict[str, Any]:
         """
         Real-time infrastructure health assessment.
@@ -1058,7 +1056,7 @@ output "cluster_name" {
         AI predicts incidents hours before humans ever could
         """
         self.logger.info("🏥 Checking infrastructure health...")
-        
+
         # Simulate health check (real version would query actual metrics)
         health = InfrastructureHealth(
             overall_score=94.5,
@@ -1076,7 +1074,7 @@ output "cluster_name" {
                 "Add disk space monitoring alert",
             ],
         )
-        
+
         return {
             "health": health.to_dict(),
             "status": "HEALTHY",
@@ -1125,73 +1123,72 @@ def create_devops_agent(
 # ============================================================================
 
 if __name__ == "__main__":
-    import sys
-    
+
     # Mock LLM client
     class MockLLMClient:
         async def generate(self, prompt, system_prompt=None, **kwargs):
             return "Analysis complete. Incident classified as P1. Auto-remediation recommended."
-    
+
     async def demo():
         print("=" * 80)
         print("DEVOPS AGENT ULTIMATE v1.0 - DEMO")
         print("=" * 80)
-        
+
         # Create agent
         llm = MockLLMClient()
         agent = create_devops_agent(llm, auto_remediate=True)
-        
+
         # Demo 1: Incident Response
         print("\n" + "=" * 80)
         print("DEMO 1: Autonomous Incident Response")
         print("=" * 80)
-        
+
         task = AgentTask(
             request="High memory usage in api-service causing OOM errors"
         )
-        
+
         response = await agent.execute(task)
         print(f"✅ Status: {response.data.get('status')}")
         print(f"   MTTR: {response.data.get('mttr_seconds', 0):.2f}s")
-        
+
         # Demo 2: Dockerfile Generation
         print("\n" + "=" * 80)
         print("DEMO 2: Production Dockerfile Generation")
         print("=" * 80)
-        
+
         task = AgentTask(request="Generate Dockerfile for Python FastAPI app")
         response = await agent.execute(task)
-        
+
         print("Security features:")
         for feature in response.data.get("security_features", []):
             print(f"   ✓ {feature}")
-        
+
         # Demo 3: Kubernetes Manifests
         print("\n" + "=" * 80)
         print("DEMO 3: Kubernetes + ArgoCD GitOps")
         print("=" * 80)
-        
+
         task = AgentTask(request="Generate Kubernetes manifests with GitOps")
         response = await agent.execute(task)
-        
+
         print("Features:")
         for feature in response.data.get("features", []):
             print(f"   ✓ {feature}")
-        
+
         # Demo 4: Health Check
         print("\n" + "=" * 80)
         print("DEMO 4: Infrastructure Health Check")
         print("=" * 80)
-        
+
         task = AgentTask(request="Check infrastructure health")
         response = await agent.execute(task)
-        
+
         health = response.data.get("health", {})
         print(f"Overall Score: {health.get('overall_score', 0)}/100")
         print(f"Predicted Issues: {len(health.get('predicted_issues', []))}")
-        
+
         print("\n" + "=" * 80)
         print("✅ ALL DEMOS PASSED - READY TO NEVER FAIL")
         print("=" * 80)
-    
+
     asyncio.run(demo())

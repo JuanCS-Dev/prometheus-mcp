@@ -22,12 +22,10 @@ Philosophy (Boris Cherny):
 
 import ast
 import re
-import subprocess
-import sys
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from enum import Enum
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Set
+from typing import Any, Dict, List, Optional
 
 from .base import (
     AgentCapability,
@@ -528,7 +526,7 @@ class PerformanceAgent(BaseAgent):
 - **Fix:** {b.optimization}
 """
 
-        report += f"\n## Top Optimization Opportunities\n"
+        report += "\n## Top Optimization Opportunities\n"
         for i, b in enumerate(bottlenecks[:5], 1):
             report += f"{i}. {b.file}:{b.line} - {b.optimization} ({b.estimated_impact})\n"
 

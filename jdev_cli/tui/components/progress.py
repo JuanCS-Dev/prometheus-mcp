@@ -21,7 +21,7 @@ Created: 2025-11-18 20:13 UTC
 
 import asyncio
 import time
-from typing import Optional, AsyncIterator
+from typing import Optional
 from dataclasses import dataclass
 
 from rich.console import Console
@@ -47,29 +47,29 @@ class ProgressState:
     total: float
     description: str = ""
     start_time: float = 0.0
-    
+
     def __post_init__(self):
         if self.start_time == 0.0:
             self.start_time = time.time()
-    
+
     @property
     def percentage(self) -> float:
         """Progress as percentage (0-100)."""
         if self.total == 0:
             return 0.0
         return min(100.0, (self.current / self.total) * 100)
-    
+
     @property
     def elapsed(self) -> float:
         """Time elapsed in seconds."""
         return time.time() - self.start_time
-    
+
     @property
     def remaining(self) -> Optional[float]:
         """Estimated time remaining in seconds."""
         if self.current == 0 or self.percentage >= 100:
             return None
-        
+
         rate = self.current / self.elapsed
         remaining_items = self.total - self.current
         return remaining_items / rate if rate > 0 else None
@@ -88,7 +88,7 @@ class ProgressBar:
         # Render current state
         console.print(progress.render())
     """
-    
+
     def __init__(
         self,
         current: float,
@@ -116,7 +116,7 @@ class ProgressBar:
         self.show_percentage = show_percentage
         self.show_fraction = show_fraction
         self.show_time = show_time
-    
+
     def _ease_out_cubic(self, t: float) -> float:
         """
         Cubic ease-out easing function.
@@ -128,7 +128,7 @@ class ProgressBar:
             Eased progress (0.0 to 1.0)
         """
         return 1 - pow(1 - t, 3)
-    
+
     def _interpolate(self, start: float, end: float, progress: float) -> float:
         """
         Interpolate between start and end with easing.
@@ -143,7 +143,7 @@ class ProgressBar:
         """
         eased = self._ease_out_cubic(progress)
         return start + (end - start) * eased
-    
+
     def _get_bar_color(self, percentage: float) -> str:
         """
         Get bar color based on progress (gradient effect).
@@ -160,7 +160,7 @@ class ProgressBar:
             return COLORS['accent_yellow']
         else:
             return COLORS['accent_green']
-    
+
     def _render_bar(self, percentage: float) -> Text:
         """
         Render progress bar visual.
@@ -173,18 +173,18 @@ class ProgressBar:
         """
         filled = int((percentage / 100) * self.width)
         empty = self.width - filled
-        
+
         # Progress characters
         filled_char = "▓"
         empty_char = "░"
-        
+
         # Color based on progress
         color = self._get_bar_color(percentage)
-        
+
         # Build bar
         bar_text = filled_char * filled + empty_char * empty
         return Text(bar_text, style=color)
-    
+
     def _format_time(self, seconds: Optional[float]) -> str:
         """
         Format seconds as human-readable time.
@@ -197,14 +197,14 @@ class ProgressBar:
         """
         if seconds is None:
             return "—"
-        
+
         if seconds < 60:
             return f"{seconds:.1f}s"
-        
+
         minutes = int(seconds // 60)
         remaining_seconds = int(seconds % 60)
         return f"{minutes}m {remaining_seconds}s"
-    
+
     def render(self) -> Text:
         """
         Render complete progress bar.
@@ -213,38 +213,38 @@ class ProgressBar:
             Rich Text object
         """
         parts = []
-        
+
         # Description
         if self.state.description:
             parts.append(Text(self.state.description + ": ", style=PRESET_STYLES.PRIMARY))
-        
+
         # Bar
         parts.append(self._render_bar(self.state.percentage))
-        
+
         # Percentage
         if self.show_percentage:
             pct_text = f" {self.state.percentage:.0f}%"
             parts.append(Text(pct_text, style=PRESET_STYLES.SECONDARY))
-        
+
         # Fraction
         if self.show_fraction:
             fraction_text = f" ({self.state.current:.0f}/{self.state.total:.0f})"
             parts.append(Text(fraction_text, style=PRESET_STYLES.TERTIARY))
-        
+
         # Time
         if self.show_time:
             elapsed_str = self._format_time(self.state.elapsed)
             remaining_str = self._format_time(self.state.remaining)
             time_text = f" ⏱️  {elapsed_str} • ~{remaining_str} remaining"
             parts.append(Text(time_text, style=PRESET_STYLES.TIMESTAMP))
-        
+
         # Combine all parts
         result = Text()
         for part in parts:
             result.append(part)
-        
+
         return result
-    
+
     async def update_animated(
         self,
         new_value: float,
@@ -265,16 +265,16 @@ class ProgressBar:
         start_value = self.state.current
         frames = int(duration * fps)
         frame_delay = duration / frames
-        
+
         for frame in range(frames + 1):
             progress_ratio = frame / frames
             interpolated = self._interpolate(start_value, new_value, progress_ratio)
             self.state.current = interpolated
             await asyncio.sleep(frame_delay)
-        
+
         # Ensure final value is exact
         self.state.current = new_value
-    
+
     async def animate_to(
         self,
         target: float,
@@ -295,20 +295,20 @@ class ProgressBar:
         console = console or Console()
         start_value = self.state.current
         start_time = time.time()
-        
+
         while True:
             elapsed = time.time() - start_time
             if elapsed >= duration:
                 break
-            
+
             progress_ratio = elapsed / duration
             interpolated = self._interpolate(start_value, target, progress_ratio)
             self.state.current = interpolated
-            
+
             # Render current frame
             console.print(self.render(), end='\r')
             await asyncio.sleep(1/30)  # 30 FPS
-        
+
         # Final frame
         self.state.current = target
         console.print(self.render())
@@ -326,7 +326,7 @@ class MultiProgressBar:
         await multi.update(task1, 50)
         await multi.update(task2, 25)
     """
-    
+
     def __init__(self, console: Optional[Console] = None):
         """
         Initialize multi-progress bar manager.
@@ -337,7 +337,7 @@ class MultiProgressBar:
         self.console = console or Console()
         self.progress_bars: dict[int, ProgressBar] = {}
         self.next_id = 0
-    
+
     def add_task(
         self,
         description: str,
@@ -357,12 +357,12 @@ class MultiProgressBar:
         """
         task_id = self.next_id
         self.next_id += 1
-        
+
         bar = ProgressBar(0, total, description, **kwargs)
         self.progress_bars[task_id] = bar
-        
+
         return task_id
-    
+
     async def update(
         self,
         task_id: int,
@@ -379,19 +379,19 @@ class MultiProgressBar:
         """
         if task_id not in self.progress_bars:
             return
-        
+
         bar = self.progress_bars[task_id]
-        
+
         if animated:
             await bar.update_animated(value)
         else:
             bar.state.current = value
-    
+
     def render_all(self):
         """Render all progress bars."""
         for task_id, bar in self.progress_bars.items():
             self.console.print(bar.render())
-    
+
     def complete(self, task_id: int):
         """Mark task as complete."""
         if task_id in self.progress_bars:
@@ -466,12 +466,12 @@ async def show_progress(
     """
     bar = ProgressBar(0, total, description)
     delay = duration / total
-    
+
     for i in range(total + 1):
         await bar.update_animated(i, duration=delay)
         console.print(bar.render(), end='\r')
         await asyncio.sleep(delay)
-    
+
     console.print()
 
 

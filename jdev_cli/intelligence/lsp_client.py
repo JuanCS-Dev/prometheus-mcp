@@ -18,7 +18,7 @@ import subprocess
 from dataclasses import dataclass, field
 from enum import Enum
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional
 
 logger = logging.getLogger(__name__)
 
@@ -30,7 +30,7 @@ class Language(Enum):
     JAVASCRIPT = "javascript"
     GO = "go"
     UNKNOWN = "unknown"
-    
+
     @classmethod
     def detect(cls, file_path: Path) -> "Language":
         """Detect language from file extension."""
@@ -52,7 +52,7 @@ class LSPServerConfig:
     language: Language
     command: List[str]
     initialization_options: Optional[Dict[str, Any]] = None
-    
+
     @classmethod
     def get_configs(cls) -> Dict[Language, "LSPServerConfig"]:
         """Get all LSP server configurations."""
@@ -181,7 +181,7 @@ class HoverInfo:
     def from_lsp(cls, data: Dict[str, Any]) -> "HoverInfo":
         """Parse from LSP hover response."""
         contents = data.get("contents", "")
-        
+
         # Handle different content formats
         if isinstance(contents, dict):
             if "value" in contents:
@@ -193,7 +193,7 @@ class HoverInfo:
                 item["value"] if isinstance(item, dict) else str(item)
                 for item in contents
             )
-        
+
         range_data = data.get("range")
         range_obj = None
         if range_data:
@@ -207,7 +207,7 @@ class HoverInfo:
                     character=range_data["end"]["character"]
                 )
             )
-        
+
         return cls(contents=contents, range=range_obj)
 
 
@@ -220,14 +220,14 @@ class CompletionItem:
     documentation: Optional[str] = None
     insert_text: Optional[str] = None
     sort_text: Optional[str] = None
-    
+
     @classmethod
     def from_lsp(cls, data: Dict[str, Any]) -> "CompletionItem":
         """Parse from LSP completion item."""
         documentation = data.get("documentation")
         if isinstance(documentation, dict):
             documentation = documentation.get("value", "")
-        
+
         return cls(
             label=data["label"],
             kind=data.get("kind", 1),
@@ -236,7 +236,7 @@ class CompletionItem:
             insert_text=data.get("insertText", data["label"]),
             sort_text=data.get("sortText")
         )
-    
+
     @property
     def kind_name(self) -> str:
         """Human-readable kind."""
@@ -257,18 +257,18 @@ class ParameterInformation:
     """Function parameter information."""
     label: str
     documentation: Optional[str] = None
-    
+
     @classmethod
     def from_lsp(cls, data: Dict[str, Any]) -> "ParameterInformation":
         """Parse from LSP parameter."""
         label = data["label"]
         if isinstance(label, list):
             label = str(label)
-        
+
         documentation = data.get("documentation")
         if isinstance(documentation, dict):
             documentation = documentation.get("value", "")
-        
+
         return cls(label=label, documentation=documentation)
 
 
@@ -279,19 +279,19 @@ class SignatureInformation:
     documentation: Optional[str] = None
     parameters: List[ParameterInformation] = field(default_factory=list)
     active_parameter: Optional[int] = None
-    
+
     @classmethod
     def from_lsp(cls, data: Dict[str, Any], active_param: Optional[int] = None) -> "SignatureInformation":
         """Parse from LSP signature."""
         documentation = data.get("documentation")
         if isinstance(documentation, dict):
             documentation = documentation.get("value", "")
-        
+
         parameters = [
             ParameterInformation.from_lsp(p)
             for p in data.get("parameters", [])
         ]
-        
+
         return cls(
             label=data["label"],
             documentation=documentation,
@@ -306,18 +306,18 @@ class SignatureHelp:
     signatures: List[SignatureInformation]
     active_signature: int = 0
     active_parameter: int = 0
-    
+
     @classmethod
     def from_lsp(cls, data: Dict[str, Any]) -> "SignatureHelp":
         """Parse from LSP signature help."""
         active_sig = data.get("activeSignature", 0)
         active_param = data.get("activeParameter", 0)
-        
+
         signatures = [
             SignatureInformation.from_lsp(sig, active_param)
             for sig in data.get("signatures", [])
         ]
-        
+
         return cls(
             signatures=signatures,
             active_signature=active_sig,
@@ -348,13 +348,13 @@ class LSPClient:
         self.root_path = Path(root_path).resolve()
         self.root_uri = f"file://{self.root_path}"
         self.language = language or Language.PYTHON
-        
+
         self._process: Optional[subprocess.Popen[bytes]] = None
         self._initialized = False
         self._message_id = 0
         self._diagnostics: Dict[str, List[Diagnostic]] = {}
         self._server_configs = LSPServerConfig.get_configs()
-        
+
         logger.info(f"LSP client initialized for {self.root_path} (language: {self.language.value})")
 
     def _next_id(self) -> int:
@@ -385,15 +385,15 @@ class LSPClient:
         if self._process is not None:
             logger.warning("LSP server already running")
             return True
-        
+
         target_language = language or self.language
-        
+
         if target_language not in self._server_configs:
             logger.error(f"No LSP server configured for {target_language.value}")
             return False
-        
+
         config = self._server_configs[target_language]
-        
+
         try:
             # Start LSP server
             self._process = subprocess.Popen(
@@ -403,15 +403,15 @@ class LSPClient:
                 stderr=subprocess.PIPE,
                 cwd=str(self.root_path)
             )
-            
+
             # Initialize
             await self._initialize(config)
             self._initialized = True
             self.language = target_language
-            
+
             logger.info(f"LSP server started successfully ({target_language.value})")
             return True
-            
+
         except FileNotFoundError:
             logger.error(
                 f"LSP server not found for {target_language.value}. "
@@ -456,7 +456,7 @@ class LSPClient:
                 "initializationOptions": config.initialization_options or {}
             }
         }
-        
+
         # Note: Full implementation would send/receive via stdin/stdout
         # For now, we'll use synchronous invocation with pylsp/tsserver
         logger.debug(f"LSP initialized ({config.language.value})")
@@ -472,7 +472,7 @@ class LSPClient:
                 )
             except asyncio.TimeoutError:
                 self._process.kill()
-            
+
             self._process = None
             self._initialized = False
             logger.info("LSP server stopped")
@@ -492,38 +492,38 @@ class LSPClient:
         if not self._initialized:
             logger.warning("LSP not initialized")
             return None
-        
+
         try:
             # For now, use simple rope-based inspection
             # Full LSP implementation would use JSON-RPC
             content = file_path.read_text()
             lines = content.split("\n")
-            
+
             if line >= len(lines):
                 return None
-            
+
             # Basic hover: extract word at position
             line_text = lines[line]
             if character >= len(line_text):
                 return None
-            
+
             # Find word boundaries
             start = character
             while start > 0 and (line_text[start - 1].isalnum() or line_text[start - 1] == "_"):
                 start -= 1
-            
+
             end = character
             while end < len(line_text) and (line_text[end].isalnum() or line_text[end] == "_"):
                 end += 1
-            
+
             word = line_text[start:end]
             if not word:
                 return None
-            
+
             # Try to get docstring/type info
             hover_text = f"Symbol: `{word}`\n\n"
             hover_text += "_(LSP integration in progress - basic info only)_"
-            
+
             return HoverInfo(
                 contents=hover_text,
                 range=Range(
@@ -531,7 +531,7 @@ class LSPClient:
                     end=Position(line, end)
                 )
             )
-            
+
         except Exception as e:
             logger.error(f"Hover failed: {e}")
             return None
@@ -551,13 +551,13 @@ class LSPClient:
         if not self._initialized:
             logger.warning("LSP not initialized")
             return []
-        
+
         try:
             # Placeholder: Would use LSP textDocument/definition
             # For now, return empty (feature in development)
             logger.info(f"Definition lookup: {file_path}:{line}:{character}")
             return []
-            
+
         except Exception as e:
             logger.error(f"Definition lookup failed: {e}")
             return []
@@ -577,12 +577,12 @@ class LSPClient:
         if not self._initialized:
             logger.warning("LSP not initialized")
             return []
-        
+
         try:
             # Placeholder: Would use LSP textDocument/references
             logger.info(f"References lookup: {file_path}:{line}:{character}")
             return []
-            
+
         except Exception as e:
             logger.error(f"References lookup failed: {e}")
             return []
@@ -631,12 +631,12 @@ class LSPClient:
         if not self._initialized:
             logger.warning("LSP not initialized")
             return []
-        
+
         try:
             # Placeholder: Would use LSP textDocument/completion
             # Real implementation would send request via stdin/stdout
             logger.info(f"Completion requested: {file_path}:{line}:{character}")
-            
+
             # For demo, return mock completions
             # In production, parse LSP JSON response
             return [
@@ -647,7 +647,7 @@ class LSPClient:
                     documentation="Example function for demonstration"
                 )
             ]
-            
+
         except Exception as e:
             logger.error(f"Completion failed: {e}")
             return []
@@ -672,32 +672,32 @@ class LSPClient:
         if not self._initialized:
             logger.warning("LSP not initialized")
             return None
-        
+
         try:
             # Placeholder: Would use LSP textDocument/signatureHelp
             # Real implementation would send request via stdin/stdout
             logger.info(f"Signature help requested: {file_path}:{line}:{character}")
-            
+
             # For demo, return mock signature
             # In production, parse LSP JSON response
             param = ParameterInformation(
                 label="param1: str",
                 documentation="First parameter"
             )
-            
+
             sig = SignatureInformation(
                 label="example_function(param1: str) -> None",
                 documentation="Example function signature",
                 parameters=[param],
                 active_parameter=0
             )
-            
+
             return SignatureHelp(
                 signatures=[sig],
                 active_signature=0,
                 active_parameter=0
             )
-            
+
         except Exception as e:
             logger.error(f"Signature help failed: {e}")
             return None
@@ -711,7 +711,7 @@ class LSPClient:
         """
         if not self._initialized:
             return
-        
+
         try:
             content = file_path.read_text()
             # Would send textDocument/didOpen notification
@@ -728,7 +728,7 @@ class LSPClient:
         """
         if not self._initialized:
             return
-        
+
         # Would send textDocument/didClose notification
         logger.debug(f"File closed: {file_path}")
 

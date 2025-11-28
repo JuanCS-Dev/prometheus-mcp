@@ -15,19 +15,17 @@ import re
 import time
 import asyncio
 from typing import Optional, List, Callable
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from enum import Enum
 
 from textual.widget import Widget
-from textual.widgets import Static, Checkbox
+from textual.widgets import Static
 from textual.reactive import reactive
 from textual.message import Message
 from textual.app import ComposeResult
 from textual.containers import Vertical
 
 from rich.text import Text
-from rich.style import Style
-from rich.console import RenderableType
 
 
 class ChecklistItemStatus(Enum):

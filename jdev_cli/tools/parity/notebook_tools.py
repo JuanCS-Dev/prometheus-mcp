@@ -18,7 +18,7 @@ import json
 import logging
 import uuid
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Dict, List, Optional
 
 from jdev_cli.tools.base import Tool, ToolCategory, ToolResult
 

@@ -18,21 +18,15 @@ Total: 30 tests
 """
 
 import pytest
-import asyncio
-import tempfile
-import os
-import json
 from pathlib import Path
-from typing import Dict, Any, List
-from unittest.mock import AsyncMock, MagicMock, patch
 
 # Import test utilities
 import sys
 sys.path.insert(0, str(Path(__file__).parent.parent.parent.parent))
 
-from jdev_cli.core.input_enhancer import InputEnhancer, EnhancedInput
-from jdev_cli.core.error_presenter import ErrorPresenter, PresentedError
-from jdev_cli.core.context_tracker import ContextTracker, ResolvedReference
+from jdev_cli.core.input_enhancer import InputEnhancer
+from jdev_cli.core.error_presenter import ErrorPresenter
+from jdev_cli.core.context_tracker import ContextTracker
 
 
 # ==============================================================================

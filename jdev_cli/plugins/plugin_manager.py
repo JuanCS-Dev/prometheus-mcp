@@ -1,6 +1,6 @@
 """Plugin system for lazy loading shell features."""
 
-from typing import Dict, Any, Protocol, Optional
+from typing import Dict, Protocol
 import asyncio
 import importlib
 
@@ -13,16 +13,16 @@ class Plugin(Protocol):
 
 class PluginManager:
     """Manages lazy-loaded plugins."""
-    
+
     def __init__(self):
         self._plugins: Dict[str, Plugin] = {}
         self._loaded: Dict[str, bool] = {}
-        
+
     async def load_plugin(self, name: str) -> Plugin:
         """Load plugin on-demand."""
         if name in self._plugins:
             return self._plugins[name]
-            
+
         # Dynamic import
         # We assume plugins are in jdev_cli.plugins package
         try:
@@ -31,21 +31,21 @@ class PluginManager:
                 None,
                 lambda: importlib.import_module(f'jdev_cli.plugins.{name}_plugin')
             )
-            
+
             # Instantiate plugin
             if not hasattr(module, 'Plugin'):
                 raise ValueError(f"Plugin module {name} does not define 'Plugin' class")
-                
+
             plugin = module.Plugin()
-            
+
             # Initialize
             await plugin.initialize()
-            
+
             self._plugins[name] = plugin
             self._loaded[name] = True
-            
+
             return plugin
-            
+
         except ImportError as e:
             raise ValueError(f"Plugin {name} not found: {e}")
         except Exception as e:

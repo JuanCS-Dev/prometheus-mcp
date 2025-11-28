@@ -6,8 +6,6 @@ Author: Boris Cherny (Senior Engineer, Claude Code Team)
 
 import pytest
 import os
-import tempfile
-from pathlib import Path
 from jdev_cli.agents.documentation import DocumentationAgent
 
 # Skip if no API key (CI environment)
@@ -31,7 +29,7 @@ class TestDocumentationAgentRealLLM:
         # Create Python project
         (tmp_path / "src").mkdir()
         (tmp_path / "src" / "__init__.py").write_text("")
-        
+
         # Main module
         (tmp_path / "src" / "calculator.py").write_text('''
 def add(a: int, b: int) -> int:
@@ -54,7 +52,7 @@ class Calculator:
         self.history.append((expression, result))
         return result
 ''')
-        
+
         # Tests
         (tmp_path / "tests").mkdir()
         (tmp_path / "tests" / "test_calculator.py").write_text('''
@@ -62,13 +60,13 @@ def test_add():
     from src.calculator import add
     assert add(2, 3) == 5
 ''')
-        
+
         # README
         (tmp_path / "README.md").write_text('''
 # Calculator Project
 Simple calculator library
 ''')
-        
+
         return tmp_path
 
     # ============================================================================
@@ -79,7 +77,7 @@ Simple calculator library
         """Test analyzing a Python file"""
         file_path = temp_project / "src" / "calculator.py"
         result = agent.analyze_code(str(file_path))
-        
+
         assert result["success"]
         assert "add" in result["analysis"].lower()
         assert "multiply" in result["analysis"].lower()
@@ -88,7 +86,7 @@ Simple calculator library
     def test_analyze_module_structure(self, agent, temp_project):
         """Test analyzing module structure"""
         result = agent.analyze_code(str(temp_project / "src"))
-        
+
         assert result["success"]
         assert "calculator" in result["analysis"].lower()
         assert "module" in result["analysis"].lower()
@@ -97,7 +95,7 @@ Simple calculator library
         """Test analyzing class design patterns"""
         file_path = temp_project / "src" / "calculator.py"
         result = agent.analyze_code(str(file_path))
-        
+
         assert result["success"]
         assert "Calculator" in result["analysis"]
         assert "class" in result["analysis"].lower()
@@ -112,9 +110,9 @@ def foo(x):  # No types, no docstring
 def bar(a,b,c,d,e,f,g):  # Too many params
     pass
 ''')
-        
+
         result = agent.analyze_code(str(bad_code))
-        
+
         assert result["success"]
         # LLM should detect issues
         analysis = result["analysis"].lower()
@@ -133,9 +131,9 @@ def fibonacci(n):
         return n
     return fibonacci(n-1) + fibonacci(n-2)
 ''')
-        
+
         result = agent.generate_docs(str(code_file))
-        
+
         assert result["success"]
         docs = result["documentation"]
         assert "fibonacci" in docs.lower()
@@ -144,7 +142,7 @@ def fibonacci(n):
     def test_generate_class_documentation(self, agent, temp_project):
         """Test generating class documentation"""
         result = agent.generate_docs(str(temp_project / "src" / "calculator.py"))
-        
+
         assert result["success"]
         docs = result["documentation"]
         assert "Calculator" in docs
@@ -156,7 +154,7 @@ def fibonacci(n):
             str(temp_project / "src"),
             doc_type="api"
         )
-        
+
         assert result["success"]
         docs = result["documentation"]
         assert "add" in docs.lower()
@@ -168,7 +166,7 @@ def fibonacci(n):
             str(temp_project / "src" / "calculator.py"),
             doc_type="tutorial"
         )
-        
+
         assert result["success"]
         docs = result["documentation"]
         assert len(docs) > 200  # Should be comprehensive
@@ -180,7 +178,7 @@ def fibonacci(n):
             str(temp_project),
             doc_type="readme"
         )
-        
+
         assert result["success"]
         docs = result["documentation"]
         assert any(section in docs for section in ["#", "##", "Installation", "Usage"])
@@ -197,9 +195,9 @@ def calculate_area(radius):
     return 3.14159 * radius ** 2
 '''
         code_file.write_text(original)
-        
+
         result = agent.update_docstrings(str(code_file))
-        
+
         assert result["success"]
         updated = code_file.read_text()
         assert '"""' in updated
@@ -214,9 +212,9 @@ def process_data(data):
     return [x * 2 for x in data]
 '''
         code_file.write_text(original)
-        
+
         result = agent.update_docstrings(str(code_file))
-        
+
         assert result["success"]
         updated = code_file.read_text()
         # Should be more descriptive now
@@ -231,9 +229,9 @@ def connect(host, port, timeout=30):
     pass
 '''
         code_file.write_text(original)
-        
+
         result = agent.update_docstrings(str(code_file))
-        
+
         assert result["success"]
         updated = code_file.read_text()
         # Should document parameters
@@ -248,9 +246,9 @@ def get_status():
     return {"active": True, "count": 42}
 '''
         code_file.write_text(original)
-        
+
         result = agent.update_docstrings(str(code_file))
-        
+
         assert result["success"]
         updated = code_file.read_text()
         # Should document return value
@@ -266,7 +264,7 @@ def get_status():
             str(temp_project),
             doc_type="architecture"
         )
-        
+
         assert result["success"]
         docs = result["documentation"]
         assert len(docs) > 300  # Should be detailed
@@ -275,7 +273,7 @@ def get_status():
     def test_document_module_relationships(self, agent, temp_project):
         """Test documenting module dependencies"""
         result = agent.analyze_code(str(temp_project))
-        
+
         assert result["success"]
         analysis = result["analysis"]
         assert "module" in analysis.lower() or "import" in analysis.lower()
@@ -286,7 +284,7 @@ def get_status():
             str(temp_project / "src"),
             doc_type="components"
         )
-        
+
         assert result["success"]
         docs = result["documentation"]
         assert "component" in docs.lower() or "Calculator" in docs
@@ -301,7 +299,7 @@ def get_status():
             str(temp_project / "src" / "calculator.py"),
             doc_type="examples"
         )
-        
+
         assert result["success"]
         docs = result["documentation"]
         assert "example" in docs.lower() or "```" in docs  # Code block
@@ -312,7 +310,7 @@ def get_status():
             str(temp_project),
             doc_type="integration"
         )
-        
+
         assert result["success"]
         docs = result["documentation"]
         assert len(docs) > 150
@@ -324,7 +322,7 @@ def get_status():
     def test_handle_invalid_file(self, agent):
         """Test handling non-existent file"""
         result = agent.analyze_code("/nonexistent/file.py")
-        
+
         assert not result["success"]
         assert "error" in result
 
@@ -332,9 +330,9 @@ def get_status():
         """Test handling binary files gracefully"""
         binary_file = tmp_path / "image.png"
         binary_file.write_bytes(b'\x89PNG\r\n\x1a\n')
-        
+
         result = agent.analyze_code(str(binary_file))
-        
+
         # Should handle gracefully
         assert "error" in result or "binary" in result.get("analysis", "").lower()
 
@@ -342,9 +340,9 @@ def get_status():
         """Test handling empty files"""
         empty_file = tmp_path / "empty.py"
         empty_file.write_text("")
-        
+
         result = agent.analyze_code(str(empty_file))
-        
+
         # Should handle empty file
         assert result["success"] or "empty" in str(result)
 
@@ -352,9 +350,9 @@ def get_status():
         """Test handling files with syntax errors"""
         bad_file = tmp_path / "syntax_error.py"
         bad_file.write_text("def foo(\n  invalid syntax here")
-        
+
         result = agent.analyze_code(str(bad_file))
-        
+
         # Should detect syntax issue
         assert "syntax" in result.get("analysis", "").lower() or "error" in result
 

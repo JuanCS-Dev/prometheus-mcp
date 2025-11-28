@@ -52,7 +52,7 @@ class TestCreateMCPClient:
     def test_create_with_registry_ignores_auto_setup(self):
         """When registry provided, auto_setup flag should be ignored."""
         custom_registry = ToolRegistry()
-        
+
         # auto_setup=False but registry provided, should work
         mcp = create_mcp_client(registry=custom_registry, auto_setup=False)
 
@@ -73,7 +73,7 @@ class TestCreateMCPClient:
     def test_create_returns_same_registry_instance(self):
         """Factory should return MCPClient with exact registry instance provided."""
         custom_registry = ToolRegistry()
-        
+
         mcp = create_mcp_client(registry=custom_registry)
 
         # Should be same object, not a copy
@@ -98,7 +98,7 @@ class TestMCPClientEnhanced:
     def test_init_with_valid_registry(self):
         """MCPClient should initialize successfully with valid registry."""
         registry = ToolRegistry()
-        
+
         mcp = MCPClient(registry)
 
         assert mcp.registry is registry
@@ -141,7 +141,6 @@ class TestMCPClientEnhanced:
     @pytest.mark.asyncio
     async def test_call_tool_with_valid_tool(self):
         """call_tool() should execute tool successfully."""
-        import asyncio
         registry = ToolRegistry()
         mock_tool = Mock()
         mock_tool.name = 'test_tool'
@@ -354,7 +353,7 @@ class TestIntegrationWithAgents:
         from jdev_cli.core.llm import LLMClient
 
         llm = LLMClient()
-        
+
         # Setup with only minimal tools
         from jdev_cli.tools.registry_setup import setup_minimal_tools
         registry, mcp = setup_minimal_tools()
@@ -372,11 +371,11 @@ class TestIntegrationWithAgents:
 
         llm = LLMClient()
         empty_registry = ToolRegistry()
-        
+
         with warnings.catch_warnings(record=True) as w:
             warnings.simplefilter("always")
             mcp = MCPClient(empty_registry)
-            
+
             # Should get warning about empty registry
             assert len(w) == 1
 

@@ -23,15 +23,11 @@ Architecture:
     Response + Governance Metadata
 """
 
-import asyncio
 import logging
-from typing import Optional, Dict, Any, Tuple
-from datetime import datetime
+from typing import Optional, Dict, Any
 
 from rich.console import Console
 from rich.panel import Panel
-from rich.table import Table
-from rich import print as rprint
 
 from jdev_cli.core.llm import LLMClient
 from jdev_cli.core.mcp_client import MCPClient

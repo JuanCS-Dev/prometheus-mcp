@@ -8,7 +8,6 @@ Usa bl run para autenticação automática via Blaxel CLI.
 Run: python tests/prometheus/stress_test.py
 """
 
-import asyncio
 import subprocess
 import json
 import time
@@ -296,7 +295,7 @@ def run_stress_test() -> TestReport:
     print(f"📊 Total Requests: {TOTAL_REQUESTS}")
     print(f"🧪 Test Scenarios: {len(TEST_SCENARIOS)}")
     print(f"⏱️  Timeout per request: {TIMEOUT_PER_REQUEST}s")
-    print(f"💰 Objective: DRAIN THE BUDGET & BUILD KNOWLEDGE")
+    print("💰 Objective: DRAIN THE BUDGET & BUILD KNOWLEDGE")
     print("="*70 + "\n")
 
     results = []
@@ -384,7 +383,7 @@ def generate_markdown_report(report: TestReport) -> str:
         status = "✅" if rate >= 80 else "⚠️" if rate >= 50 else "❌"
         md += f"| {cat} | {data['total']} | {data['success']} | {data['failed']} | {data['avg_duration']:.1f}s | {status} **{rate:.0f}%** |\n"
 
-    md += f"""
+    md += """
 ## 🧪 Test Scenarios
 
 | # | Category | Test Name | Description |
@@ -393,7 +392,7 @@ def generate_markdown_report(report: TestReport) -> str:
     for i, scenario in enumerate(TEST_SCENARIOS, 1):
         md += f"| {i} | {scenario['category']} | {scenario['name']} | {scenario['prompt'][:50]}... |\n"
 
-    md += f"""
+    md += """
 ## 📋 Detailed Results
 
 | ID | Category | Test Name | Status | Duration | Output Preview |
@@ -406,7 +405,7 @@ def generate_markdown_report(report: TestReport) -> str:
         md += f"| {r.id:03d} | {r.category} | {r.name[:20]} | {status_icon} {r.status} | {r.duration:.1f}s | {output}... |\n"
 
     # Sample outputs section
-    md += f"""
+    md += """
 ## 📝 Sample Outputs
 
 """

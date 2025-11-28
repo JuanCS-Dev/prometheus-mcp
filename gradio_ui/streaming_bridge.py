@@ -26,7 +26,7 @@ import re
 import time
 from dataclasses import dataclass, field
 from typing import Any, Dict, Generator, List, Optional, Tuple
-from jdev_tui.core.prometheus_client import PrometheusClient, PrometheusStreamConfig
+from jdev_tui.core.prometheus_client import PrometheusClient
 
 logger = logging.getLogger(__name__)
 

@@ -8,8 +8,6 @@ import logging
 from typing import Dict, Any
 from pathlib import Path
 from rich.console import Console
-from rich.panel import Panel
-from rich.syntax import Syntax
 
 from jdev_cli.integration.sandbox import get_sandbox, SandboxResult
 from jdev_cli.integration.safety import safety_validator
@@ -43,23 +41,23 @@ async def handle_sandbox(args: str, context: Dict[str, Any]) -> str:
     """
     if not args.strip():
         return _format_help()
-    
+
     sandbox = get_sandbox()
-    
+
     # Check availability
     if not sandbox.is_available():
         return _format_error("Docker sandbox not available. Install Docker and ensure daemon is running.")
-    
+
     # Get current directory from context
     cwd = context.get('cwd', Path.cwd())
     if isinstance(cwd, str):
         cwd = Path(cwd)
-    
+
     # Extract flags (simple parsing)
     command = args.strip()
     timeout = 30
     readonly = False  # Default to writable for most commands
-    
+
     # Check for timeout flag
     if '--timeout' in command:
         parts = command.split('--timeout')
@@ -69,27 +67,27 @@ async def handle_sandbox(args: str, context: Dict[str, Any]) -> str:
             command = parts[0].strip() + ' ' + ' '.join(parts[1].strip().split()[1:])
         except (IndexError, ValueError):
             pass
-    
+
     # Check for readonly flag
     if '--readonly' in command:
         readonly = True
         command = command.replace('--readonly', '').strip()
-    
+
     # Safety validation before execution
     tool_call = {
         "tool": "bash_command",
         "arguments": {"command": command}
     }
     is_safe, reason = safety_validator.is_safe(tool_call)
-    
+
     if not is_safe:
         console.print(f"\n[yellow]⚠️  Safety Warning:[/yellow] {reason}")
         console.print("[dim]Command will execute in isolated sandbox anyway.[/dim]\n")
-    
+
     console.print(f"\n[cyan]🔒 Executing in sandbox:[/cyan] {command}")
     console.print(f"[dim]Directory: {cwd}[/dim]")
     console.print(f"[dim]Timeout: {timeout}s | Mode: {'readonly' if readonly else 'writable'}[/dim]\n")
-    
+
     try:
         # Execute in sandbox
         result = sandbox.execute(
@@ -98,9 +96,9 @@ async def handle_sandbox(args: str, context: Dict[str, Any]) -> str:
             timeout=timeout,
             readonly=readonly
         )
-        
+
         return _format_result(result, command)
-        
+
     except Exception as e:
         logger.error(f"Sandbox execution failed: {e}")
         return _format_error(f"Execution failed: {e}")
@@ -109,32 +107,32 @@ async def handle_sandbox(args: str, context: Dict[str, Any]) -> str:
 def _format_result(result: SandboxResult, command: str) -> str:
     """Format sandbox execution result."""
     output_lines = []
-    
+
     # Status header
     if result.success:
         status = "[green]✓ Success[/green]"
     else:
         status = f"[red]✗ Failed (exit {result.exit_code})[/red]"
-    
+
     output_lines.append(f"\n{status}")
     output_lines.append(f"[dim]Duration: {result.duration_ms:.0f}ms | Container: {result.container_id[:12]}[/dim]\n")
-    
+
     # Stdout
     if result.stdout.strip():
         output_lines.append("[cyan]Output:[/cyan]")
         output_lines.append(result.stdout.rstrip())
         output_lines.append("")
-    
+
     # Stderr
     if result.stderr.strip():
         output_lines.append("[yellow]Errors/Warnings:[/yellow]")
         output_lines.append(result.stderr.rstrip())
         output_lines.append("")
-    
+
     # No output case
     if not result.stdout.strip() and not result.stderr.strip():
         output_lines.append("[dim]No output produced[/dim]\n")
-    
+
     return "\n".join(output_lines)
 
 

@@ -19,24 +19,16 @@ Total: 30 tests (ALL MUST PASS - Security is non-negotiable)
 """
 
 import pytest
-import asyncio
-import tempfile
-import os
-import json
-import subprocess
-import signal
 from pathlib import Path
-from typing import Dict, Any, List
-from unittest.mock import AsyncMock, MagicMock, patch
 
 # Import test utilities
 import sys
 sys.path.insert(0, str(Path(__file__).parent.parent.parent.parent))
 
-from jdev_cli.core.input_validator import InputValidator, ValidationResult
-from jdev_cli.core.sandbox import SecureExecutor, ExecutionResult
+from jdev_cli.core.input_validator import InputValidator
+from jdev_cli.core.sandbox import SecureExecutor
 from jdev_cli.core.python_sandbox import PythonSandbox
-from jdev_cli.core.prompt_shield import PromptShield, ShieldResult
+from jdev_cli.core.prompt_shield import PromptShield
 from jdev_cli.core.audit_logger import AuditLogger, AuditEventType
 
 

@@ -13,8 +13,7 @@ Date: 2025-11-25
 """
 
 import logging
-import traceback
-from typing import Any, Dict, Optional
+from typing import Any, Dict
 
 
 def log_error(

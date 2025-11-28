@@ -10,7 +10,7 @@ from jdev_cli.tui.landing import create_landing_screen
 def verify():
     console = Console()
     console.print("[bold blue]Testing Landing Screen Rendering (2025 Edition)...[/bold blue]")
-    
+
     try:
         landing = create_landing_screen(console)
         console.print(landing.render())

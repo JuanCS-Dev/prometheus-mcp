@@ -30,21 +30,21 @@ class StreamProcessor:
     
     Implements Cursor-style streaming: line-by-line emission as produced.
     """
-    
+
     def __init__(self, max_buffer: int = 1000):
         self.max_buffer = max_buffer
         self._queue: asyncio.Queue[Optional[OutputChunk]] = asyncio.Queue()
         self._sequence = 0
         self._callbacks: list[Callable[[OutputChunk], None]] = []
-    
+
     def add_callback(self, callback: Callable[[OutputChunk], None]) -> None:
         """Register callback for each chunk."""
         self._callbacks.append(callback)
-    
+
     async def feed(self, content: str, stream_type: StreamType) -> None:
         """Feed content to stream (producer side)."""
         import time
-        
+
         chunk = OutputChunk(
             content=content,
             stream_type=stream_type,
@@ -52,7 +52,7 @@ class StreamProcessor:
             sequence=self._sequence
         )
         self._sequence += 1
-        
+
         # Notify callbacks immediately
         for cb in self._callbacks:
             try:
@@ -62,9 +62,9 @@ class StreamProcessor:
                     cb(chunk)
             except Exception as e:
                 logger.debug(f"Callback execution failed: {e}")
-        
+
         await self._queue.put(chunk)
-    
+
     async def consume(self) -> AsyncIterator[OutputChunk]:
         """Consume stream (consumer side)."""
         while True:
@@ -72,11 +72,11 @@ class StreamProcessor:
             if chunk is None:
                 break
             yield chunk
-    
+
     async def close(self) -> None:
         """Signal end of stream."""
         await self._queue.put(None)
-    
+
     def is_empty(self) -> bool:
         """Check if queue is empty."""
         return self._queue.empty()
@@ -88,13 +88,13 @@ class LineBufferedStreamReader:
     
     Yields complete lines immediately (Claude Code pattern).
     """
-    
+
     def __init__(self, stream: asyncio.StreamReader, processor: StreamProcessor, stream_type: StreamType):
         self.stream = stream
         self.processor = processor
         self.stream_type = stream_type
         self._buffer = ""
-    
+
     async def read_lines(self) -> None:
         """Read and emit lines as they arrive."""
         try:
@@ -104,14 +104,14 @@ class LineBufferedStreamReader:
                     if self._buffer:
                         await self.processor.feed(self._buffer, self.stream_type)
                     break
-                
+
                 text = chunk.decode('utf-8', errors='replace')
                 self._buffer += text
-                
+
                 while '\n' in self._buffer:
                     line, self._buffer = self._buffer.split('\n', 1)
                     await self.processor.feed(line + '\n', self.stream_type)
-        
+
         except asyncio.CancelledError:
             raise
         except Exception as e:

@@ -5,7 +5,6 @@ Individual agent streaming panel with glassmorphism effects,
 animated spinners, and cursor animation.
 """
 
-from typing import Optional
 from rich.panel import Panel
 from rich.text import Text
 from rich.style import Style

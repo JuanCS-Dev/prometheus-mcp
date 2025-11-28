@@ -14,8 +14,6 @@ Test Philosophy:
 
 import pytest
 import asyncio
-import tempfile
-import shutil
 import os
 import sys
 import json
@@ -23,16 +21,11 @@ from pathlib import Path
 from datetime import datetime
 from typing import Dict, List, Any, Optional
 from dataclasses import dataclass, field
-from contextlib import asynccontextmanager
-from unittest.mock import Mock, AsyncMock, patch
 
 # Add project to path
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
-from jdev_cli.core.llm import LLMClient
-from jdev_cli.core.mcp_client import MCPClient
 from jdev_cli.tools.base import ToolRegistry, ToolResult
-from jdev_cli.agents.base import AgentTask, AgentResponse
 
 
 # ==============================================================================

@@ -25,15 +25,14 @@ Versão: 3.0.0 (2030 Vision)
 
 from __future__ import annotations
 
-import asyncio
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from enum import Enum, auto
-from typing import Any, Callable, Dict, List, Optional, Tuple, TypeVar, Generic
+from typing import Any, Callable, Dict, List, Optional
 from uuid import UUID, uuid4
 from pathlib import Path
 
-from .constitution import Constitution, Severity, ViolationType, create_default_constitution
+from .constitution import Constitution, Severity, create_default_constitution
 from .classifiers import (
     ConstitutionalClassifier,
     ClassificationReport,
@@ -49,12 +48,12 @@ from .enforcement import (
     ConsoleExecutor,
 )
 from .monitor import JusticaMonitor, SuspicionScore
-from .audit import AuditLogger, AuditLevel, AuditCategory, create_test_logger
+from .audit import AuditLevel, create_test_logger
 
 
 class JusticaState(Enum):
     """Estados possíveis do agente JUSTIÇA."""
-    
+
     INITIALIZING = auto()   # Inicializando componentes
     READY = auto()          # Pronto para operar
     MONITORING = auto()     # Em modo de monitoramento ativo
@@ -70,33 +69,33 @@ class JusticaConfig:
     
     Permite customização de todos os parâmetros do sistema.
     """
-    
+
     # Identificação
     agent_id: str = "justica-primary"
     name: str = "JUSTIÇA"
     version: str = "3.0.0"
-    
+
     # Políticas
     enforcement_mode: EnforcementMode = EnforcementMode.NORMATIVE
-    
+
     # Thresholds
     violation_threshold: float = 80.0
     auto_suspend_threshold: float = 0.20
     critical_alert_threshold: float = 90.0
-    
+
     # Monitoramento
     analysis_window_minutes: int = 30
     cross_agent_correlation_minutes: int = 5
-    
+
     # Logging
     log_dir: Optional[Path] = None
     console_logging: bool = True
     file_logging: bool = True
-    
+
     # Comportamento
     auto_execute_enforcement: bool = True
     require_human_for_critical: bool = True
-    
+
     def to_dict(self) -> Dict[str, Any]:
         return {
             "agent_id": self.agent_id,
@@ -122,45 +121,45 @@ class JusticaVerdict:
     
     Contém a decisão completa com todas as evidências e raciocínio.
     """
-    
+
     id: UUID = field(default_factory=uuid4)
     timestamp: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
-    
+
     # Sujeito do veredicto
     agent_id: str = ""
     content_analyzed: str = ""
-    
+
     # Decisão
     approved: bool = True
     requires_human_review: bool = False
-    
+
     # Evidências
     classification: Optional[ClassificationReport] = None
     suspicion_score: Optional[SuspicionScore] = None
     trust_factor: Optional[TrustFactor] = None
-    
+
     # Ações tomadas
     actions_taken: List[EnforcementAction] = field(default_factory=list)
-    
+
     # Raciocínio
     reasoning: str = ""
     constitutional_basis: List[str] = field(default_factory=list)
-    
+
     # Metadados
     processing_time_ms: float = 0.0
-    
+
     @property
     def is_violation(self) -> bool:
         """Verifica se o veredicto indica violação."""
         return not self.approved and not self.requires_human_review
-    
+
     @property
     def severity(self) -> Severity:
         """Retorna a severidade do veredicto."""
         if self.classification:
             return self.classification.severity
         return Severity.INFO
-    
+
     def to_dict(self) -> Dict[str, Any]:
         return {
             "id": str(self.id),
@@ -217,7 +216,7 @@ class JusticaAgent:
         monitor: Monitor em tempo real
         audit_logger: Logger de auditoria
     """
-    
+
     BANNER = """
 ╔══════════════════════════════════════════════════════════════════════════════╗
 ║                                                                              ║
@@ -235,7 +234,7 @@ class JusticaAgent:
 ║                                                                              ║
 ╚══════════════════════════════════════════════════════════════════════════════╝
     """
-    
+
     def __init__(
         self,
         config: Optional[JusticaConfig] = None,
@@ -251,22 +250,22 @@ class JusticaAgent:
         self.config = config or JusticaConfig()
         self.state = JusticaState.INITIALIZING
         self.started_at: Optional[datetime] = None
-        
+
         # ════════════════════════════════════════════════════════════════════
         # INICIALIZAÇÃO DOS COMPONENTES
         # ════════════════════════════════════════════════════════════════════
-        
+
         # 1. Constituição
         self.constitution = constitution or create_default_constitution()
-        
+
         # 2. Classifier
         self.classifier = ConstitutionalClassifier(self.constitution)
-        
+
         # 3. Trust Engine
         self.trust_engine = TrustEngine(
             auto_suspend_threshold=self.config.auto_suspend_threshold,
         )
-        
+
         # 4. Enforcement Engine
         policy = self._create_enforcement_policy()
         self.enforcement_engine = EnforcementEngine(
@@ -274,7 +273,7 @@ class JusticaAgent:
             trust_engine=self.trust_engine,
             policy=policy,
         )
-        
+
         # 5. Monitor
         self.monitor = JusticaMonitor(
             constitution=self.constitution,
@@ -282,21 +281,21 @@ class JusticaAgent:
             analysis_window_minutes=self.config.analysis_window_minutes,
             cross_agent_correlation_window_minutes=self.config.cross_agent_correlation_minutes,
         )
-        
+
         # 6. Audit Logger
         self.audit_logger, self._memory_backend = create_test_logger()
-        
+
         # ════════════════════════════════════════════════════════════════════
         # REGISTRO DE EXECUTORES
         # ════════════════════════════════════════════════════════════════════
         self._register_default_executors()
-        
+
         # ════════════════════════════════════════════════════════════════════
         # CALLBACKS
         # ════════════════════════════════════════════════════════════════════
         self._on_violation_callbacks: List[Callable[[JusticaVerdict], None]] = []
         self._on_escalation_callbacks: List[Callable[[JusticaVerdict], None]] = []
-        
+
         # ════════════════════════════════════════════════════════════════════
         # MÉTRICAS
         # ════════════════════════════════════════════════════════════════════
@@ -304,28 +303,28 @@ class JusticaAgent:
         self.total_approvals = 0
         self.total_violations = 0
         self.total_escalations = 0
-        
+
         # Marcar como pronto
         self.state = JusticaState.READY
-    
+
     def _create_enforcement_policy(self) -> EnforcementPolicy:
         """Cria política de enforcement baseada na configuração."""
         mode = self.config.enforcement_mode
-        
+
         if mode == EnforcementMode.COERCIVE:
             return EnforcementPolicy.default_coercive()
         elif mode == EnforcementMode.ADAPTIVE:
             return EnforcementPolicy.default_adaptive()
         else:
             return EnforcementPolicy.default_normative()
-    
+
     def _register_default_executors(self) -> None:
         """Registra executores padrão para ações de enforcement."""
         executor = ConsoleExecutor()
-        
+
         for action_type in ActionType:
             self.enforcement_engine.register_executor(action_type, executor)
-    
+
     def start(self) -> None:
         """
         Inicia o Agente JUSTIÇA.
@@ -333,38 +332,38 @@ class JusticaAgent:
         Loga evento de inicialização e entra em modo de monitoramento.
         """
         print(self.BANNER)
-        
+
         self.started_at = datetime.now(timezone.utc)
         self.state = JusticaState.MONITORING
-        
+
         self.audit_logger.log_system_event(
             event="JUSTIÇA Started",
             details=self.config.to_dict(),
             level=AuditLevel.INFO,
         )
-        
+
         print(f"\n✓ JUSTIÇA iniciado em {self.started_at.isoformat()}")
         print(f"✓ Modo de enforcement: {self.config.enforcement_mode.name}")
         print(f"✓ Threshold de violação: {self.config.violation_threshold}")
         print(f"✓ Constituição: {self.constitution.version} ({len(self.constitution.get_all_principles())} princípios)")
-    
+
     def stop(self) -> None:
         """Para o Agente JUSTIÇA."""
         self.state = JusticaState.SHUTDOWN
-        
+
         self.audit_logger.log_system_event(
             event="JUSTIÇA Shutdown",
             details={"uptime_seconds": (datetime.now(timezone.utc) - self.started_at).total_seconds() if self.started_at else 0},
             level=AuditLevel.INFO,
         )
-        
+
         self.audit_logger.close()
         print("\n✓ JUSTIÇA encerrado.")
-    
+
     # ════════════════════════════════════════════════════════════════════════════
     # API PRINCIPAL
     # ════════════════════════════════════════════════════════════════════════════
-    
+
     def evaluate_input(
         self,
         agent_id: str,
@@ -387,14 +386,14 @@ class JusticaAgent:
         """
         import time
         start_time = time.time()
-        
+
         context = context or {}
-        
+
         # ════════════════════════════════════════════════════════════════════
         # FASE 1: CLASSIFICAÇÃO
         # ════════════════════════════════════════════════════════════════════
         classification = self.classifier.classify_input(content, context)
-        
+
         # ════════════════════════════════════════════════════════════════════
         # FASE 2: MONITORAMENTO
         # ════════════════════════════════════════════════════════════════════
@@ -404,13 +403,13 @@ class JusticaAgent:
             transcript=content,
             thoughts=thoughts,
         )
-        
+
         # ════════════════════════════════════════════════════════════════════
         # FASE 3: VERIFICAÇÃO DE TRUST
         # ════════════════════════════════════════════════════════════════════
         trust_factor = self.trust_engine.get_or_create_trust_factor(agent_id)
         is_suspended, suspension_reason = self.trust_engine.check_suspension(agent_id)
-        
+
         # ════════════════════════════════════════════════════════════════════
         # FASE 4: DETERMINAÇÃO DO VEREDICTO
         # ════════════════════════════════════════════════════════════════════
@@ -423,7 +422,7 @@ class JusticaAgent:
             is_suspended=is_suspended,
             suspension_reason=suspension_reason,
         )
-        
+
         # ════════════════════════════════════════════════════════════════════
         # FASE 5: ENFORCEMENT
         # ════════════════════════════════════════════════════════════════════
@@ -433,7 +432,7 @@ class JusticaAgent:
                 agent_id=agent_id,
                 auto_execute=self.config.auto_execute_enforcement,
             )
-            
+
             # Coletar ações executadas
             if "execution" in enforcement_result:
                 for action_dict in enforcement_result["execution"].get("actions", []):
@@ -443,19 +442,19 @@ class JusticaAgent:
                         reason=action_dict["reason"],
                     )
                     verdict.actions_taken.append(action)
-        
+
         # ════════════════════════════════════════════════════════════════════
         # FASE 6: LOGGING E CALLBACKS
         # ════════════════════════════════════════════════════════════════════
         processing_time = (time.time() - start_time) * 1000
         verdict.processing_time_ms = processing_time
-        
+
         self._log_verdict(verdict)
         self._update_metrics(verdict)
         self._trigger_callbacks(verdict)
-        
+
         return verdict
-    
+
     def evaluate_output(
         self,
         agent_id: str,
@@ -477,15 +476,15 @@ class JusticaAgent:
         """
         import time
         start_time = time.time()
-        
+
         context = context or {}
-        
+
         # Classificar output
         classification = self.classifier.classify_output(content, context)
-        
+
         # Obter trust factor
         trust_factor = self.trust_engine.get_or_create_trust_factor(agent_id)
-        
+
         # Determinar veredicto
         verdict = self._determine_verdict(
             agent_id=agent_id,
@@ -496,7 +495,7 @@ class JusticaAgent:
             is_suspended=False,
             suspension_reason=None,
         )
-        
+
         # Enforcement se necessário
         if not verdict.approved:
             self.enforcement_engine.process_classification(
@@ -504,14 +503,14 @@ class JusticaAgent:
                 agent_id=agent_id,
                 auto_execute=self.config.auto_execute_enforcement,
             )
-        
+
         verdict.processing_time_ms = (time.time() - start_time) * 1000
-        
+
         self._log_verdict(verdict, is_output=True)
         self._update_metrics(verdict)
-        
+
         return verdict
-    
+
     def _determine_verdict(
         self,
         agent_id: str,
@@ -523,12 +522,12 @@ class JusticaAgent:
         suspension_reason: Optional[str],
     ) -> JusticaVerdict:
         """Determina o veredicto baseado em todas as evidências."""
-        
+
         reasoning_parts = []
         constitutional_basis = []
         approved = True
         requires_human = False
-        
+
         # ════════════════════════════════════════════════════════════════════
         # REGRA 1: Agente Suspenso
         # ════════════════════════════════════════════════════════════════════
@@ -536,7 +535,7 @@ class JusticaAgent:
             approved = False
             reasoning_parts.append(f"Agente suspenso: {suspension_reason}")
             constitutional_basis.append("Proteção da Integridade do Sistema")
-        
+
         # ════════════════════════════════════════════════════════════════════
         # REGRA 2: Classificação
         # ════════════════════════════════════════════════════════════════════
@@ -544,23 +543,23 @@ class JusticaAgent:
             approved = False
             reasoning_parts.append(f"Classificação CRÍTICA: {classification.reasoning}")
             constitutional_basis.extend(classification.constitutional_principles_violated)
-            
+
             if self.config.require_human_for_critical:
                 requires_human = True
                 reasoning_parts.append("Requer revisão humana por severidade crítica")
                 constitutional_basis.append("Escalação Apropriada")
-        
+
         elif classification.result == ClassificationResult.VIOLATION:
             approved = False
             reasoning_parts.append(f"Violação detectada: {classification.reasoning}")
             constitutional_basis.extend(classification.constitutional_principles_violated)
-        
+
         elif classification.result == ClassificationResult.NEEDS_REVIEW:
             approved = False  # Conservador
             requires_human = True
             reasoning_parts.append("Classificação ambígua requer revisão humana")
             constitutional_basis.append("Escalação Apropriada")
-        
+
         elif classification.result == ClassificationResult.SUSPICIOUS:
             # Suspeito mas não necessariamente violação
             if trust_factor.level in (TrustLevel.REDUCED, TrustLevel.MINIMAL):
@@ -568,7 +567,7 @@ class JusticaAgent:
                 reasoning_parts.append("Conteúdo suspeito de agente com baixo trust")
             else:
                 reasoning_parts.append("Conteúdo suspeito mas aprovado (trust adequado)")
-        
+
         # ════════════════════════════════════════════════════════════════════
         # REGRA 3: Score de Suspeita
         # ════════════════════════════════════════════════════════════════════
@@ -576,7 +575,7 @@ class JusticaAgent:
             approved = False
             reasoning_parts.append(f"Score de suspeita crítico: {suspicion.score:.1f}")
             constitutional_basis.append("Proteção da Integridade do Sistema")
-        
+
         # ════════════════════════════════════════════════════════════════════
         # REGRA 4: Trust Level Muito Baixo
         # ════════════════════════════════════════════════════════════════════
@@ -584,14 +583,14 @@ class JusticaAgent:
             if approved:  # Ainda não foi reprovado
                 requires_human = True
                 reasoning_parts.append(f"Trust level {trust_factor.level.name} requer supervisão")
-        
+
         # ════════════════════════════════════════════════════════════════════
         # CONSTRUIR VEREDICTO
         # ════════════════════════════════════════════════════════════════════
         if approved and not reasoning_parts:
             reasoning_parts.append("Nenhuma violação detectada. Aprovado.")
             constitutional_basis.append("Enforcement Proporcional")
-        
+
         return JusticaVerdict(
             agent_id=agent_id,
             content_analyzed=content,
@@ -603,7 +602,7 @@ class JusticaAgent:
             reasoning=" | ".join(reasoning_parts),
             constitutional_basis=list(set(constitutional_basis)),
         )
-    
+
     def _log_verdict(self, verdict: JusticaVerdict, is_output: bool = False) -> None:
         """Loga o veredicto no audit trail."""
         self.audit_logger.log_classification(
@@ -614,19 +613,19 @@ class JusticaAgent:
             reasoning=verdict.reasoning,
             violations=[vt.name for vt in verdict.classification.violation_types] if verdict.classification else [],
         )
-    
+
     def _update_metrics(self, verdict: JusticaVerdict) -> None:
         """Atualiza métricas internas."""
         self.total_verdicts += 1
-        
+
         if verdict.approved:
             self.total_approvals += 1
         elif verdict.is_violation:
             self.total_violations += 1
-        
+
         if verdict.requires_human_review:
             self.total_escalations += 1
-    
+
     def _trigger_callbacks(self, verdict: JusticaVerdict) -> None:
         """Dispara callbacks registrados."""
         if verdict.is_violation:
@@ -635,36 +634,36 @@ class JusticaAgent:
                     callback(verdict)
                 except Exception:
                     pass
-        
+
         if verdict.requires_human_review:
             for callback in self._on_escalation_callbacks:
                 try:
                     callback(verdict)
                 except Exception:
                     pass
-    
+
     # ════════════════════════════════════════════════════════════════════════════
     # API DE REGISTRO
     # ════════════════════════════════════════════════════════════════════════════
-    
+
     def on_violation(self, callback: Callable[[JusticaVerdict], None]) -> None:
         """Registra callback para violações."""
         self._on_violation_callbacks.append(callback)
-    
+
     def on_escalation(self, callback: Callable[[JusticaVerdict], None]) -> None:
         """Registra callback para escalações."""
         self._on_escalation_callbacks.append(callback)
-    
+
     # ════════════════════════════════════════════════════════════════════════════
     # API DE CONSULTA
     # ════════════════════════════════════════════════════════════════════════════
-    
+
     def get_agent_status(self, agent_id: str) -> Dict[str, Any]:
         """Retorna status completo de um agente."""
         trust_factor = self.trust_engine.get_trust_factor(agent_id)
         session = self.monitor.get_or_create_session(agent_id)
         is_suspended, reason = self.trust_engine.check_suspension(agent_id)
-        
+
         return {
             "agent_id": agent_id,
             "trust_factor": trust_factor.current_factor if trust_factor else 1.0,
@@ -676,7 +675,7 @@ class JusticaAgent:
             "current_suspicion": session.current_suspicion,
             "violation_rate": trust_factor.violation_rate if trust_factor else 0,
         }
-    
+
     def get_metrics(self) -> Dict[str, Any]:
         """Retorna métricas completas do sistema."""
         return {
@@ -697,11 +696,11 @@ class JusticaAgent:
             "monitor": self.monitor.get_metrics(),
             "audit": self.audit_logger.get_metrics(),
         }
-    
+
     def get_constitution_hash(self) -> str:
         """Retorna hash da constituição para verificação de integridade."""
         return self.constitution.integrity_hash
-    
+
     def __repr__(self) -> str:
         return f"JusticaAgent(state={self.state.name}, verdicts={self.total_verdicts})"
 
@@ -731,16 +730,16 @@ def create_justica(
 def create_strict_justica() -> JusticaAgent:
     """Cria JUSTIÇA em modo estrito (máxima segurança)."""
     from .constitution import create_strict_constitution
-    
+
     config = JusticaConfig(
         enforcement_mode=EnforcementMode.COERCIVE,
         violation_threshold=70.0,
         auto_suspend_threshold=0.30,
         require_human_for_critical=True,
     )
-    
+
     constitution = create_strict_constitution()
-    
+
     return JusticaAgent(config=config, constitution=constitution)
 
 
@@ -752,11 +751,11 @@ if __name__ == "__main__":
     # Criar e iniciar JUSTIÇA
     justica = create_justica(mode=EnforcementMode.NORMATIVE)
     justica.start()
-    
+
     print("\n" + "═" * 80)
     print("DEMONSTRAÇÃO DO AGENTE JUSTIÇA")
     print("═" * 80)
-    
+
     # Testar com diferentes inputs
     test_cases = [
         {
@@ -780,49 +779,49 @@ if __name__ == "__main__":
             "description": "Request malicioso",
         },
     ]
-    
+
     for case in test_cases:
         print(f"\n{'─' * 60}")
         print(f"📝 {case['description']}")
         print(f"🤖 Agent: {case['agent_id']}")
         print(f"💬 Content: {case['content'][:60]}...")
         print("─" * 60)
-        
+
         verdict = justica.evaluate_input(
             agent_id=case["agent_id"],
             content=case["content"],
         )
-        
+
         status = "✅ APROVADO" if verdict.approved else "❌ REJEITADO"
         if verdict.requires_human_review:
             status += " (⚠️ REQUER REVISÃO HUMANA)"
-        
+
         print(f"\n  Veredicto: {status}")
         print(f"  Severidade: {verdict.severity.name}")
         print(f"  Reasoning: {verdict.reasoning[:80]}...")
         print(f"  Tempo: {verdict.processing_time_ms:.2f}ms")
-        
+
         if verdict.actions_taken:
             print(f"  Ações: {len(verdict.actions_taken)}")
-    
+
     # Métricas finais
     print("\n" + "═" * 80)
     print("MÉTRICAS FINAIS")
     print("═" * 80)
-    
+
     metrics = justica.get_metrics()
-    
+
     print("\n📊 JUSTIÇA:")
     for key, value in metrics["justica"].items():
         if isinstance(value, float):
             print(f"  {key}: {value:.2%}" if "rate" in key else f"  {key}: {value:.2f}")
         else:
             print(f"  {key}: {value}")
-    
+
     print("\n📊 Trust Engine:")
     for key, value in metrics["trust_engine"].items():
         if not isinstance(value, dict):
             print(f"  {key}: {value}")
-    
+
     # Encerrar
     justica.stop()

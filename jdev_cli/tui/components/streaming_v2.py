@@ -18,7 +18,7 @@ from __future__ import annotations
 
 import asyncio
 import threading
-from typing import Optional, Callable, List
+from typing import Optional, List
 from dataclasses import dataclass
 
 from textual.widgets import Static
@@ -29,7 +29,6 @@ from rich.text import Text
 from rich.console import RenderableType, Group
 
 from .block_renderers import (
-    BlockType, BlockInfo, BlockRendererRegistry,
     render_block, list_renderers
 )
 from .block_detector_v2 import BlockDetectorV2

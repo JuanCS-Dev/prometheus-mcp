@@ -1,18 +1,15 @@
 """Minimal shell core - ultra-fast prompt loop."""
 
-import asyncio
-import sys
-from typing import Optional
 from pathlib import Path
 
 
 class ShellCore:
     """Core shell functionality - minimal and fast."""
-    
+
     def __init__(self):
         self.cwd = Path.cwd()
         self._session = None  # Lazy load prompt_toolkit
-        
+
     async def show_welcome(self):
         """Show welcome - ultra fast, no dependencies."""
         # Simple print - NO rich/TUI overhead for instant feedback
@@ -21,11 +18,11 @@ class ShellCore:
         green = "\033[92m"
         reset = "\033[0m"
         dim = "\033[2m"
-        
+
         print(f"\n{cyan}🚀 NEUROSHELL v2.0{reset} - {green}ULTRA FAST MODE{reset}")
         print(f"{dim}📁 {self.cwd}{reset}")
         print(f"{dim}Type 'help' for commands{reset}\n")
-        
+
     async def get_input(self) -> str:
         """Get user input with lazy session loading."""
         if self._session is None:
@@ -34,19 +31,19 @@ class ShellCore:
             try:
                 from prompt_toolkit import PromptSession
                 from prompt_toolkit.history import FileHistory
-                
+
                 history_file = Path.home() / ".qwen_shell_history"
                 self._session = PromptSession(history=FileHistory(str(history_file)))
             except ImportError:
                 # Fallback if prompt_toolkit not installed (should not happen in dev env)
                 return input("❯ ")
-            
+
         return await self._session.prompt_async("❯ ")
-        
+
     async def output_chunk(self, chunk: str):
         """Output chunk - streaming mode."""
         print(chunk, end='', flush=True)
-        
+
     async def output_line(self, line: str):
         """Output full line."""
         print(line)
@@ -95,7 +92,7 @@ class ShellCore:
             console.print(syntax)
         except ImportError:
             print(f"```{language}\n{code}\n```")
-            
+
     async def print_success(self, message: str):
         """Print success message."""
         try:

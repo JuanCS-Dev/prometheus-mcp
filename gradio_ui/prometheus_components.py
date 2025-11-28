@@ -4,8 +4,7 @@ PROMETHEUS Dashboard Components for Gradio UI.
 Render functions for Memory, World Model, and Evolution panels.
 """
 
-from typing import Dict, Any, Optional
-import json
+from typing import Dict, Any
 
 
 def render_memory_panel(memory_status: Dict[str, Any]) -> str:

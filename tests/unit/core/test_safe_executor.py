@@ -11,14 +11,10 @@ Author: Boris Cherny style - Type-safe, thorough, no shortcuts
 """
 
 import pytest
-from pathlib import Path
-from typing import List
 
 from jdev_tui.core.safe_executor import (
     SafeCommandExecutor,
     SafeExecutionResult,
-    AllowedCommand,
-    CommandCategory,
     get_safe_executor,
 )
 

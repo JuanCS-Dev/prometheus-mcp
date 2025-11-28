@@ -30,18 +30,18 @@ def print_command(cmd, score=None, highlight=False):
     """Print command result."""
     color = COLORS['accent_green'] if highlight else COLORS['text']
     category_icon = "📄" if cmd.category == CommandCategory.FILE else "🔍"
-    
+
     # Title with keybinding
     title_line = f"{color}{category_icon} {cmd.title}{COLORS['reset']}"
     if cmd.keybinding:
         title_line += f" {COLORS['dim']}({cmd.keybinding}){COLORS['reset']}"
-    
+
     if score is not None:
         title_line += f" {COLORS['accent_yellow']}[{score:.2f}]{COLORS['reset']}"
-    
+
     print(f"  {title_line}")
     print(f"    {COLORS['dim']}{cmd.description}{COLORS['reset']}")
-    
+
     if cmd.use_count > 0:
         print(f"    {COLORS['dim']}Used {cmd.use_count} times{COLORS['reset']}")
     print()
@@ -50,10 +50,10 @@ def print_command(cmd, score=None, highlight=False):
 def main():
     """Run command palette demo."""
     print_header("⌘ COMMAND PALETTE - Cmd+K Style with Fuzzy Search")
-    
+
     # Initialize palette
     palette = CommandPalette()
-    
+
     # Add file commands
     file_commands = [
         Command(
@@ -87,7 +87,7 @@ def main():
             keybinding="Ctrl+W"
         ),
     ]
-    
+
     # Add search commands
     search_commands = [
         Command(
@@ -107,7 +107,7 @@ def main():
             keybinding="Ctrl+T"
         ),
     ]
-    
+
     # Add git commands
     git_commands = [
         Command(
@@ -125,7 +125,7 @@ def main():
             keywords=["save", "record"],
         ),
     ]
-    
+
     # Add tool commands
     tool_commands = [
         Command(
@@ -144,27 +144,27 @@ def main():
             keybinding="Shift+Alt+F"
         ),
     ]
-    
+
     # Add all commands
     all_commands = file_commands + search_commands + git_commands + tool_commands
     palette.add_commands(all_commands)
-    
+
     print(f"{COLORS['info']}✓ Loaded {len(all_commands)} commands{COLORS['reset']}\n")
-    
+
     # Demo 1: Fuzzy search
     print_header("🔍 Demo 1: Fuzzy Search")
-    
+
     queries = [
         ("opn", "Typo: 'opn' → matches 'Open File'"),
         ("sf", "Initials: 'sf' → matches 'Save File'"),
         ("git st", "Partial: 'git st' → matches 'Git Status'"),
         ("format", "Exact: 'format' → matches 'Format Code'"),
     ]
-    
+
     for query, description in queries:
         print(f"{COLORS['info']}Query: \"{query}\" - {description}{COLORS['reset']}\n")
         results = palette.search(query, limit=3)
-        
+
         if results:
             for cmd in results:
                 # Calculate score for display
@@ -172,56 +172,56 @@ def main():
                 print_command(cmd, score=score, highlight=True)
         else:
             print(f"  {COLORS['dim']}No results{COLORS['reset']}\n")
-    
+
     # Demo 2: Category filtering
     print_header("🏷️ Demo 2: Category Filtering")
-    
+
     print(f"{COLORS['info']}Filter by category: FILE{COLORS['reset']}\n")
     results = palette.search("", limit=10, category=CommandCategory.FILE, include_recent=False)
-    
+
     for cmd in results:
         print_command(cmd)
-    
+
     # Demo 3: Recent commands
     print_header("🕐 Demo 3: Recent Commands")
-    
+
     # Simulate usage
     cmds_to_use = ["file.open", "file.save", "git.status", "tools.index", "file.open"]
     print(f"{COLORS['info']}Simulating command usage...{COLORS['reset']}\n")
-    
+
     for cmd_id in cmds_to_use:
         palette.execute_command(cmd_id)
         cmd = palette.get_command(cmd_id)
         print(f"  {COLORS['dim']}• Executed: {cmd.title}{COLORS['reset']}")
-    
+
     print(f"\n{COLORS['info']}Recent commands (most used first):{COLORS['reset']}\n")
-    
+
     recent = palette.get_recent_commands(limit=5)
     for cmd in recent:
         print_command(cmd, highlight=True)
-    
+
     # Demo 4: Keyboard shortcuts
     print_header("⌨️ Demo 4: Keyboard Shortcuts")
-    
+
     print(f"{COLORS['info']}Commands with keybindings:{COLORS['reset']}\n")
-    
+
     commands_with_keys = [
-        cmd for cmd in palette.commands.values() 
+        cmd for cmd in palette.commands.values()
         if cmd.keybinding
     ]
-    
+
     # Sort by category
     commands_with_keys.sort(key=lambda c: c.category.value)
-    
+
     for cmd in commands_with_keys:
         category_color = COLORS['accent_blue']
         print(f"  {category_color}{cmd.keybinding:20s}{COLORS['reset']} {cmd.title}")
         print(f"  {COLORS['dim']}{' ' * 20} {cmd.description}{COLORS['reset']}")
         print()
-    
+
     # Summary
     print_header("✨ Command Palette Features")
-    
+
     features = [
         "Fuzzy search (typo-tolerant)",
         "Category filtering",
@@ -232,10 +232,10 @@ def main():
         "Usage statistics",
         "< 50ms response time"
     ]
-    
+
     for feature in features:
         print(f"  {COLORS['dim']}•{COLORS['reset']} {feature}")
-    
+
     print()
 
 

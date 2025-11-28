@@ -12,13 +12,9 @@ Vibe coders:
 """
 
 import pytest
-import asyncio
 import os
 import subprocess
-from pathlib import Path
-from datetime import datetime
 
-from .helpers import IssueCollector, VibeCoder
 
 
 @pytest.mark.vibe_coder
@@ -207,7 +203,7 @@ class TestErrorMessageClarity:
                 issue_collector.add_issue(
                     severity="MEDIUM",
                     category="UX",
-                    title=f"No friendly explanation for syntax error",
+                    title="No friendly explanation for syntax error",
                     description="Syntax errors aren't translated to plain English",
                     reproduction_steps=[
                         f"1. Create file with syntax error: {code[:20]}...",

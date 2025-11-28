@@ -33,8 +33,7 @@ import json
 import re
 from dataclasses import dataclass
 from enum import Enum
-from pathlib import Path
-from typing import Any, Dict, List, Optional, Set, Tuple, cast
+from typing import Any, Dict, List, Optional
 
 from .base import (
     AgentCapability,
@@ -42,7 +41,6 @@ from .base import (
     AgentRole,
     AgentTask,
     BaseAgent,
-    TaskStatus,
 )
 
 
@@ -80,7 +78,7 @@ class TestCase:
     target: str
     assertions: int
     complexity: int
-    
+
     def __post_init__(self) -> None:
         """Validate test case fields."""
         if not self.name.startswith("test_"):
@@ -109,7 +107,7 @@ class CoverageReport:
     missing_lines: List[int]
     branches_total: int
     branches_covered: int
-    
+
     @property
     def branch_coverage(self) -> float:
         """Calculate branch coverage percentage."""
@@ -133,7 +131,7 @@ class MutationResult:
     killed_mutants: int
     survived_mutants: int
     timeout_mutants: int
-    
+
     @property
     def mutation_score(self) -> float:
         """Calculate mutation score (higher is better)."""
@@ -212,13 +210,13 @@ class TestingAgent(BaseAgent):
             self.name = "TestingAgent"
             self.llm_client = model
             self.config = config or {}
-        
+
         # Configuration
         self.test_framework: TestFramework = TestFramework.PYTEST
         self.min_coverage_threshold: float = 90.0
         self.min_mutation_score: float = 80.0
         self.flaky_detection_runs: int = 5
-        
+
         # Execution tracking (from BaseAgent)
         self.execution_count: int = 0
 
@@ -238,10 +236,10 @@ class TestingAgent(BaseAgent):
             4. Return structured response
         """
         self.execution_count += 1
-        
+
         try:
             action = task.context.get("action", "generate_tests")
-            
+
             if action == "generate_tests":
                 return await self._handle_test_generation(task)
             elif action == "analyze_coverage":
@@ -257,9 +255,9 @@ class TestingAgent(BaseAgent):
                     success=False,
                     data={},
                     reasoning=f"Unknown action: {action}",
-                    error=f"Supported actions: generate_tests, analyze_coverage, mutation_testing, detect_flaky, test_quality_score",
+                    error="Supported actions: generate_tests, analyze_coverage, mutation_testing, detect_flaky, test_quality_score",
                 )
-        
+
         except Exception as e:
             return AgentResponse(
                 success=False,
@@ -279,7 +277,7 @@ class TestingAgent(BaseAgent):
         """
         source_code = task.context.get("source_code", "")
         file_path = task.context.get("file_path", "")
-        
+
         if not source_code and file_path:
             # Read file if path provided
             try:
@@ -292,7 +290,7 @@ class TestingAgent(BaseAgent):
                     reasoning=f"Failed to read file: {file_path}",
                     error=str(e),
                 )
-        
+
         if not source_code:
             return AgentResponse(
                 success=False,
@@ -300,10 +298,10 @@ class TestingAgent(BaseAgent):
                 reasoning="No source code provided",
                 error="source_code or file_path required in task context",
             )
-        
+
         # Generate tests
         test_cases = await self._generate_test_suite(source_code)
-        
+
         # Calculate metrics
         total_assertions = sum(tc.assertions for tc in test_cases)
         avg_complexity = (
@@ -311,7 +309,7 @@ class TestingAgent(BaseAgent):
             if test_cases
             else 0
         )
-        
+
         return AgentResponse(
             success=True,
             data={
@@ -355,31 +353,31 @@ class TestingAgent(BaseAgent):
             4. Generate integration tests for classes
         """
         test_cases: List[TestCase] = []
-        
+
         try:
             tree = ast.parse(source_code)
         except SyntaxError:
             # Cannot parse, return empty list
             return test_cases
-        
+
         # Extract functions (including async)
         functions = [
-            node for node in ast.walk(tree) 
+            node for node in ast.walk(tree)
             if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef))
         ]
-        
+
         # Extract classes
         classes = [node for node in ast.walk(tree) if isinstance(node, ast.ClassDef)]
-        
+
         # Generate unit tests for functions
         for func in functions:
             if not func.name.startswith("_"):  # Skip private functions
                 test_cases.extend(self._generate_function_tests(func))
-        
+
         # Generate integration tests for classes
         for cls in classes:
             test_cases.extend(self._generate_class_tests(cls))
-        
+
         return test_cases
 
     def _generate_function_tests(self, func: ast.FunctionDef) -> List[TestCase]:
@@ -393,20 +391,20 @@ class TestingAgent(BaseAgent):
         """
         tests: List[TestCase] = []
         func_name = func.name
-        
+
         # Analyze function signature
         params = [arg.arg for arg in func.args.args]
         has_return = self._has_return_statement(func)
-        
+
         # Generate basic unit test
         basic_test = self._create_basic_test(func_name, params, has_return)
         tests.append(basic_test)
-        
+
         # Generate edge case tests
         if params:
             edge_tests = self._create_edge_case_tests(func_name, params)
             tests.extend(edge_tests)
-        
+
         return tests
 
     def _create_basic_test(
@@ -424,7 +422,7 @@ class TestingAgent(BaseAgent):
         """
         # Generate mock parameters
         param_values = ", ".join(self._mock_param_value(p) for p in params)
-        
+
         # Generate test code
         if has_return:
             code = f"""def test_{func_name}_basic():
@@ -438,7 +436,7 @@ class TestingAgent(BaseAgent):
     {func_name}({param_values})
     # No exception should be raised
 """
-        
+
         return TestCase(
             name=f"test_{func_name}_basic",
             code=code,
@@ -461,7 +459,7 @@ class TestingAgent(BaseAgent):
             List of edge case test cases
         """
         tests: List[TestCase] = []
-        
+
         # Test with None values
         none_test = TestCase(
             name=f"test_{func_name}_with_none",
@@ -477,7 +475,7 @@ class TestingAgent(BaseAgent):
             complexity=3,
         )
         tests.append(none_test)
-        
+
         # Test with empty values
         if any(p in ["list", "dict", "str", "data"] for p in params):
             empty_test = TestCase(
@@ -493,7 +491,7 @@ class TestingAgent(BaseAgent):
                 complexity=3,
             )
             tests.append(empty_test)
-        
+
         return tests
 
     def _generate_class_tests(self, cls: ast.ClassDef) -> List[TestCase]:
@@ -507,7 +505,7 @@ class TestingAgent(BaseAgent):
         """
         tests: List[TestCase] = []
         class_name = cls.name
-        
+
         # Test class instantiation
         init_test = TestCase(
             name=f"test_{class_name}_instantiation",
@@ -523,7 +521,7 @@ class TestingAgent(BaseAgent):
             complexity=2,
         )
         tests.append(init_test)
-        
+
         return tests
 
     def _has_return_statement(self, func: ast.FunctionDef) -> bool:
@@ -575,18 +573,18 @@ class TestingAgent(BaseAgent):
         """
         test_path = task.context.get("test_path", "tests/")
         source_path = task.context.get("source_path", ".")
-        
+
         try:
             # Run pytest with coverage
             cmd = f"pytest {test_path} --cov={source_path} --cov-report=json --quiet"
             result = await self._execute_tool("bash_command", {"command": cmd})
-            
+
             # Parse coverage JSON
             coverage_data = await self._parse_coverage_json()
-            
+
             # Calculate quality score based on coverage
             quality_score = self._calculate_coverage_score(coverage_data)
-            
+
             return AgentResponse(
                 success=True,
                 data={
@@ -606,7 +604,7 @@ class TestingAgent(BaseAgent):
                     "test_path": test_path,
                 },
             )
-        
+
         except Exception as e:
             return AgentResponse(
                 success=False,
@@ -624,9 +622,9 @@ class TestingAgent(BaseAgent):
         try:
             result = await self._execute_tool("read_file", {"path": "coverage.json"})
             data = json.loads(result.get("content", "{}"))
-            
+
             totals = data.get("totals", {})
-            
+
             return CoverageReport(
                 total_statements=totals.get("num_statements", 0),
                 covered_statements=totals.get("covered_lines", 0),
@@ -662,7 +660,7 @@ class TestingAgent(BaseAgent):
         """
         base_score = coverage.coverage_percentage * 0.7
         branch_bonus = coverage.branch_coverage * 0.3
-        
+
         return min(100, int(base_score + branch_bonus))
 
     async def _handle_mutation_testing(self, task: AgentTask) -> AgentResponse:
@@ -675,23 +673,23 @@ class TestingAgent(BaseAgent):
             AgentResponse with mutation testing results
         """
         source_path = task.context.get("source_path", ".")
-        
+
         try:
             # Run mutmut
             cmd = f"mutmut run --paths-to-mutate={source_path} --runner='pytest -x'"
             await self._execute_tool("bash_command", {"command": cmd})
-            
+
             # Get results
             result = await self._execute_tool(
                 "bash_command", {"command": "mutmut results"}
             )
-            
+
             # Parse mutation results
             mutation_result = self._parse_mutation_results(result.get("output", ""))
-            
+
             # Calculate score
             quality_score = int(mutation_result.mutation_score)
-            
+
             return AgentResponse(
                 success=True,
                 data={
@@ -708,7 +706,7 @@ class TestingAgent(BaseAgent):
                 reasoning=f"Mutation score: {mutation_result.mutation_score:.1f}% (threshold: {self.min_mutation_score}%)",
                 metadata={"tool": "mutmut"},
             )
-        
+
         except Exception as e:
             return AgentResponse(
                 success=False,
@@ -731,7 +729,7 @@ class TestingAgent(BaseAgent):
         survived = len(re.findall(r"SURVIVED", output))
         timeout = len(re.findall(r"TIMEOUT", output))
         total = killed + survived + timeout
-        
+
         return MutationResult(
             total_mutants=total,
             killed_mutants=killed,
@@ -750,10 +748,10 @@ class TestingAgent(BaseAgent):
         """
         test_path = task.context.get("test_path", "tests/")
         runs = task.context.get("runs", self.flaky_detection_runs)
-        
+
         try:
             flaky_tests = await self._detect_flaky_tests(test_path, runs)
-            
+
             return AgentResponse(
                 success=True,
                 data={
@@ -772,7 +770,7 @@ class TestingAgent(BaseAgent):
                 reasoning=f"Found {len(flaky_tests)} flaky tests in {runs} runs",
                 metadata={"runs": runs},
             )
-        
+
         except Exception as e:
             return AgentResponse(
                 success=False,
@@ -794,12 +792,12 @@ class TestingAgent(BaseAgent):
             List of detected flaky tests
         """
         test_results: Dict[str, List[bool]] = {}
-        
+
         for run in range(runs):
             result = await self._execute_tool(
                 "bash_command", {"command": f"pytest {test_path} -v"}
             )
-            
+
             # Parse test results (simplified)
             output = result.get("output", "")
             for line in output.split("\n"):
@@ -810,7 +808,7 @@ class TestingAgent(BaseAgent):
                         if test_name not in test_results:
                             test_results[test_name] = []
                         test_results[test_name].append("PASSED" in line)
-        
+
         # Identify flaky tests (inconsistent results)
         flaky_tests: List[FlakyTest] = []
         for test_name, results in test_results.items():
@@ -825,7 +823,7 @@ class TestingAgent(BaseAgent):
                         suspected_cause="Race condition or timing issue",
                     )
                 )
-        
+
         return flaky_tests
 
     async def _handle_quality_scoring(self, task: AgentTask) -> AgentResponse:
@@ -853,7 +851,7 @@ class TestingAgent(BaseAgent):
             coverage_pct = coverage_response.data.get("coverage", {}).get(
                 "coverage_percentage", 0
             )
-            
+
             # Get mutation score (if available)
             try:
                 mutation_task = AgentTask(
@@ -866,20 +864,20 @@ class TestingAgent(BaseAgent):
                 )
             except Exception:
                 mutation_score = 0
-            
+
             # Calculate component scores
             coverage_score = (coverage_pct / 100) * 40
             mutation_component = (mutation_score / 100) * 30
             test_count_component = 15  # Assume good if tests exist
             flaky_component = 15  # Assume no flaky tests
-            
+
             total_score = int(
                 coverage_score
                 + mutation_component
                 + test_count_component
                 + flaky_component
             )
-            
+
             return AgentResponse(
                 success=True,
                 data={
@@ -895,7 +893,7 @@ class TestingAgent(BaseAgent):
                 reasoning=f"Test quality score: {total_score}/100 ({self._score_to_grade(total_score)})",
                 metadata={"scoring_version": "1.0"},
             )
-        
+
         except Exception as e:
             return AgentResponse(
                 success=False,

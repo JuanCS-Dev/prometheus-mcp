@@ -11,8 +11,6 @@ This test suite covers:
 """
 
 import pytest
-import asyncio
-from datetime import datetime
 from jdev_cli.agents.sofia_agent import (
     SofiaIntegratedAgent,
     create_sofia_agent,

@@ -220,7 +220,6 @@ class StreamingResponseWidget(Static):
         """
         import time
         import re
-        import json
 
         # =================================================================
         # BLINDAGEM 1: Sanitizar Rich markup que o LLM gerou erroneamente

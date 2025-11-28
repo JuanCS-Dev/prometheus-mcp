@@ -18,8 +18,8 @@ EXPANDED TOOLS (4+):
 - prometheus_world_model_reset: Reset world model state
 """
 
-from typing import Optional, Dict, Any, List
-from jdev_cli.tools.base import Tool, ToolResult, ToolCategory
+from typing import Optional
+from jdev_cli.tools.base import ToolResult, ToolCategory
 from jdev_cli.tools.validated import ValidatedTool
 
 
@@ -76,7 +76,7 @@ Use this for complex tasks that benefit from planning and learning.
             # Configure provider on the fly if needed
             self._provider.config.enable_world_model = use_world_model
             self._provider.config.enable_memory = use_memory
-            
+
             result = await self._provider.generate(task)
             return ToolResult(success=True, data=result)
         except Exception as e:
@@ -110,10 +110,10 @@ class PrometheusMemoryQueryTool(ValidatedTool):
     async def _execute_validated(self, query: str, memory_type: str = "all") -> ToolResult:
         if not self._provider:
             return ToolResult(success=False, error="Prometheus provider not initialized")
-        
+
         try:
             # Assuming provider has a method to query memory directly or via orchestrator
-            # Since get_memory_context is available, we use that for now, 
+            # Since get_memory_context is available, we use that for now,
             # or we might need to extend provider to support specific queries if get_memory_context is task-based.
             # For now, we use get_memory_context with the query as the task.
             context = self._provider.get_memory_context(query)
@@ -144,7 +144,7 @@ class PrometheusSimulateTool(ValidatedTool):
     async def _execute_validated(self, action_plan: str) -> ToolResult:
         if not self._provider:
             return ToolResult(success=False, error="Prometheus provider not initialized")
-        
+
         try:
             # We need to access the orchestrator's world model directly if possible
             await self._provider._ensure_initialized()
@@ -182,7 +182,7 @@ class PrometheusEvolveTool(ValidatedTool):
     async def _execute_validated(self, iterations: int = 5) -> ToolResult:
         if not self._provider:
             return ToolResult(success=False, error="Prometheus provider not initialized")
-        
+
         try:
             result = await self._provider.evolve(iterations)
             return ToolResult(success=True, data=result)
@@ -217,7 +217,7 @@ class PrometheusReflectTool(ValidatedTool):
     async def _execute_validated(self, outcome: str, task_id: Optional[str] = None) -> ToolResult:
         if not self._provider:
             return ToolResult(success=False, error="Prometheus provider not initialized")
-        
+
         try:
              await self._provider._ensure_initialized()
              if self._provider._orchestrator and hasattr(self._provider._orchestrator, 'reflection'):
@@ -257,7 +257,7 @@ class PrometheusCreateToolTool(ValidatedTool):
     async def _execute_validated(self, tool_description: str, language: str = "python") -> ToolResult:
         if not self._provider:
             return ToolResult(success=False, error="Prometheus provider not initialized")
-        
+
         try:
              await self._provider._ensure_initialized()
              # Assuming orchestrator has a tool_factory
@@ -285,7 +285,7 @@ class PrometheusGetStatusTool(ValidatedTool):
     async def _execute_validated(self) -> ToolResult:
         if not self._provider:
             return ToolResult(success=False, error="Prometheus provider not initialized")
-        
+
         try:
             status = self._provider.get_status()
             return ToolResult(success=True, data=status)
@@ -315,7 +315,7 @@ class PrometheusBenchmarkTool(ValidatedTool):
     async def _execute_validated(self, suite: str = "all") -> ToolResult:
         if not self._provider:
             return ToolResult(success=False, error="Prometheus provider not initialized")
-        
+
         try:
              await self._provider._ensure_initialized()
              # Assuming orchestrator has a run_benchmark method

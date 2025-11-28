@@ -19,7 +19,6 @@ Based on 2025 best practices:
 - FastAPI-style async patterns
 """
 
-import asyncio
 import sys
 import logging
 from pathlib import Path
@@ -41,9 +40,6 @@ from rich.table import Table
 from rich.progress import Progress, SpinnerColumn, TextColumn
 from rich.syntax import Syntax
 from rich.markdown import Markdown
-from rich.live import Live
-from rich.spinner import Spinner
-from rich import print as rprint
 from rich.prompt import Confirm
 
 # Your agents
@@ -124,7 +120,7 @@ def render_plan(data: dict, format: OutputFormat = OutputFormat.table):
         table.add_column("Stage", style="cyan")
         table.add_column("Steps", style="white")
         table.add_column("Status", style="green")
-        
+
         for idx, stage in enumerate(data.get("stages", []), 1):
             steps_list = stage.get("steps", [])
             if isinstance(steps_list, list):
@@ -134,20 +130,20 @@ def render_plan(data: dict, format: OutputFormat = OutputFormat.table):
                     steps = "\n".join(f"• {s}" for s in steps_list)
             else:
                 steps = str(steps_list)
-            
+
             table.add_row(
                 str(idx),
                 stage.get("name", "Unknown"),
                 steps,
                 "✓ Ready"
             )
-        
+
         console.print(table)
-    
+
     elif format == OutputFormat.json:
         import json
         console.print_json(json.dumps(data, indent=2))
-    
+
     elif format == OutputFormat.markdown:
         md = f"# {data.get('goal', 'Plan')}\n\n"
         for stage in data.get("stages", []):
@@ -159,7 +155,7 @@ def render_plan(data: dict, format: OutputFormat = OutputFormat.table):
                     md += f"- {step}\n"
             md += "\n"
         console.print(Markdown(md))
-    
+
     else:  # plain
         console.print(data)
 
@@ -205,9 +201,9 @@ async def execute_agent_task(
         dict: Agent response data
     """
     start_time = datetime.now()
-    
+
     console.print(f"\n[bold blue]🤖 {agent_name.upper()}[/bold blue] [dim]processing...[/dim]")
-    
+
     try:
         # Show spinner while processing
         with Progress(
@@ -217,28 +213,28 @@ async def execute_agent_task(
             transient=True
         ) as progress:
             task_desc = progress.add_task(f"Analyzing: {prompt[:40]}...", total=None)
-            
+
             # Real agent execution
             agent = state.agents.get(agent_name)
             if not agent:
                 raise ValueError(f"Agent '{agent_name}' not initialized")
-            
+
             agent_task = AgentTask(
                 request=prompt,
                 context=context or {}
             )
-            
+
             response: AgentResponse = await agent.execute(agent_task)
             progress.update(task_desc, completed=True)
-        
+
         if not response.success:
             raise Exception(response.error or "Agent execution failed")
-        
+
         duration = (datetime.now() - start_time).total_seconds()
         render_success(f"{agent_name.capitalize()} completed", duration)
-        
+
         return response.data
-        
+
     except Exception as e:
         render_error(f"{agent_name} failed", str(e))
         raise
@@ -251,22 +247,22 @@ async def ensure_initialized():
     """Lazy initialization - only when needed"""
     if state.initialized:
         return
-    
+
     console.print("\n[dim]Initializing agents...[/dim]")
-    
+
     try:
         # Initialize LLM and MCP clients
         state.llm_client = LLMClient()
         state.mcp_client = MCPClient()
-        
+
         # Initialize agents (lazy)
         state.agents['planner'] = PlannerAgent(state.llm_client, state.mcp_client)
         state.agents['reviewer'] = ReviewerAgent(state.llm_client, state.mcp_client)
         state.agents['explorer'] = ExplorerAgent(state.llm_client, state.mcp_client)
-        
+
         state.initialized = True
         console.print("[green]✓[/green] [dim]Ready[/dim]\n")
-        
+
     except Exception as e:
         render_error("Initialization failed", str(e))
         raise
@@ -289,14 +285,14 @@ async def agent_plan(
         maestro agent plan "Refactor database layer" --output json
     """
     await ensure_initialized()
-    
+
     context = {}
     if context_file and context_file.exists():
         # Load context from file
         import json
         with open(context_file) as f:
             context = json.load(f)
-    
+
     result = await execute_agent_task("planner", goal, context)
     render_plan(result, output)
 
@@ -314,20 +310,20 @@ async def agent_review(
         maestro agent review . --deep
     """
     await ensure_initialized()
-    
+
     target_path = Path(target)
     if not target_path.exists():
         render_error(f"Path not found: {target}")
         raise typer.Exit(1)
-    
+
     context = {
         "files": [str(target_path)] if target_path.is_file() else [str(f) for f in target_path.rglob("*.py")],
         "deep_mode": deep,
         "auto_fix": fix
     }
-    
+
     result = await execute_agent_task("reviewer", f"Review {target}", context)
-    
+
     # Render results
     report = result.get("report", result)
     if "issues" in report:
@@ -336,7 +332,7 @@ async def agent_review(
         table.add_column("File", style="cyan")
         table.add_column("Line", style="dim")
         table.add_column("Issue", style="white")
-        
+
         for issue in report.get("issues", [])[:20]:  # Limit to 20
             table.add_row(
                 issue.get("severity", "UNKNOWN"),
@@ -344,7 +340,7 @@ async def agent_review(
                 str(issue.get("line", "")),
                 issue.get("message", "")[:60]
             )
-        
+
         console.print(table)
         console.print(f"\n[dim]Score: {report.get('score', 0)}/100[/dim]")
         console.print(f"[dim]Approved: {report.get('approved', False)}[/dim]")
@@ -370,18 +366,18 @@ async def agent_explore(
         maestro agent explore search "database transaction handlers"
     """
     await ensure_initialized()
-    
+
     context = {
         "operation": operation,
         "root_dir": str(root)
     }
-    
+
     if target:
         context["target"] = target
-    
+
     prompt = f"{operation} {target or ''}"
     result = await execute_agent_task("explorer", prompt, context)
-    
+
     # Render based on operation
     if operation == "map":
         console.print(Panel(
@@ -393,12 +389,12 @@ async def agent_explore(
 💀 Dead Code: {result.get('dead_code', 0)} entities""",
             border_style="cyan"
         ))
-        
+
         if result.get('hotspots'):
             console.print("\n[bold yellow]🔥 Hotspots (High Coupling):[/bold yellow]")
             for hotspot in result['hotspots'][:5]:
                 console.print(f"  • {hotspot}")
-    
+
     elif operation == "blast-radius":
         console.print(Panel(
             f"""[bold]Blast Radius Analysis[/bold]
@@ -409,7 +405,7 @@ async def agent_explore(
 🔗 Dependencies: {len(result.get('transitive_dependencies', []))}""",
             border_style="red" if result.get('risk_level') == 'HIGH' else "yellow"
         ))
-    
+
     else:
         console.print(result)
 
@@ -423,7 +419,7 @@ def config_show():
     table = Table(title="⚙️  Configuration", border_style="blue")
     table.add_column("Key", style="cyan")
     table.add_column("Value", style="white")
-    
+
     config = {
         "log_file": "maestro.log",
         "agents_initialized": str(state.initialized),
@@ -431,10 +427,10 @@ def config_show():
         "context_size": len(state.context),
         "available_agents": ", ".join(state.agents.keys()) if state.agents else "None"
     }
-    
+
     for key, value in config.items():
         table.add_row(key, value)
-    
+
     console.print(table)
 
 @config_app.command("reset")
@@ -447,7 +443,7 @@ def config_reset(
         if not confirmed:
             console.print("[yellow]Cancelled[/yellow]")
             raise typer.Exit(0)
-    
+
     state.context.clear()
     state.initialized = False
     render_success("Configuration reset")
@@ -508,7 +504,7 @@ def main(
             "Type [cyan]maestro --help[/cyan] for all commands",
             border_style="cyan"
         ))
-    
+
     if verbose:
         logging.getLogger().setLevel(logging.DEBUG)
         console.print("[dim]Verbose mode enabled[/dim]")

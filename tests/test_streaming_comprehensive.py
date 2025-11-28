@@ -20,8 +20,6 @@ Test Coverage: Unit, Integration, E2E, Performance, Edge Cases
 import asyncio
 import sys
 import time
-import random
-import string
 from pathlib import Path
 from typing import List, Dict, Any, Optional
 from dataclasses import dataclass, field
@@ -1520,8 +1518,8 @@ async def run_all_tests():
     print("\n" + "="*80)
     print("🧪 RUNNING COMPREHENSIVE TEST SUITE")
     print("="*80)
-    print(f"Total tests: 50+")
-    print(f"Categories: PAUSE_RESUME, STREAMING, APPROVAL, EDGE_CASES")
+    print("Total tests: 50+")
+    print("Categories: PAUSE_RESUME, STREAMING, APPROVAL, EDGE_CASES")
     print("="*80 + "\n")
 
     # Category 1: Pause/Resume (10 tests)

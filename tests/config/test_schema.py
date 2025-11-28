@@ -1,6 +1,5 @@
 """Tests for configuration schema."""
 
-import pytest
 from jdev_cli.config.schema import (
     QwenConfig,
     ProjectConfig,
@@ -13,7 +12,7 @@ from jdev_cli.config.schema import (
 
 class TestProjectConfig:
     """Test ProjectConfig dataclass."""
-    
+
     def test_default_values(self):
         """Test default project config values."""
         config = ProjectConfig()
@@ -21,7 +20,7 @@ class TestProjectConfig:
         assert config.type == "python"
         assert config.version == "1.0.0"
         assert config.description == ""
-    
+
     def test_custom_values(self):
         """Test custom project config values."""
         config = ProjectConfig(
@@ -36,7 +35,7 @@ class TestProjectConfig:
 
 class TestRulesConfig:
     """Test RulesConfig dataclass."""
-    
+
     def test_default_values(self):
         """Test default rules config."""
         config = RulesConfig()
@@ -44,7 +43,7 @@ class TestRulesConfig:
         assert config.style_guide is None
         assert config.max_line_length == 100
         assert config.use_type_hints is True
-    
+
     def test_with_rules(self):
         """Test rules config with custom rules."""
         config = RulesConfig(
@@ -58,20 +57,20 @@ class TestRulesConfig:
 
 class TestSafetyConfig:
     """Test SafetyConfig dataclass."""
-    
+
     def test_default_dangerous_commands(self):
         """Test default dangerous commands list."""
         config = SafetyConfig()
         assert "rm -rf" in config.dangerous_commands
         assert "chmod 777" in config.dangerous_commands
         assert len(config.dangerous_commands) > 0
-    
+
     def test_default_require_approval(self):
         """Test default commands requiring approval."""
         config = SafetyConfig()
         assert "git push" in config.require_approval
         assert "docker run" in config.require_approval
-    
+
     def test_allowed_paths(self):
         """Test allowed paths configuration."""
         config = SafetyConfig(allowed_paths=["./src", "./tests"])
@@ -81,7 +80,7 @@ class TestSafetyConfig:
 
 class TestHooksConfig:
     """Test HooksConfig dataclass."""
-    
+
     def test_default_empty_hooks(self):
         """Test hooks are empty by default."""
         config = HooksConfig()
@@ -89,7 +88,7 @@ class TestHooksConfig:
         assert config.post_edit == []
         assert config.post_delete == []
         assert config.pre_commit == []
-    
+
     def test_custom_hooks(self):
         """Test custom hook configuration."""
         config = HooksConfig(
@@ -102,7 +101,7 @@ class TestHooksConfig:
 
 class TestContextConfig:
     """Test ContextConfig dataclass."""
-    
+
     def test_default_values(self):
         """Test default context config."""
         config = ContextConfig()
@@ -110,14 +109,14 @@ class TestContextConfig:
         assert config.include_git is True
         assert config.include_tests is True
         assert len(config.exclude_patterns) > 0
-    
+
     def test_exclude_patterns(self):
         """Test exclude patterns include common dirs."""
         config = ContextConfig()
         assert any("__pycache__" in p for p in config.exclude_patterns)
         assert any("node_modules" in p for p in config.exclude_patterns)
         assert any("venv" in p for p in config.exclude_patterns)
-    
+
     def test_file_extensions(self):
         """Test default file extensions."""
         config = ContextConfig()
@@ -128,7 +127,7 @@ class TestContextConfig:
 
 class TestQwenConfig:
     """Test QwenConfig main class."""
-    
+
     def test_default_initialization(self):
         """Test QwenConfig creates all sub-configs."""
         config = QwenConfig()
@@ -137,21 +136,21 @@ class TestQwenConfig:
         assert isinstance(config.safety, SafetyConfig)
         assert isinstance(config.hooks, HooksConfig)
         assert isinstance(config.context, ContextConfig)
-    
+
     def test_to_dict(self):
         """Test converting config to dictionary."""
         config = QwenConfig()
         data = config.to_dict()
-        
+
         assert 'project' in data
         assert 'rules' in data
         assert 'safety' in data
         assert 'hooks' in data
         assert 'context' in data
-        
+
         assert isinstance(data['project'], dict)
         assert isinstance(data['rules'], dict)
-    
+
     def test_from_dict(self):
         """Test creating config from dictionary."""
         data = {
@@ -161,23 +160,23 @@ class TestQwenConfig:
             'hooks': {'post_write': ['echo test']},
             'context': {'max_tokens': 16000},
         }
-        
+
         config = QwenConfig.from_dict(data)
-        
+
         assert config.project.name == 'test'
         assert config.rules.max_line_length == 120
         assert config.safety.max_file_size_mb == 20
         assert config.hooks.post_write == ['echo test']
         assert config.context.max_tokens == 16000
-    
+
     def test_from_dict_partial(self):
         """Test from_dict with partial data uses defaults."""
         data = {
             'project': {'name': 'partial'},
         }
-        
+
         config = QwenConfig.from_dict(data)
-        
+
         assert config.project.name == 'partial'
         # Should use defaults for missing fields
         assert config.project.type == 'python'

@@ -24,7 +24,7 @@ import logging
 import fnmatch
 import datetime
 from enum import Enum
-from typing import Optional, Tuple, List, Dict, Any
+from typing import Tuple, Dict, Any
 from pathlib import Path
 
 logger = logging.getLogger(__name__)

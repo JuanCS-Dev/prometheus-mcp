@@ -4,7 +4,6 @@ Tests for async process operations.
 SCALE & SUSTAIN Phase 3.1 validation.
 """
 
-import asyncio
 import pytest
 
 from jdev_core.async_utils import (

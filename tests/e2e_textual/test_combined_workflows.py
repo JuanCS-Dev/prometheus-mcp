@@ -4,11 +4,10 @@ Tests complex scenarios that combine multiple tools and agents.
 """
 
 import pytest
-import asyncio
 import time
 from pathlib import Path
 
-from .conftest import TestResult, get_report
+from .conftest import TestResult
 
 
 class TestMultiToolWorkflows:
@@ -293,7 +292,7 @@ class TestComplexScenarios:
         )
 
         try:
-            from jdev_cli.tools.file_ops import WriteFileTool, ReadFileTool
+            from jdev_cli.tools.file_ops import WriteFileTool
 
             write_tool = WriteFileTool()
 
@@ -659,7 +658,7 @@ class TestAuthService:
                             result.logs.append("  ✓ Fixed hardcoded API key in config.py")
 
             # Summary
-            result.logs.append(f"\nSummary:")
+            result.logs.append("\nSummary:")
             result.logs.append(f"  Issues found: {len(issues_found)}")
             result.logs.append(f"  Issues fixed: {len(issues_fixed)}")
 

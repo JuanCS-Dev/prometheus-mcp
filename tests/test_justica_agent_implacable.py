@@ -27,11 +27,8 @@ import gc
 import os
 import sys
 import time
-import traceback
-import uuid
-from datetime import datetime
-from typing import Any, Dict, List, Optional
-from unittest.mock import MagicMock, Mock, AsyncMock, patch
+from typing import Any, Dict
+from unittest.mock import patch
 
 import pytest
 
@@ -40,15 +37,10 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")
 
 from jdev_cli.agents.justica_agent import (
     JusticaIntegratedAgent,
-    GovernanceMetrics,
 )
 from jdev_cli.agents.base import AgentTask, AgentResponse, AgentRole
 from jdev_governance.justica import (
     EnforcementMode,
-    JusticaVerdict,
-    Severity,
-    ViolationType,
-    TrustLevel,
 )
 
 

@@ -5,14 +5,13 @@ import shutil
 from pathlib import Path
 from typing import Optional
 
-from .base import Tool, ToolResult, ToolCategory
+from .base import ToolResult, ToolCategory
 from .validated import ValidatedTool
-from ..core.validation import Required, TypeCheck
 
 
 class CdTool(ValidatedTool):
     """Change directory."""
-    
+
     def __init__(self):
         super().__init__()
         self.category = ToolCategory.EXECUTION
@@ -28,7 +27,7 @@ class CdTool(ValidatedTool):
         """Validate parameters."""
         return {}
 
-    
+
     async def _execute_validated(self, path: str) -> ToolResult:
         """Change directory."""
         try:
@@ -39,24 +38,24 @@ class CdTool(ValidatedTool):
                 path = str(Path.cwd().parent)
             elif path == ".":
                 path = str(Path.cwd())
-            
+
             target = Path(path).expanduser().resolve()
-            
+
             if not target.exists():
                 return ToolResult(
                     success=False,
                     error=f"Directory not found: {path}"
                 )
-            
+
             if not target.is_dir():
                 return ToolResult(
                     success=False,
                     error=f"Not a directory: {path}"
                 )
-            
+
             # Change directory
             os.chdir(target)
-            
+
             return ToolResult(
                 success=True,
                 data=f"Changed directory to {target}",
@@ -71,7 +70,7 @@ class CdTool(ValidatedTool):
 
 class LsTool(ValidatedTool):
     """List directory contents (like ls command)."""
-    
+
     def __init__(self):
         super().__init__()
         self.category = ToolCategory.FILE_READ
@@ -97,36 +96,36 @@ class LsTool(ValidatedTool):
         """Validate parameters."""
         return {}
 
-    
+
     async def _execute_validated(self, path: str = ".", all: bool = False, long: bool = False) -> ToolResult:
         """List directory contents."""
         try:
             dir_path = Path(path).expanduser().resolve()
-            
+
             if not dir_path.exists():
                 return ToolResult(
                     success=False,
                     error=f"Directory not found: {path}"
                 )
-            
+
             if not dir_path.is_dir():
                 return ToolResult(
                     success=False,
                     error=f"Not a directory: {path}"
                 )
-            
+
             # List items
             items = []
             for item in sorted(dir_path.iterdir()):
                 # Skip hidden files unless -a
                 if not all and item.name.startswith('.'):
                     continue
-                
+
                 item_info = {
                     "name": item.name,
                     "type": "dir" if item.is_dir() else "file"
                 }
-                
+
                 if long:
                     stat = item.stat()
                     item_info.update({
@@ -134,9 +133,9 @@ class LsTool(ValidatedTool):
                         "permissions": oct(stat.st_mode)[-3:],
                         "modified": stat.st_mtime
                     })
-                
+
                 items.append(item_info)
-            
+
             return ToolResult(
                 success=True,
                 data=items,
@@ -153,13 +152,13 @@ class LsTool(ValidatedTool):
 
 class PwdTool(ValidatedTool):
     """Print working directory."""
-    
+
     def __init__(self):
         super().__init__()
         self.category = ToolCategory.EXECUTION
         self.description = "Print current working directory (pwd)"
         self.parameters = {}
-    
+
     async def _execute_validated(self) -> ToolResult:
         """Get current directory."""
         try:
@@ -175,7 +174,7 @@ class PwdTool(ValidatedTool):
 
 class MkdirTool(ValidatedTool):
     """Make directory (mkdir)."""
-    
+
     def __init__(self):
         super().__init__()
         self.category = ToolCategory.FILE_MGMT
@@ -196,20 +195,20 @@ class MkdirTool(ValidatedTool):
         """Validate parameters."""
         return {}
 
-    
+
     async def _execute_validated(self, path: str, parents: bool = True) -> ToolResult:
         """Create directory."""
         try:
             dir_path = Path(path).expanduser()
-            
+
             if dir_path.exists():
                 return ToolResult(
                     success=False,
                     error=f"Directory already exists: {path}"
                 )
-            
+
             dir_path.mkdir(parents=parents, exist_ok=False)
-            
+
             return ToolResult(
                 success=True,
                 data=f"Created directory: {path}",
@@ -221,7 +220,7 @@ class MkdirTool(ValidatedTool):
 
 class RmTool(ValidatedTool):
     """Remove file or directory (rm)."""
-    
+
     def __init__(self):
         super().__init__()
         self.category = ToolCategory.FILE_MGMT
@@ -247,12 +246,12 @@ class RmTool(ValidatedTool):
         """Validate parameters."""
         return {}
 
-    
+
     async def _execute_validated(self, path: str, recursive: bool = False, force: bool = False) -> ToolResult:
         """Remove file/directory."""
         try:
             target = Path(path).expanduser()
-            
+
             if not target.exists():
                 if force:
                     return ToolResult(
@@ -263,7 +262,7 @@ class RmTool(ValidatedTool):
                     success=False,
                     error=f"Path not found: {path}"
                 )
-            
+
             # Safety check - prevent removing important directories
             dangerous_paths = ["/", str(Path.home()), "/usr", "/etc", "/var"]
             if str(target.resolve()) in dangerous_paths:
@@ -271,7 +270,7 @@ class RmTool(ValidatedTool):
                     success=False,
                     error=f"Refusing to remove protected directory: {path}"
                 )
-            
+
             if target.is_dir():
                 if not recursive:
                     return ToolResult(
@@ -281,7 +280,7 @@ class RmTool(ValidatedTool):
                 shutil.rmtree(target)
             else:
                 target.unlink()
-            
+
             return ToolResult(
                 success=True,
                 data=f"Removed: {path}",
@@ -296,7 +295,7 @@ class RmTool(ValidatedTool):
 
 class CpTool(ValidatedTool):
     """Copy file or directory (cp)."""
-    
+
     def __init__(self):
         super().__init__()
         self.category = ToolCategory.FILE_MGMT
@@ -322,19 +321,19 @@ class CpTool(ValidatedTool):
         """Validate parameters."""
         return {}
 
-    
+
     async def _execute_validated(self, source: str, destination: str, recursive: bool = False) -> ToolResult:
         """Copy file/directory."""
         try:
             src = Path(source).expanduser()
             dst = Path(destination).expanduser()
-            
+
             if not src.exists():
                 return ToolResult(
                     success=False,
                     error=f"Source not found: {source}"
                 )
-            
+
             if src.is_dir():
                 if not recursive:
                     return ToolResult(
@@ -344,7 +343,7 @@ class CpTool(ValidatedTool):
                 shutil.copytree(src, dst)
             else:
                 shutil.copy2(src, dst)
-            
+
             return ToolResult(
                 success=True,
                 data=f"Copied {source} → {destination}",
@@ -360,7 +359,7 @@ class CpTool(ValidatedTool):
 
 class MvTool(ValidatedTool):
     """Move/rename file or directory (mv)."""
-    
+
     def __init__(self):
         super().__init__()
         self.category = ToolCategory.FILE_MGMT
@@ -381,21 +380,21 @@ class MvTool(ValidatedTool):
         """Validate parameters."""
         return {}
 
-    
+
     async def _execute_validated(self, source: str, destination: str) -> ToolResult:
         """Move/rename file/directory."""
         try:
             src = Path(source).expanduser()
             dst = Path(destination).expanduser()
-            
+
             if not src.exists():
                 return ToolResult(
                     success=False,
                     error=f"Source not found: {source}"
                 )
-            
+
             shutil.move(str(src), str(dst))
-            
+
             return ToolResult(
                 success=True,
                 data=f"Moved {source} → {destination}",
@@ -410,7 +409,7 @@ class MvTool(ValidatedTool):
 
 class TouchTool(ValidatedTool):
     """Create empty file or update timestamp (touch)."""
-    
+
     def __init__(self):
         super().__init__()
         self.category = ToolCategory.FILE_WRITE
@@ -426,12 +425,12 @@ class TouchTool(ValidatedTool):
         """Validate parameters."""
         return {}
 
-    
+
     async def _execute_validated(self, path: str) -> ToolResult:
         """Touch file."""
         try:
             file_path = Path(path).expanduser()
-            
+
             if file_path.exists():
                 # Update timestamp
                 file_path.touch()
@@ -440,7 +439,7 @@ class TouchTool(ValidatedTool):
                 # Create empty file
                 file_path.touch()
                 action = "Created file"
-            
+
             return ToolResult(
                 success=True,
                 data=f"{action}: {path}",
@@ -452,7 +451,7 @@ class TouchTool(ValidatedTool):
 
 class CatTool(ValidatedTool):
     """Display file contents (cat)."""
-    
+
     def __init__(self):
         super().__init__()
         self.category = ToolCategory.FILE_READ
@@ -473,30 +472,30 @@ class CatTool(ValidatedTool):
         """Validate parameters."""
         return {}
 
-    
+
     async def _execute_validated(self, path: str, lines: Optional[int] = None) -> ToolResult:
         """Display file contents."""
         try:
             file_path = Path(path).expanduser()
-            
+
             if not file_path.exists():
                 return ToolResult(
                     success=False,
                     error=f"File not found: {path}"
                 )
-            
+
             if not file_path.is_file():
                 return ToolResult(
                     success=False,
                     error=f"Not a file: {path}"
                 )
-            
+
             content = file_path.read_text()
-            
+
             if lines:
                 content_lines = content.split('\n')
                 content = '\n'.join(content_lines[:lines])
-            
+
             return ToolResult(
                 success=True,
                 data=content,

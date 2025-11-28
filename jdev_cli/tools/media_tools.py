@@ -11,14 +11,12 @@ Date: 2025-11-26
 from __future__ import annotations
 
 import base64
-import io
 import logging
 import mimetypes
 import struct
-import zlib
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple
+from typing import List, Optional, Tuple
 
 from .base import Tool, ToolCategory, ToolResult
 

@@ -89,7 +89,7 @@ class CodeIssue(BaseModel):
     auto_fixable: bool = False
     related_issues: List[str] = Field(default_factory=list)
     confidence: float = 1.0  # 0-1, how sure we are
-    
+
 class RAGContext(BaseModel):
     """Context retrieved from codebase"""
     related_functions: List[str] = Field(default_factory=list)
@@ -127,7 +127,7 @@ class CodeGraphAnalyzer(ast.NodeVisitor):
         self.graph = nx.DiGraph()
         self.metrics: List[ComplexityMetrics] = []
         self.nodes: List[CodeGraphNode] = []
-        
+
         # Current context
         self.current_function: Optional[str] = None
         self.complexity = 0
@@ -138,22 +138,22 @@ class CodeGraphAnalyzer(ast.NodeVisitor):
         self.returns = 0
         self.args = 0
         self.line_start = 0
-        
+
         # Data flow tracking
         self.variables: Dict[str, Set[int]] = {}  # var -> lines where used
         self.function_calls: List[Tuple[str, int]] = []
-        
+
     def analyze(self, tree: ast.AST) -> Tuple[List[ComplexityMetrics], List[CodeGraphNode], nx.DiGraph]:
         """Main entry point - now returns the graph!"""
         self.visit(tree)
         self._build_dependency_edges()
         return self.metrics, self.nodes, self.graph
-    
+
     def _build_dependency_edges(self):
         """Build edges in the graph based on function calls"""
         # Map function names to their graph IDs
         func_map = {node.name: node.id for node in self.nodes}
-        
+
         # For each function call we tracked, create an edge
         for caller_name in func_map:
             caller_id = func_map[caller_name]
@@ -162,11 +162,11 @@ class CodeGraphAnalyzer(ast.NodeVisitor):
                 if called_name in func_map:
                     called_id = func_map[called_name]
                     self.graph.add_edge(caller_id, called_id, line=line)
-            
+
             # Add node to graph if not already there
             if caller_id not in self.graph:
                 self.graph.add_node(caller_id)
-    
+
     def visit_FunctionDef(self, node: ast.FunctionDef):
         self._enter_function(node)
         self.generic_visit(node)
@@ -202,7 +202,7 @@ class CodeGraphAnalyzer(ast.NodeVisitor):
                 branch_count=self.branches
             )
             self.metrics.append(metric)
-            
+
             # Store graph node
             graph_node = CodeGraphNode(
                 id=f"{self.file_path}::{self.current_function}",
@@ -215,7 +215,7 @@ class CodeGraphAnalyzer(ast.NodeVisitor):
                 metadata={"cognitive": self.cognitive, "loc": self.loc}
             )
             self.nodes.append(graph_node)
-            
+
             self.current_function = None
 
     # Cyclomatic Complexity
@@ -251,7 +251,7 @@ class CodeGraphAnalyzer(ast.NodeVisitor):
         self.complexity += len(node.values) - 1
         self.cognitive += 1
         self.generic_visit(node)
-        
+
     def visit_Return(self, node):
         self.returns += 1
         self.generic_visit(node)
@@ -277,7 +277,7 @@ class RAGContextEngine:
         self.mcp = mcp_client
         self.llm = llm_client
         self.vector_store = {}  # In production: use Pinecone/FAISS/ChromaDB
-        
+
     async def build_context(self, files: List[str], task_description: str) -> RAGContext:
         """
         Retrieves relevant context:
@@ -286,24 +286,24 @@ class RAGContextEngine:
         - Historical issues in related files
         """
         context = RAGContext()
-        
+
         # Semantic search for related functions
         # In production: Use embeddings + vector DB
         context.related_functions = await self._find_related_functions(files)
-        
+
         # Load team standards from .reviewrc or similar
         context.team_standards = await self._load_team_standards()
-        
+
         # Query historical issues
         context.historical_issues = await self._query_historical_issues(files)
-        
+
         return context
-    
+
     async def _find_related_functions(self, files: List[str]) -> List[str]:
         """Use semantic search to find related code"""
         # Stub: In production, use embedding-based search
         return []
-    
+
     async def _load_team_standards(self) -> Dict[str, str]:
         """Load team-specific coding standards"""
         # Check for .reviewrc, copilot-instructions.md, etc.
@@ -312,7 +312,7 @@ class RAGContextEngine:
             "max_args": "5",
             "require_docstrings": "true"
         }
-    
+
     async def _query_historical_issues(self, files: List[str]) -> List[str]:
         """Find past issues in similar files"""
         return []
@@ -326,7 +326,7 @@ class SecurityAgent(ast.NodeVisitor):
     Specialized agent for security analysis using AST.
     NO MORE STRING MATCHING - Surgical AST-based detection!
     """
-    
+
     DANGEROUS_CALLS = {
         'eval': {
             'severity': IssueSeverity.CRITICAL,
@@ -347,7 +347,7 @@ class SecurityAgent(ast.NodeVisitor):
             'fix': 'Use standard import statements or importlib.import_module() with validation'
         }
     }
-    
+
     DANGEROUS_METHODS = {
         ('pickle', 'loads'): {
             'severity': IssueSeverity.HIGH,
@@ -368,20 +368,20 @@ class SecurityAgent(ast.NodeVisitor):
             'fix': 'Use subprocess.run() with explicit args list'
         }
     }
-    
+
     def __init__(self, file_path: str):
         self.file_path = file_path
         self.issues: List[CodeIssue] = []
-        
+
     async def analyze(self, code: str, tree: ast.AST) -> List[CodeIssue]:
         """AST-based security analysis - no false positives from comments/strings"""
         self.issues = []
         self.visit(tree)
         return self.issues
-    
+
     def visit_Call(self, node: ast.Call):
         """Visit function calls - the surgical approach"""
-        
+
         # Case 1: Direct dangerous function call (eval, exec, etc.)
         if isinstance(node.func, ast.Name):
             func_name = node.func.id
@@ -399,21 +399,21 @@ class SecurityAgent(ast.NodeVisitor):
                     auto_fixable=False,
                     confidence=1.0
                 ))
-        
+
         # Case 2: Method calls on modules (pickle.loads, os.system, etc.)
         elif isinstance(node.func, ast.Attribute):
             # Get the full chain: os.system -> ('os', 'system')
             module_chain = self._get_attribute_chain(node.func)
-            
+
             if len(module_chain) >= 2:
                 module_method = (module_chain[-2], module_chain[-1])
                 if module_method in self.DANGEROUS_METHODS:
                     danger = self.DANGEROUS_METHODS[module_method]
-                    
+
                     # Extra check for subprocess - warn only if shell=True
                     if module_method[0] == 'subprocess':
                         has_shell_true = any(
-                            isinstance(kw, ast.keyword) and 
+                            isinstance(kw, ast.keyword) and
                             kw.arg == 'shell' and
                             isinstance(kw.value, ast.Constant) and
                             kw.value.value is True
@@ -423,7 +423,7 @@ class SecurityAgent(ast.NodeVisitor):
                             # Skip if shell=False or not specified
                             self.generic_visit(node)
                             return
-                    
+
                     self.issues.append(CodeIssue(
                         file=self.file_path,
                         line=node.lineno,
@@ -436,21 +436,21 @@ class SecurityAgent(ast.NodeVisitor):
                         auto_fixable=False,
                         confidence=0.95
                     ))
-        
+
         self.generic_visit(node)
-    
+
     def _get_attribute_chain(self, node: ast.Attribute) -> List[str]:
         """Extract attribute chain: a.b.c -> ['a', 'b', 'c']"""
         chain = [node.attr]
         current = node.value
-        
+
         while isinstance(current, ast.Attribute):
             chain.insert(0, current.attr)
             current = current.value
-        
+
         if isinstance(current, ast.Name):
             chain.insert(0, current.id)
-        
+
         return chain
 
 class PerformanceAgent:
@@ -495,14 +495,14 @@ class CodeGraphAnalysisAgent:
     - High coupling (functions with too many dependencies)
     - Impact analysis (what breaks if X changes)
     """
-    
+
     async def analyze(self, graph: nx.DiGraph, nodes: List[CodeGraphNode]) -> List[CodeIssue]:
         """Perform graph-based analysis"""
         issues = []
-        
+
         if not graph or len(graph.nodes) == 0:
             return issues
-        
+
         # 1. Detect circular dependencies
         try:
             cycles = list(nx.simple_cycles(graph))
@@ -520,12 +520,12 @@ class CodeGraphAnalysisAgent:
                     ))
         except Exception as e:
             self.logger.debug(f"Failed to detect cyclic imports: {e}")  # Graph might be empty or invalid
-        
+
         # 2. Detect dead code (unreachable nodes)
         if len(graph.nodes) > 0:
             # Find entry points (nodes with no incoming edges)
             entry_points = [n for n in graph.nodes if graph.in_degree(n) == 0]
-            
+
             if entry_points:
                 # Find all reachable nodes from entry points
                 reachable = set()
@@ -535,7 +535,7 @@ class CodeGraphAnalysisAgent:
                         reachable.add(entry)
                     except Exception as e:
                         self.logger.debug(f"Failed to find descendants for {entry}: {e}")
-                
+
                 # Dead code = nodes not reachable from any entry point
                 dead_nodes = set(graph.nodes) - reachable
                 if dead_nodes:
@@ -550,13 +550,13 @@ class CodeGraphAnalysisAgent:
                             fix_suggestion="Remove if truly unused, or add tests to verify it's needed",
                             confidence=0.7  # Lower confidence - might be called externally
                         ))
-        
+
         # 3. Detect high coupling (God functions)
         node_map = {node.id: node for node in nodes}
         for node_id in graph.nodes:
             out_degree = graph.out_degree(node_id)  # Functions it calls
             in_degree = graph.in_degree(node_id)     # Functions that call it
-            
+
             # High fan-out = calls too many things
             if out_degree > 10:
                 func_name = node_id.split("::")[-1]
@@ -569,13 +569,13 @@ class CodeGraphAnalysisAgent:
                     fix_suggestion="Break down into smaller, more focused functions",
                     confidence=0.85
                 ))
-            
+
             # High fan-in = too many things depend on it
             if in_degree > 15:
                 func_name = node_id.split("::")[-1]
                 node = node_map.get(node_id)
                 complexity = node.complexity if node else 0
-                
+
                 # This is a critical function - better be well-tested!
                 issues.append(CodeIssue(
                     file="", line=0,
@@ -586,7 +586,7 @@ class CodeGraphAnalysisAgent:
                     fix_suggestion="Add comprehensive tests and consider making it more stable/immutable",
                     confidence=1.0
                 ))
-        
+
         # 4. Detect long dependency chains (deep call stacks)
         if entry_points:
             for entry in entry_points:
@@ -594,7 +594,7 @@ class CodeGraphAnalysisAgent:
                     # Find longest path from this entry point
                     paths = nx.single_source_shortest_path_length(graph, entry)
                     max_depth = max(paths.values()) if paths else 0
-                    
+
                     if max_depth > 6:
                         func_name = entry.split("::")[-1]
                         issues.append(CodeIssue(
@@ -608,7 +608,7 @@ class CodeGraphAnalysisAgent:
                         ))
                 except Exception as e:
                     self.logger.debug(f"Failed to calculate call chain depth for {entry}: {e}")
-        
+
         return issues
 
 # ============================================================================
@@ -621,7 +621,7 @@ class ReviewerAgent(BaseAgent):
     
     Orchestrates multiple specialized agents and uses RAG for deep context.
     """
-    
+
     def __init__(self, llm_client: Any, mcp_client: Any):
         super().__init__(
             role=AgentRole.REVIEWER,
@@ -630,7 +630,7 @@ class ReviewerAgent(BaseAgent):
             mcp_client=mcp_client,
             system_prompt=self._build_system_prompt()
         )
-        
+
         # Initialize components
         self.rag_engine = RAGContextEngine(mcp_client, llm_client)
         self.security_agent = SecurityAgent("")  # file_path set per file
@@ -664,7 +664,7 @@ class ReviewerAgent(BaseAgent):
             files_map = await self._load_context(task)
             if not files_map:
                 return AgentResponse(
-                    success=False, 
+                    success=False,
                     reasoning="No files found to review.",
                     error="No files provided"
                 )
@@ -680,11 +680,11 @@ class ReviewerAgent(BaseAgent):
             all_nodes = []
             all_graphs = []  # Store graphs per file
             all_issues = []
-            
+
             for fname, content in files_map.items():
                 if not fname.endswith('.py'):
                     continue
-                    
+
                 try:
                     tree = ast.parse(content)
                     analyzer = CodeGraphAnalyzer(fname)
@@ -692,7 +692,7 @@ class ReviewerAgent(BaseAgent):
                     all_metrics.extend(metrics)
                     all_nodes.extend(nodes)
                     all_graphs.append(graph)
-                    
+
                     # Immediate heuristic checks
                     for m in metrics:
                         if m.cyclomatic > 15:
@@ -715,10 +715,10 @@ class ReviewerAgent(BaseAgent):
                                 fix_suggestion="Simplify control flow and reduce nesting",
                                 confidence=0.95
                             ))
-                            
+
                 except SyntaxError as e:
                     all_issues.append(CodeIssue(
-                        file=fname, 
+                        file=fname,
                         line=e.lineno or 0,
                         severity=IssueSeverity.CRITICAL,
                         category=IssueCategory.LOGIC,
@@ -731,33 +731,33 @@ class ReviewerAgent(BaseAgent):
             for fname, content in files_map.items():
                 if not fname.endswith('.py'):
                     continue
-                    
+
                 try:
                     tree = ast.parse(content)
-                    
+
                     # Security analysis (AST-based, surgical!)
                     self.security_agent.file_path = fname
                     sec_issues = await self.security_agent.analyze(content, tree)
                     all_issues.extend(sec_issues)
                 except Exception as e:
                     self.logger.debug(f"Security analysis failed for {fname}: {e}")  # Already caught syntax errors above
-                
+
                 # Performance analysis
                 perf_issues = await self.performance_agent.analyze(content, all_metrics)
                 for issue in perf_issues:
                     issue.file = fname
                 all_issues.extend(perf_issues)
-            
+
             # Test coverage
             test_issues = await self.test_agent.analyze(list(files_map.keys()))
             all_issues.extend(test_issues)
-            
+
             # Graph analysis - THE MONEY SHOT! 💰
             # Merge all graphs into one mega-graph for cross-file analysis
             mega_graph = nx.DiGraph()
             for g in all_graphs:
                 mega_graph = nx.compose(mega_graph, g)
-            
+
             graph_issues = await self.graph_agent.analyze(mega_graph, all_nodes)
             all_issues.extend(graph_issues)
 
@@ -765,11 +765,11 @@ class ReviewerAgent(BaseAgent):
             llm_prompt = self._build_llm_prompt(
                 files_map, all_metrics, rag_context, all_issues
             )
-            
+
             try:
                 llm_response = await self._call_llm(llm_prompt, temperature=0.2)
                 llm_data = self._parse_llm_json(llm_response)
-                
+
                 # Merge LLM findings
                 if "additional_issues" in llm_data:
                     for issue_dict in llm_data["additional_issues"]:
@@ -781,12 +781,12 @@ class ReviewerAgent(BaseAgent):
             # Phase 6: Calculate final score and risk
             score = self._calculate_score(all_issues, all_metrics)
             risk_level = self._calculate_risk(all_issues, score)
-            
+
             # Phase 7: Generate recommendations
             recommendations = self._generate_recommendations(
                 all_issues, all_metrics, rag_context
             )
-            
+
             # Phase 8: Build final report
             report = ReviewReport(
                 approved=score >= 75 and risk_level != "CRITICAL",
@@ -809,14 +809,14 @@ class ReviewerAgent(BaseAgent):
 
         except Exception as e:
             return AgentResponse(
-                success=False, 
-                error=str(e), 
+                success=False,
+                error=str(e),
                 reasoning=f"Review process failed: {str(e)}"
             )
 
     def _build_llm_prompt(
-        self, 
-        files: Dict[str, str], 
+        self,
+        files: Dict[str, str],
         metrics: List[ComplexityMetrics],
         rag_context: RAGContext,
         static_issues: List[CodeIssue]
@@ -882,13 +882,13 @@ Output JSON with:
             return {"summary": "LLM response invalid JSON", "additional_issues": []}
 
     def _calculate_score(
-        self, 
-        issues: List[CodeIssue], 
+        self,
+        issues: List[CodeIssue],
         metrics: List[ComplexityMetrics]
     ) -> int:
         """Calculate quality score 0-100"""
         score = 100
-        
+
         # Deduct for issues
         severity_deductions = {
             IssueSeverity.CRITICAL: 30,
@@ -897,29 +897,29 @@ Output JSON with:
             IssueSeverity.LOW: 3,
             IssueSeverity.INFO: 1
         }
-        
+
         for issue in issues:
             deduction = severity_deductions.get(issue.severity, 5)
             # Weight by confidence
             score -= int(deduction * issue.confidence)
-        
+
         # Deduct for complexity
         if metrics:
             avg_cyclo = sum(m.cyclomatic for m in metrics) / len(metrics)
             avg_cognitive = sum(m.cognitive for m in metrics) / len(metrics)
-            
+
             if avg_cyclo > 10:
                 score -= int((avg_cyclo - 10) * 2)
             if avg_cognitive > 15:
                 score -= int((avg_cognitive - 15) * 1.5)
-        
+
         return max(0, min(100, score))
 
     def _calculate_risk(self, issues: List[CodeIssue], score: int) -> str:
         """Determine deployment risk level"""
         critical_count = sum(1 for i in issues if i.severity == IssueSeverity.CRITICAL)
         high_count = sum(1 for i in issues if i.severity == IssueSeverity.HIGH)
-        
+
         if critical_count > 0 or score < 40:
             return "CRITICAL"
         elif high_count > 2 or score < 60:
@@ -937,23 +937,23 @@ Output JSON with:
     ) -> List[str]:
         """Generate actionable recommendations"""
         recs = []
-        
+
         # Based on issue patterns
         security_issues = [i for i in issues if i.category == IssueCategory.SECURITY]
         if security_issues:
             recs.append("🔒 Run a security scan with tools like Bandit or Semgrep")
-        
+
         complex_funcs = [m for m in metrics if m.cyclomatic > 10]
         if len(complex_funcs) > 3:
             recs.append("🔧 Consider refactoring the most complex functions first")
-        
+
         if not any(i.category == IssueCategory.TESTING for i in issues):
             recs.append("✅ Ensure adequate test coverage for new functionality")
-        
+
         # Team standards
         if rag_context.team_standards.get("require_docstrings") == "true":
             recs.append("📝 Add docstrings to all public functions")
-        
+
         return recs
 
     def _estimate_fix_time(self, issues: List[CodeIssue]) -> str:
@@ -962,9 +962,9 @@ Output JSON with:
         critical = sum(1 for i in issues if i.severity == IssueSeverity.CRITICAL)
         high = sum(1 for i in issues if i.severity == IssueSeverity.HIGH)
         medium = sum(1 for i in issues if i.severity == IssueSeverity.MEDIUM)
-        
+
         total_hours = critical * 4 + high * 2 + medium * 1
-        
+
         if total_hours < 1:
             return "< 1 hour"
         elif total_hours < 4:

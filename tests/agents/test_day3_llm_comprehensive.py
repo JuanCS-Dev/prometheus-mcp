@@ -10,7 +10,7 @@ from pathlib import Path
 from dotenv import load_dotenv
 from jdev_cli.agents.planner import PlannerAgent
 from jdev_cli.agents.refactorer import RefactorerAgent
-from jdev_cli.agents.base import TaskContext, TaskStatus, AgentRole
+from jdev_cli.agents.base import TaskContext, TaskStatus
 
 # Carregar .env ANTES de qualquer teste
 load_dotenv()
@@ -31,7 +31,7 @@ def ensure_api_key():
 
 class TestPlannerRealWorldScenarios:
     """Cenários reais de planejamento"""
-    
+
     def test_plan_simple_crud_api(self):
         """Planejar API CRUD simples"""
         agent = PlannerAgent()
@@ -44,7 +44,7 @@ class TestPlannerRealWorldScenarios:
         assert result.status == TaskStatus.SUCCESS
         assert result.output is not None
         assert len(str(result.output)) > 100
-    
+
     def test_plan_authentication_system(self):
         """Planejar sistema de autenticação"""
         agent = PlannerAgent()
@@ -56,7 +56,7 @@ class TestPlannerRealWorldScenarios:
         result = agent.execute(ctx)
         assert result.status == TaskStatus.SUCCESS
         assert result.output is not None
-    
+
     def test_plan_database_migration(self):
         """Planejar migração de banco de dados"""
         agent = PlannerAgent()
@@ -68,7 +68,7 @@ class TestPlannerRealWorldScenarios:
         result = agent.execute(ctx)
         assert result.status == TaskStatus.SUCCESS
         assert result.output is not None
-    
+
     def test_plan_microservice_architecture(self):
         """Planejar arquitetura de microserviços"""
         agent = PlannerAgent()
@@ -81,7 +81,7 @@ class TestPlannerRealWorldScenarios:
         assert result.status == TaskStatus.SUCCESS
         output_str = str(result.output)
         assert len(output_str) > 200
-    
+
     def test_plan_ci_cd_pipeline(self):
         """Planejar pipeline CI/CD"""
         agent = PlannerAgent()
@@ -93,7 +93,7 @@ class TestPlannerRealWorldScenarios:
         result = agent.execute(ctx)
         assert result.status == TaskStatus.SUCCESS
         assert result.output is not None
-    
+
     def test_plan_data_processing_pipeline(self):
         """Planejar pipeline de processamento de dados"""
         agent = PlannerAgent()
@@ -105,7 +105,7 @@ class TestPlannerRealWorldScenarios:
         result = agent.execute(ctx)
         assert result.status == TaskStatus.SUCCESS
         assert result.output is not None
-    
+
     def test_plan_real_time_chat_app(self):
         """Planejar aplicação de chat em tempo real"""
         agent = PlannerAgent()
@@ -117,7 +117,7 @@ class TestPlannerRealWorldScenarios:
         result = agent.execute(ctx)
         assert result.status == TaskStatus.SUCCESS
         assert result.output is not None
-    
+
     def test_plan_payment_integration(self):
         """Planejar integração de pagamento"""
         agent = PlannerAgent()
@@ -129,7 +129,7 @@ class TestPlannerRealWorldScenarios:
         result = agent.execute(ctx)
         assert result.status == TaskStatus.SUCCESS
         assert result.output is not None
-    
+
     def test_plan_ml_model_deployment(self):
         """Planejar deploy de modelo ML"""
         agent = PlannerAgent()
@@ -141,7 +141,7 @@ class TestPlannerRealWorldScenarios:
         result = agent.execute(ctx)
         assert result.status == TaskStatus.SUCCESS
         assert result.output is not None
-    
+
     def test_plan_monitoring_system(self):
         """Planejar sistema de monitoramento"""
         agent = PlannerAgent()
@@ -157,7 +157,7 @@ class TestPlannerRealWorldScenarios:
 
 class TestPlannerEdgeCases:
     """Edge cases do Planner"""
-    
+
     def test_plan_with_very_short_description(self):
         """Descrição muito curta"""
         agent = PlannerAgent()
@@ -165,7 +165,7 @@ class TestPlannerEdgeCases:
         result = agent.execute(ctx)
         assert result.status in [TaskStatus.SUCCESS, TaskStatus.FAILED]
         assert result.output is not None
-    
+
     def test_plan_with_technical_jargon(self):
         """Descrição com jargão técnico"""
         agent = PlannerAgent()
@@ -177,7 +177,7 @@ class TestPlannerEdgeCases:
         result = agent.execute(ctx)
         assert result.status == TaskStatus.SUCCESS
         assert result.output is not None
-    
+
     def test_plan_with_multiple_languages(self):
         """Descrição multi-linguagem"""
         agent = PlannerAgent()
@@ -189,7 +189,7 @@ class TestPlannerEdgeCases:
         result = agent.execute(ctx)
         assert result.status == TaskStatus.SUCCESS
         assert result.output is not None
-    
+
     def test_plan_with_conflicting_requirements(self):
         """Requisitos conflitantes"""
         agent = PlannerAgent()
@@ -201,7 +201,7 @@ class TestPlannerEdgeCases:
         result = agent.execute(ctx)
         assert result.status in [TaskStatus.SUCCESS, TaskStatus.FAILED]
         assert result.output is not None
-    
+
     def test_plan_with_deprecated_technologies(self):
         """Tecnologias deprecadas"""
         agent = PlannerAgent()
@@ -217,7 +217,7 @@ class TestPlannerEdgeCases:
 
 class TestPlannerPerformanceStress:
     """Testes de stress e performance"""
-    
+
     def test_plan_handles_rapid_succession(self):
         """Múltiplos planos em sequência rápida"""
         agent = PlannerAgent()
@@ -230,10 +230,10 @@ class TestPlannerPerformanceStress:
             )
             result = agent.execute(ctx)
             results.append(result)
-        
+
         assert all(r.status in [TaskStatus.SUCCESS, TaskStatus.FAILED] for r in results)
         assert all(r.output is not None for r in results)
-    
+
     def test_plan_execution_time_reasonable(self):
         """Tempo de execução deve ser razoável"""
         agent = PlannerAgent()
@@ -245,10 +245,10 @@ class TestPlannerPerformanceStress:
         start = time.time()
         result = agent.execute(ctx)
         duration = time.time() - start
-        
+
         assert result.status in [TaskStatus.SUCCESS, TaskStatus.FAILED]
         assert duration < 60  # Menos de 60 segundos
-    
+
     def test_plan_with_long_description(self):
         """Descrição muito longa"""
         agent = PlannerAgent()
@@ -269,7 +269,7 @@ class TestPlannerPerformanceStress:
 
 class TestRefactorerRealCode:
     """Refatoração de código real"""
-    
+
     def test_refactor_god_class(self, tmp_path):
         """Detectar e sugerir refatoração de God Class"""
         code_file = tmp_path / "god_class.py"
@@ -286,7 +286,7 @@ class UserManager:
     def render_template(self): pass
     def handle_request(self): pass
 """)
-        
+
         agent = RefactorerAgent()
         ctx = TaskContext(
             task_id="god_class_01",
@@ -298,7 +298,7 @@ class UserManager:
         assert result.output is not None
         output_str = str(result.output).lower()
         assert len(output_str) > 50
-    
+
     def test_refactor_long_method(self, tmp_path):
         """Detectar método muito longo"""
         code_file = tmp_path / "long_method.py"
@@ -317,7 +317,7 @@ def process_order(order):
     step10 = order.trigger_webhook()
     return order
 """)
-        
+
         agent = RefactorerAgent()
         ctx = TaskContext(
             task_id="long_method_01",
@@ -327,7 +327,7 @@ def process_order(order):
         result = agent.execute(ctx)
         assert result.status == TaskStatus.SUCCESS
         assert result.output is not None
-    
+
     def test_refactor_duplicate_code(self, tmp_path):
         """Detectar código duplicado"""
         code_file = tmp_path / "duplicate.py"
@@ -344,7 +344,7 @@ def calculate_discount_silver(price):
     final = price + tax - discount
     return final
 """)
-        
+
         agent = RefactorerAgent()
         ctx = TaskContext(
             task_id="duplicate_01",
@@ -354,7 +354,7 @@ def calculate_discount_silver(price):
         result = agent.execute(ctx)
         assert result.status == TaskStatus.SUCCESS
         assert result.output is not None
-    
+
     def test_refactor_poor_naming(self, tmp_path):
         """Detectar nomes ruins"""
         code_file = tmp_path / "bad_names.py"
@@ -367,7 +367,7 @@ a = 10
 b = 20
 c = f(a, b)
 """)
-        
+
         agent = RefactorerAgent()
         ctx = TaskContext(
             task_id="naming_01",
@@ -377,7 +377,7 @@ c = f(a, b)
         result = agent.execute(ctx)
         assert result.status == TaskStatus.SUCCESS
         assert result.output is not None
-    
+
     def test_refactor_missing_types(self, tmp_path):
         """Detectar falta de type hints"""
         code_file = tmp_path / "no_types.py"
@@ -389,7 +389,7 @@ def calculate(a, b, operation):
         return a - b
     return None
 """)
-        
+
         agent = RefactorerAgent()
         ctx = TaskContext(
             task_id="types_01",
@@ -399,7 +399,7 @@ def calculate(a, b, operation):
         result = agent.execute(ctx)
         assert result.status == TaskStatus.SUCCESS
         assert result.output is not None
-    
+
     def test_refactor_complex_conditionals(self, tmp_path):
         """Detectar condicionais complexas"""
         code_file = tmp_path / "complex_cond.py"
@@ -409,7 +409,7 @@ def check_eligibility(user):
         return True
     return False
 """)
-        
+
         agent = RefactorerAgent()
         ctx = TaskContext(
             task_id="conditional_01",
@@ -419,7 +419,7 @@ def check_eligibility(user):
         result = agent.execute(ctx)
         assert result.status == TaskStatus.SUCCESS
         assert result.output is not None
-    
+
     def test_refactor_magic_numbers(self, tmp_path):
         """Detectar magic numbers"""
         code_file = tmp_path / "magic.py"
@@ -429,7 +429,7 @@ def calculate_price(quantity):
         return quantity * 9.99 * 0.85
     return quantity * 9.99
 """)
-        
+
         agent = RefactorerAgent()
         ctx = TaskContext(
             task_id="magic_01",
@@ -439,7 +439,7 @@ def calculate_price(quantity):
         result = agent.execute(ctx)
         assert result.status == TaskStatus.SUCCESS
         assert result.output is not None
-    
+
     def test_refactor_deep_nesting(self, tmp_path):
         """Detectar nesting profundo"""
         code_file = tmp_path / "deep_nest.py"
@@ -453,7 +453,7 @@ def process(data):
                         return True
     return False
 """)
-        
+
         agent = RefactorerAgent()
         ctx = TaskContext(
             task_id="nesting_01",
@@ -463,7 +463,7 @@ def process(data):
         result = agent.execute(ctx)
         assert result.status == TaskStatus.SUCCESS
         assert result.output is not None
-    
+
     def test_refactor_missing_error_handling(self, tmp_path):
         """Detectar falta de error handling"""
         code_file = tmp_path / "no_errors.py"
@@ -475,7 +475,7 @@ def read_file(path):
     with open(path) as f:
         return f.read()
 """)
-        
+
         agent = RefactorerAgent()
         ctx = TaskContext(
             task_id="errors_01",
@@ -485,7 +485,7 @@ def read_file(path):
         result = agent.execute(ctx)
         assert result.status == TaskStatus.SUCCESS
         assert result.output is not None
-    
+
     def test_refactor_unused_imports(self, tmp_path):
         """Detectar imports não usados"""
         code_file = tmp_path / "unused.py"
@@ -499,7 +499,7 @@ from pathlib import Path
 def hello():
     return "world"
 """)
-        
+
         agent = RefactorerAgent()
         ctx = TaskContext(
             task_id="imports_01",
@@ -513,7 +513,7 @@ def hello():
 
 class TestRefactorerCodeSmells:
     """Detectar code smells específicos"""
-    
+
     def test_detect_shotgun_surgery(self, tmp_path):
         """Detectar Shotgun Surgery smell"""
         code_file = tmp_path / "shotgun.py"
@@ -528,7 +528,7 @@ class OrderService:
 class PaymentService:
     def get_user_name(self): pass
 """)
-        
+
         agent = RefactorerAgent()
         ctx = TaskContext(
             task_id="shotgun_01",
@@ -538,7 +538,7 @@ class PaymentService:
         result = agent.execute(ctx)
         assert result.status == TaskStatus.SUCCESS
         assert result.output is not None
-    
+
     def test_detect_feature_envy(self, tmp_path):
         """Detectar Feature Envy"""
         code_file = tmp_path / "envy.py"
@@ -554,7 +554,7 @@ class OrderProcessor:
             total += item.price * item.quantity
         return total
 """)
-        
+
         agent = RefactorerAgent()
         ctx = TaskContext(
             task_id="envy_01",
@@ -564,7 +564,7 @@ class OrderProcessor:
         result = agent.execute(ctx)
         assert result.status == TaskStatus.SUCCESS
         assert result.output is not None
-    
+
     def test_detect_data_clumps(self, tmp_path):
         """Detectar Data Clumps"""
         code_file = tmp_path / "clumps.py"
@@ -578,7 +578,7 @@ def update_user(name, email, phone, address, city, country):
 def display_user(name, email, phone, address, city, country):
     pass
 """)
-        
+
         agent = RefactorerAgent()
         ctx = TaskContext(
             task_id="clumps_01",
@@ -596,7 +596,7 @@ def display_user(name, email, phone, address, city, country):
 
 class TestPlannerRefactorerIntegration:
     """Testes de integração entre agentes"""
-    
+
     def test_plan_then_refactor_workflow(self, tmp_path):
         """Workflow: Planejar -> Refatorar"""
         # Fase 1: Planejar
@@ -608,7 +608,7 @@ class TestPlannerRefactorerIntegration:
         )
         plan_result = planner.execute(plan_ctx)
         assert plan_result.status == TaskStatus.SUCCESS
-        
+
         # Criar código baseado no plano (simulado)
         code_file = tmp_path / "calculator.py"
         code_file.write_text("""
@@ -618,7 +618,7 @@ def calc(a,b,op):
     elif op=='mul':return a*b
     elif op=='div':return a/b
 """)
-        
+
         # Fase 2: Refatorar
         refactorer = RefactorerAgent()
         refactor_ctx = TaskContext(
@@ -628,12 +628,12 @@ def calc(a,b,op):
         )
         refactor_result = refactorer.execute(refactor_ctx)
         assert refactor_result.status == TaskStatus.SUCCESS
-    
+
     def test_multiple_agents_same_project(self, tmp_path):
         """Múltiplos agentes no mesmo projeto"""
         planner = PlannerAgent()
         refactorer = RefactorerAgent()
-        
+
         # Planner trabalha
         plan_result = planner.execute(TaskContext(
             task_id="multi_01_plan",
@@ -641,11 +641,11 @@ def calc(a,b,op):
             working_dir=tmp_path
         ))
         assert plan_result.status == TaskStatus.SUCCESS
-        
+
         # Refactorer trabalha no mesmo diretório
         code_file = tmp_path / "api.py"
         code_file.write_text("def api(): pass")
-        
+
         refactor_result = refactorer.execute(TaskContext(
             task_id="multi_01_refactor",
             description=f"Review {code_file}",
@@ -660,7 +660,7 @@ def calc(a,b,op):
 
 class TestAgentRobustness:
     """Testes de robustez"""
-    
+
     def test_planner_handles_empty_working_dir(self):
         """Planner deve funcionar com diretório vazio"""
         agent = PlannerAgent()
@@ -672,7 +672,7 @@ class TestAgentRobustness:
         result = agent.execute(ctx)
         assert result.status in [TaskStatus.SUCCESS, TaskStatus.FAILED]
         assert result.output is not None
-    
+
     def test_refactorer_handles_nonexistent_file(self, tmp_path):
         """Refactorer deve lidar com arquivo inexistente"""
         agent = RefactorerAgent()
@@ -684,7 +684,7 @@ class TestAgentRobustness:
         result = agent.execute(ctx)
         assert result.status in [TaskStatus.SUCCESS, TaskStatus.FAILED]
         assert result.output is not None
-    
+
     def test_planner_handles_unicode_description(self):
         """Planner com caracteres unicode"""
         agent = PlannerAgent()
@@ -696,12 +696,12 @@ class TestAgentRobustness:
         result = agent.execute(ctx)
         assert result.status in [TaskStatus.SUCCESS, TaskStatus.FAILED]
         assert result.output is not None
-    
+
     def test_refactorer_handles_binary_file(self, tmp_path):
         """Refactorer com arquivo binário"""
         binary_file = tmp_path / "binary.bin"
         binary_file.write_bytes(b'\x00\x01\x02\x03\x04')
-        
+
         agent = RefactorerAgent()
         ctx = TaskContext(
             task_id="binary_01",
@@ -711,7 +711,7 @@ class TestAgentRobustness:
         result = agent.execute(ctx)
         assert result.status in [TaskStatus.SUCCESS, TaskStatus.FAILED]
         assert result.output is not None
-    
+
     def test_planner_handles_very_large_description(self):
         """Planner com descrição gigante"""
         agent = PlannerAgent()
@@ -732,7 +732,7 @@ class TestAgentRobustness:
 
 class TestAgentConsistency:
     """Testes de consistência"""
-    
+
     def test_planner_consistent_task_id_propagation(self):
         """Task ID deve ser propagado corretamente"""
         agent = PlannerAgent()
@@ -744,7 +744,7 @@ class TestAgentConsistency:
         )
         result = agent.execute(ctx)
         assert result.task_id == task_id
-    
+
     def test_refactorer_consistent_agent_role(self):
         """Agent role deve ser consistente"""
         agent = RefactorerAgent()
@@ -757,7 +757,7 @@ class TestAgentConsistency:
         # Verificar que o resultado contém informações básicas
         assert result.task_id == "role_01"
         assert result.status in [TaskStatus.SUCCESS, TaskStatus.FAILED]
-    
+
     def test_planner_metadata_preservation(self):
         """Metadata deve ser preservado"""
         agent = PlannerAgent()
@@ -778,7 +778,7 @@ class TestAgentConsistency:
 
 class TestAgentPerformanceLimits:
     """Testes de performance e limites"""
-    
+
     def test_planner_handles_concurrent_contexts(self):
         """Planner deve lidar com múltiplos contextos"""
         agent = PlannerAgent()
@@ -788,13 +788,13 @@ class TestAgentPerformanceLimits:
         ]
         results = [agent.execute(ctx) for ctx in contexts]
         assert all(r.status in [TaskStatus.SUCCESS, TaskStatus.FAILED] for r in results)
-    
+
     def test_refactorer_handles_large_file(self, tmp_path):
         """Refactorer com arquivo grande"""
         large_file = tmp_path / "large.py"
         large_content = "# Line\n" * 10000
         large_file.write_text(large_content)
-        
+
         agent = RefactorerAgent()
         ctx = TaskContext(
             task_id="large_01",
@@ -803,7 +803,7 @@ class TestAgentPerformanceLimits:
         )
         result = agent.execute(ctx)
         assert result.status in [TaskStatus.SUCCESS, TaskStatus.FAILED]
-    
+
     def test_planner_execution_time_tracking(self):
         """Rastrear tempo de execução"""
         agent = PlannerAgent()
@@ -815,7 +815,7 @@ class TestAgentPerformanceLimits:
         start = time.time()
         result = agent.execute(ctx)
         duration = time.time() - start
-        
+
         assert result.status in [TaskStatus.SUCCESS, TaskStatus.FAILED]
         assert duration < 60
         assert result.metadata is not None
@@ -827,7 +827,7 @@ class TestAgentPerformanceLimits:
 
 class TestPlannerVariations:
     """Variações do Planner (50 testes)"""
-    
+
     @pytest.mark.parametrize("description", [
         "Build REST API",
         "Create database schema",
@@ -893,7 +893,7 @@ class TestPlannerVariations:
         assert result.output is not None
 
 
-# Total de testes: 
+# Total de testes:
 # TestPlannerRealWorldScenarios: 10
 # TestPlannerEdgeCases: 5
 # TestPlannerPerformanceStress: 3
@@ -910,7 +910,7 @@ class TestPlannerVariations:
 
 class TestRefactorerVariations:
     """Variações do Refactorer (100 testes)"""
-    
+
     @pytest.mark.parametrize("code_content", [
         "def f(): pass",
         "class C: pass",
@@ -1020,7 +1020,7 @@ class TestRefactorerVariations:
         """Test refactorer com vários códigos"""
         code_file = tmp_path / f"test_{hash(code_content)}.py"
         code_file.write_text(code_content)
-        
+
         agent = RefactorerAgent()
         ctx = TaskContext(
             task_id=f"refvar_{hash(code_content)}",
@@ -1034,7 +1034,7 @@ class TestRefactorerVariations:
 
 class TestAgentEdgeCasesCombinations:
     """Combinações de edge cases (88 testes)"""
-    
+
     @pytest.mark.parametrize("working_dir", [
         Path("/tmp"),
         Path("/tmp/nested/deep/path"),
@@ -1050,7 +1050,7 @@ class TestAgentEdgeCasesCombinations:
             "medium": "This is a medium length task description",
             "long": " ".join(["requirement"] * 50)
         }
-        
+
         if agent_type == "planner":
             agent = PlannerAgent()
         else:
@@ -1058,13 +1058,13 @@ class TestAgentEdgeCasesCombinations:
             # Criar arquivo dummy para refactorer
             code_file = tmp_path / "dummy.py"
             code_file.write_text("def dummy(): pass")
-        
+
         ctx = TaskContext(
             task_id=f"combo_{agent_type}_{description_length}",
             description=descriptions[description_length],
             working_dir=tmp_path if working_dir == Path(".") else working_dir
         )
-        
+
         result = agent.execute(ctx)
         assert result.status in [TaskStatus.SUCCESS, TaskStatus.FAILED]
         assert result.output is not None
@@ -1089,7 +1089,7 @@ class TestAgentEdgeCasesCombinations:
 
 class TestPlannerLanguageVariations:
     """Planner com diferentes linguagens (50 testes)"""
-    
+
     @pytest.mark.parametrize("language,task", [
         ("Python", "Create FastAPI application"),
         ("JavaScript", "Build Express.js server"),
@@ -1157,7 +1157,7 @@ class TestPlannerLanguageVariations:
 
 class TestRefactorerPatterns:
     """Refactorer com design patterns (50 testes)"""
-    
+
     @pytest.mark.parametrize("pattern,code_snippet", [
         ("Singleton", "class Singleton:\n    _instance = None"),
         ("Factory", "class Factory:\n    def create(self): pass"),
@@ -1214,7 +1214,7 @@ class TestRefactorerPatterns:
         """Test refactorer com design patterns"""
         code_file = tmp_path / f"pattern_{pattern}.py"
         code_file.write_text(code_snippet)
-        
+
         agent = RefactorerAgent()
         ctx = TaskContext(
             task_id=f"pattern_{pattern}_{hash(code_snippet)}",

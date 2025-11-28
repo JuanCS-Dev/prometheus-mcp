@@ -25,11 +25,10 @@ Data: 2025-11-25
 from __future__ import annotations
 
 import re
-from abc import ABC, abstractmethod
+from abc import abstractmethod
 from dataclasses import dataclass, field
 from typing import (
-    Dict, List, Optional, Type, Pattern, Callable,
-    ClassVar, Any, TypeVar, Generic
+    Dict, List, Optional, Type, Pattern, ClassVar, Any
 )
 from enum import Enum, auto
 
@@ -37,7 +36,7 @@ from rich.text import Text
 from rich.panel import Panel
 from rich.syntax import Syntax
 from rich.markdown import Markdown as RichMarkdown
-from rich.console import RenderableType, Group
+from rich.console import RenderableType
 from rich.table import Table
 
 

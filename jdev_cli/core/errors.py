@@ -18,7 +18,6 @@ Design principles:
 from __future__ import annotations
 
 from typing import Any, Dict, Optional
-from pathlib import Path
 from dataclasses import dataclass, field
 
 from .types import ErrorCategory, FilePath
@@ -46,7 +45,7 @@ class QwenError(Exception):
     All custom exceptions should inherit from this base class.
     Provides structured error information and recovery hints.
     """
-    
+
     def __init__(
         self,
         message: str,
@@ -59,11 +58,11 @@ class QwenError(Exception):
         self.context = context
         self.recoverable = recoverable
         self.cause = cause
-    
+
     def __str__(self) -> str:
         """Human-readable error message."""
         parts = [self.message]
-        
+
         if self.context:
             if self.context.file:
                 parts.append(f"File: {self.context.file}")
@@ -77,12 +76,12 @@ class QwenError(Exception):
             if self.context.suggestions:
                 parts.append("Suggestions:")
                 parts.extend(f"  - {s}" for s in self.context.suggestions)
-        
+
         if self.cause:
             parts.append(f"Caused by: {self.cause}")
-        
+
         return "\n".join(parts)
-    
+
     def to_dict(self) -> Dict[str, Any]:
         """Serialize error to dictionary."""
         result: Dict[str, Any] = {
@@ -90,7 +89,7 @@ class QwenError(Exception):
             'message': self.message,
             'recoverable': self.recoverable,
         }
-        
+
         if self.context:
             result['context'] = {
                 'category': self.context.category.value,
@@ -100,10 +99,10 @@ class QwenError(Exception):
                 'suggestions': list(self.context.suggestions),
                 'metadata': self.context.metadata,
             }
-        
+
         if self.cause:
             result['cause'] = str(self.cause)
-        
+
         return result
 
 
@@ -113,7 +112,7 @@ class QwenError(Exception):
 
 class SyntaxError(QwenError):
     """Syntax error in Python code."""
-    
+
     def __init__(
         self,
         message: str,
@@ -139,7 +138,7 @@ class SyntaxError(QwenError):
 
 class ImportError(QwenError):
     """Module import error."""
-    
+
     def __init__(
         self,
         message: str,
@@ -163,7 +162,7 @@ class ImportError(QwenError):
 
 class TypeError(QwenError):
     """Type error in code execution."""
-    
+
     def __init__(
         self,
         message: str,
@@ -191,7 +190,7 @@ class TypeError(QwenError):
 
 class RuntimeError(QwenError):
     """Runtime error during execution."""
-    
+
     def __init__(
         self,
         message: str,
@@ -213,7 +212,7 @@ class RuntimeError(QwenError):
 
 class FileNotFoundError(QwenError):
     """File or directory not found."""
-    
+
     def __init__(self, path: FilePath):
         context = ErrorContext(
             category=ErrorCategory.PERMISSION,
@@ -229,7 +228,7 @@ class FileNotFoundError(QwenError):
 
 class PermissionError(QwenError):
     """Permission denied for file operation."""
-    
+
     def __init__(self, path: FilePath, operation: str):
         context = ErrorContext(
             category=ErrorCategory.PERMISSION,
@@ -250,7 +249,7 @@ class PermissionError(QwenError):
 
 class FileAlreadyExistsError(QwenError):
     """File already exists and cannot be overwritten."""
-    
+
     def __init__(self, path: FilePath):
         context = ErrorContext(
             category=ErrorCategory.PERMISSION,
@@ -270,7 +269,7 @@ class FileAlreadyExistsError(QwenError):
 
 class NetworkError(QwenError):
     """Network-related error."""
-    
+
     def __init__(
         self,
         message: str,
@@ -283,7 +282,7 @@ class NetworkError(QwenError):
             metadata['url'] = url
         if status_code:
             metadata['status_code'] = status_code
-        
+
         context = ErrorContext(
             category=ErrorCategory.NETWORK,
             metadata=metadata,
@@ -299,7 +298,7 @@ class NetworkError(QwenError):
 
 class TimeoutError(QwenError):
     """Operation timed out."""
-    
+
     def __init__(
         self,
         message: str,
@@ -323,7 +322,7 @@ class TimeoutError(QwenError):
 
 class RateLimitError(QwenError):
     """API rate limit exceeded."""
-    
+
     def __init__(
         self,
         provider: str,
@@ -332,13 +331,13 @@ class RateLimitError(QwenError):
         message = f"Rate limit exceeded for {provider}"
         if retry_after:
             message += f". Retry after {retry_after} seconds"
-        
+
         metadata: Dict[str, Any] = {
             'provider': provider,
         }
         if retry_after is not None:
             metadata['retry_after'] = retry_after
-        
+
         context = ErrorContext(
             category=ErrorCategory.NETWORK,
             metadata=metadata,
@@ -357,7 +356,7 @@ class RateLimitError(QwenError):
 
 class ResourceError(QwenError):
     """Resource constraint error."""
-    
+
     def __init__(
         self,
         message: str,
@@ -370,14 +369,14 @@ class ResourceError(QwenError):
             metadata['limit'] = limit
         if current is not None:
             metadata['current'] = current
-        
+
         suggestions = [
             f"Reduce {resource_type} usage",
             "Check resource limits and quotas",
         ]
         if limit and current:
             suggestions.insert(0, f"Current: {current}, Limit: {limit}")
-        
+
         context = ErrorContext(
             category=ErrorCategory.RESOURCE,
             metadata=metadata,
@@ -388,7 +387,7 @@ class ResourceError(QwenError):
 
 class TokenLimitError(ResourceError):
     """Token limit exceeded."""
-    
+
     def __init__(
         self,
         current_tokens: int,
@@ -405,7 +404,7 @@ class TokenLimitError(ResourceError):
 
 class MemoryLimitError(ResourceError):
     """Memory limit exceeded."""
-    
+
     def __init__(
         self,
         current_mb: float,
@@ -425,7 +424,7 @@ class MemoryLimitError(ResourceError):
 
 class ValidationError(QwenError):
     """Input validation error."""
-    
+
     def __init__(
         self,
         message: str,
@@ -440,13 +439,13 @@ class ValidationError(QwenError):
             metadata['value'] = str(value)
         if constraint:
             metadata['constraint'] = constraint
-        
+
         suggestions = ["Check input format and constraints"]
         if field:
             suggestions.append(f"Field '{field}' is invalid")
         if constraint:
             suggestions.append(f"Constraint: {constraint}")
-        
+
         context = ErrorContext(
             category=ErrorCategory.UNKNOWN,
             metadata=metadata,
@@ -461,7 +460,7 @@ class ValidationError(QwenError):
 
 class ConfigurationError(QwenError):
     """Configuration error."""
-    
+
     def __init__(
         self,
         message: str,
@@ -471,7 +470,7 @@ class ConfigurationError(QwenError):
         metadata = {}
         if config_key:
             metadata['config_key'] = config_key
-        
+
         suggestions = [
             "Check configuration file syntax",
             "Verify all required fields are set",
@@ -479,7 +478,7 @@ class ConfigurationError(QwenError):
         ]
         if config_key:
             suggestions.insert(0, f"Invalid configuration key: {config_key}")
-        
+
         context = ErrorContext(
             category=ErrorCategory.UNKNOWN,
             file=config_file,
@@ -495,7 +494,7 @@ class ConfigurationError(QwenError):
 
 class LLMError(QwenError):
     """LLM-related error."""
-    
+
     def __init__(
         self,
         message: str,
@@ -508,7 +507,7 @@ class LLMError(QwenError):
             metadata['provider'] = provider
         if model:
             metadata['model'] = model
-        
+
         context = ErrorContext(
             category=ErrorCategory.NETWORK,
             metadata=metadata,
@@ -524,7 +523,7 @@ class LLMError(QwenError):
 
 class LLMValidationError(QwenError):
     """LLM backend not available."""
-    
+
     def __init__(self, message: str):
         context = ErrorContext(
             category=ErrorCategory.NETWORK,
@@ -545,7 +544,7 @@ class LLMValidationError(QwenError):
 
 class ToolError(QwenError):
     """Tool execution error."""
-    
+
     def __init__(
         self,
         message: str,
@@ -556,7 +555,7 @@ class ToolError(QwenError):
         metadata = {'tool': tool_name}
         if arguments:
             metadata['arguments'] = arguments
-        
+
         context = ErrorContext(
             category=ErrorCategory.RUNTIME,
             metadata=metadata,
@@ -571,7 +570,7 @@ class ToolError(QwenError):
 
 class ToolNotFoundError(ToolError):
     """Tool not found in registry."""
-    
+
     def __init__(self, tool_name: str):
         super().__init__(
             f"Tool not found: {tool_name}",
@@ -586,25 +585,25 @@ class ToolNotFoundError(ToolError):
 __all__ = [
     # Base
     'QwenError', 'ErrorContext',
-    
+
     # Code execution
     'SyntaxError', 'ImportError', 'TypeError', 'RuntimeError',
-    
+
     # File system
     'FileNotFoundError', 'PermissionError', 'FileAlreadyExistsError',
-    
+
     # Network
     'NetworkError', 'TimeoutError', 'RateLimitError',
-    
+
     # Resources
     'ResourceError', 'TokenLimitError', 'MemoryLimitError',
-    
+
     # Validation
     'ValidationError', 'ConfigurationError',
-    
+
     # LLM
     'LLMError', 'LLMValidationError',
-    
+
     # Tools
     'ToolError', 'ToolNotFoundError',
 ]

@@ -36,7 +36,7 @@ import os
 import re
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import Any, AsyncIterator, Dict, List, Optional
+from typing import AsyncIterator, Dict, List, Optional
 
 logger = logging.getLogger(__name__)
 

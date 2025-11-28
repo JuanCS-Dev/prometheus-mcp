@@ -186,7 +186,7 @@ async def run_agent_example():
     doc_gen = create_documentation_agent()
     security = SecurityAuditAgent()
 
-    print(f"Created agents:")
+    print("Created agents:")
     print(f"  - {reviewer.name}: {reviewer.description}")
     print(f"  - {doc_gen.name}: {doc_gen.description}")
     print(f"  - {security.agent.name}: {security.agent.description}")

@@ -9,11 +9,8 @@ Focuses on:
 Based on Anthropic Claude Code testing standards.
 """
 import pytest
-import ast
-import json
 import networkx as nx
-from unittest.mock import AsyncMock, MagicMock, patch
-from typing import Dict, Any, List
+from unittest.mock import AsyncMock, MagicMock
 
 from jdev_cli.agents.reviewer import (
     IssueSeverity,
@@ -22,17 +19,9 @@ from jdev_cli.agents.reviewer import (
     ComplexityMetrics,
     CodeIssue,
     RAGContext,
-    ReviewReport,
-    CodeGraphAnalyzer,
-    SecurityAgent,
-    PerformanceAgent,
-    TestCoverageAgent,
-    CodeGraphAnalysisAgent,
     ReviewerAgent,
 )
 from jdev_cli.agents.base import (
-    AgentRole,
-    AgentCapability,
     AgentTask,
     AgentResponse,
 )

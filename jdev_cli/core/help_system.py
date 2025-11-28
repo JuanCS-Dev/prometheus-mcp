@@ -1,5 +1,5 @@
 """Minimal help system stub (consolidated from removed module)."""
-from typing import Dict, List, Optional
+from typing import List, Optional
 
 
 class HelpSystem:

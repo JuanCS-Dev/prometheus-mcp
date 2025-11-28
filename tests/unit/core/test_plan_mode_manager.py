@@ -11,12 +11,9 @@ Comprehensive tests following Boris Cherny methodology:
 Target: 95%+ coverage
 """
 
-import pytest
 from pathlib import Path
-from unittest.mock import patch, MagicMock
-import tempfile
+from unittest.mock import patch
 import threading
-import datetime
 
 from jdev_tui.core.plan_mode_manager import PlanModeManager
 

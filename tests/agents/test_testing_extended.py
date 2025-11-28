@@ -17,20 +17,13 @@ Total: 121 tests
 Philosophy: "If it's not tested with real code, it's not validated."
 """
 
-import ast
 import pytest
-from pathlib import Path
-from unittest.mock import AsyncMock, MagicMock
+from unittest.mock import MagicMock
 
 from jdev_cli.agents.testing import (
     TestingAgent,
-    TestCase,
-    TestType,
-    TestFramework,
-    CoverageReport,
-    MutationResult,
 )
-from jdev_cli.agents.base import AgentTask, AgentRole
+from jdev_cli.agents.base import AgentTask
 
 
 # ============================================================================
@@ -39,11 +32,11 @@ from jdev_cli.agents.base import AgentTask, AgentRole
 
 class TestRealCodeAnalysis:
     """Tests with actual Python code, not mocks."""
-    
+
     @pytest.fixture
     def agent(self):
         return TestingAgent(model=MagicMock())
-    
+
     @pytest.mark.asyncio
     async def test_analyze_real_function_simple(self, agent):
         """Test with real simple function."""
@@ -55,13 +48,13 @@ def calculate_sum(a: int, b: int) -> int:
             request="Generate tests",
             context={"action": "generate_tests", "source_code": code},
         )
-        
+
         response = await agent.execute(task)
-        
+
         assert response.success is True
         assert len(response.data["test_cases"]) >= 2
         # Should have basic + edge case tests
-        
+
     @pytest.mark.asyncio
     async def test_analyze_real_function_with_validation(self, agent):
         """Test function with input validation."""
@@ -75,14 +68,14 @@ def validate_age(age: int) -> bool:
             request="Generate tests",
             context={"action": "generate_tests", "source_code": code},
         )
-        
+
         response = await agent.execute(task)
-        
+
         assert response.success is True
         test_cases = response.data["test_cases"]
         # Should detect ValueError possibility
         assert any("ValueError" in tc["code"] or "pytest.raises" in tc["code"] for tc in test_cases)
-    
+
     @pytest.mark.asyncio
     async def test_analyze_real_class_with_methods(self, agent):
         """Test real class with multiple methods."""
@@ -106,15 +99,15 @@ class Calculator:
             request="Generate tests",
             context={"action": "generate_tests", "source_code": code},
         )
-        
+
         response = await agent.execute(task)
-        
+
         assert response.success is True
         test_cases = response.data["test_cases"]
         # Should have instantiation + method tests
         assert len(test_cases) >= 4
         assert any("Calculator" in tc["target"] for tc in test_cases)
-    
+
     @pytest.mark.asyncio
     async def test_analyze_dataclass(self, agent):
         """Test real dataclass."""
@@ -131,12 +124,12 @@ class User:
             request="Generate tests",
             context={"action": "generate_tests", "source_code": code},
         )
-        
+
         response = await agent.execute(task)
-        
+
         assert response.success is True
         # Should handle dataclass
-        
+
     @pytest.mark.asyncio
     async def test_analyze_property_getter_setter(self, agent):
         """Test property with getter/setter."""
@@ -159,11 +152,11 @@ class Person:
             request="Generate tests",
             context={"action": "generate_tests", "source_code": code},
         )
-        
+
         response = await agent.execute(task)
-        
+
         assert response.success is True
-    
+
     @pytest.mark.asyncio
     async def test_analyze_context_manager(self, agent):
         """Test context manager implementation."""
@@ -180,11 +173,11 @@ class FileHandler:
             request="Generate tests",
             context={"action": "generate_tests", "source_code": code},
         )
-        
+
         response = await agent.execute(task)
-        
+
         assert response.success is True
-    
+
     @pytest.mark.asyncio
     async def test_analyze_generator_function(self, agent):
         """Test real generator."""
@@ -199,13 +192,13 @@ def fibonacci(n: int):
             request="Generate tests",
             context={"action": "generate_tests", "source_code": code},
         )
-        
+
         response = await agent.execute(task)
-        
+
         assert response.success is True
         test_cases = response.data["test_cases"]
         assert len(test_cases) >= 1
-    
+
     @pytest.mark.asyncio
     async def test_analyze_recursive_function(self, agent):
         """Test recursive function."""
@@ -219,11 +212,11 @@ def factorial(n: int) -> int:
             request="Generate tests",
             context={"action": "generate_tests", "source_code": code},
         )
-        
+
         response = await agent.execute(task)
-        
+
         assert response.success is True
-    
+
     @pytest.mark.asyncio
     async def test_analyze_list_comprehension(self, agent):
         """Test function with list comprehension."""
@@ -235,11 +228,11 @@ def square_numbers(nums: list[int]) -> list[int]:
             request="Generate tests",
             context={"action": "generate_tests", "source_code": code},
         )
-        
+
         response = await agent.execute(task)
-        
+
         assert response.success is True
-    
+
     @pytest.mark.asyncio
     async def test_analyze_dict_comprehension(self, agent):
         """Test function with dict comprehension."""
@@ -251,11 +244,11 @@ def create_mapping(keys: list, values: list) -> dict:
             request="Generate tests",
             context={"action": "generate_tests", "source_code": code},
         )
-        
+
         response = await agent.execute(task)
-        
+
         assert response.success is True
-    
+
     @pytest.mark.asyncio
     async def test_analyze_lambda_function(self, agent):
         """Test function using lambda."""
@@ -267,11 +260,11 @@ def apply_operation(nums: list[int], op=lambda x: x * 2) -> list[int]:
             request="Generate tests",
             context={"action": "generate_tests", "source_code": code},
         )
-        
+
         response = await agent.execute(task)
-        
+
         assert response.success is True
-    
+
     @pytest.mark.asyncio
     async def test_analyze_exception_handling(self, agent):
         """Test function with try/except."""
@@ -286,11 +279,11 @@ def safe_divide(a: float, b: float) -> float:
             request="Generate tests",
             context={"action": "generate_tests", "source_code": code},
         )
-        
+
         response = await agent.execute(task)
-        
+
         assert response.success is True
-    
+
     @pytest.mark.asyncio
     async def test_analyze_multiple_return_types(self, agent):
         """Test function with union return type."""
@@ -304,11 +297,11 @@ def find_user(user_id: int) -> dict | None:
             request="Generate tests",
             context={"action": "generate_tests", "source_code": code},
         )
-        
+
         response = await agent.execute(task)
-        
+
         assert response.success is True
-    
+
     @pytest.mark.asyncio
     async def test_analyze_variadic_args(self, agent):
         """Test function with *args."""
@@ -320,11 +313,11 @@ def sum_all(*numbers: int) -> int:
             request="Generate tests",
             context={"action": "generate_tests", "source_code": code},
         )
-        
+
         response = await agent.execute(task)
-        
+
         assert response.success is True
-    
+
     @pytest.mark.asyncio
     async def test_analyze_keyword_args(self, agent):
         """Test function with **kwargs."""
@@ -336,11 +329,11 @@ def create_user(**attrs) -> dict:
             request="Generate tests",
             context={"action": "generate_tests", "source_code": code},
         )
-        
+
         response = await agent.execute(task)
-        
+
         assert response.success is True
-    
+
     @pytest.mark.asyncio
     async def test_analyze_multiple_decorators(self, agent):
         """Test function with multiple decorators."""
@@ -360,11 +353,11 @@ def expensive_operation(x: int) -> int:
             request="Generate tests",
             context={"action": "generate_tests", "source_code": code},
         )
-        
+
         response = await agent.execute(task)
-        
+
         assert response.success is True
-    
+
     @pytest.mark.asyncio
     async def test_analyze_class_inheritance(self, agent):
         """Test class with inheritance."""
@@ -381,11 +374,11 @@ class Dog(Animal):
             request="Generate tests",
             context={"action": "generate_tests", "source_code": code},
         )
-        
+
         response = await agent.execute(task)
-        
+
         assert response.success is True
-    
+
     @pytest.mark.asyncio
     async def test_analyze_abstract_base_class(self, agent):
         """Test ABC implementation."""
@@ -401,11 +394,11 @@ class Shape(ABC):
             request="Generate tests",
             context={"action": "generate_tests", "source_code": code},
         )
-        
+
         response = await agent.execute(task)
-        
+
         assert response.success is True
-    
+
     @pytest.mark.asyncio
     async def test_analyze_enum_class(self, agent):
         """Test Enum class."""
@@ -421,11 +414,11 @@ class Status(Enum):
             request="Generate tests",
             context={"action": "generate_tests", "source_code": code},
         )
-        
+
         response = await agent.execute(task)
-        
+
         assert response.success is True
-    
+
     @pytest.mark.asyncio
     async def test_analyze_type_annotations_complex(self, agent):
         """Test complex type annotations."""
@@ -442,11 +435,11 @@ def process_data(
             request="Generate tests",
             context={"action": "generate_tests", "source_code": code},
         )
-        
+
         response = await agent.execute(task)
-        
+
         assert response.success is True
-    
+
     @pytest.mark.asyncio
     async def test_analyze_async_context_manager(self, agent):
         """Test async context manager."""
@@ -462,11 +455,11 @@ class AsyncResource:
             request="Generate tests",
             context={"action": "generate_tests", "source_code": code},
         )
-        
+
         response = await agent.execute(task)
-        
+
         assert response.success is True
-    
+
     @pytest.mark.asyncio
     async def test_analyze_coroutine(self, agent):
         """Test async coroutine."""
@@ -478,12 +471,12 @@ async def fetch_data(url: str) -> dict:
             request="Generate tests",
             context={"action": "generate_tests", "source_code": code},
         )
-        
+
         response = await agent.execute(task)
-        
+
         assert response.success is True
         assert len(response.data["test_cases"]) >= 1
-    
+
     @pytest.mark.asyncio
     async def test_analyze_async_generator(self, agent):
         """Test async generator."""
@@ -496,11 +489,11 @@ async def async_range(n: int):
             request="Generate tests",
             context={"action": "generate_tests", "source_code": code},
         )
-        
+
         response = await agent.execute(task)
-        
+
         assert response.success is True
-    
+
     @pytest.mark.asyncio
     async def test_analyze_classmethod_factory(self, agent):
         """Test classmethod as factory."""
@@ -517,11 +510,11 @@ class User:
             request="Generate tests",
             context={"action": "generate_tests", "source_code": code},
         )
-        
+
         response = await agent.execute(task)
-        
+
         assert response.success is True
-    
+
     @pytest.mark.asyncio
     async def test_analyze_staticmethod_utility(self, agent):
         """Test staticmethod utility."""
@@ -540,11 +533,11 @@ class MathUtils:
             request="Generate tests",
             context={"action": "generate_tests", "source_code": code},
         )
-        
+
         response = await agent.execute(task)
-        
+
         assert response.success is True
-    
+
     @pytest.mark.asyncio
     async def test_analyze_nested_classes(self, agent):
         """Test nested classes."""
@@ -558,11 +551,11 @@ class Outer:
             request="Generate tests",
             context={"action": "generate_tests", "source_code": code},
         )
-        
+
         response = await agent.execute(task)
-        
+
         assert response.success is True
-    
+
     @pytest.mark.asyncio
     async def test_analyze_metaclass(self, agent):
         """Test metaclass."""
@@ -578,11 +571,11 @@ class MyClass(metaclass=Meta):
             request="Generate tests",
             context={"action": "generate_tests", "source_code": code},
         )
-        
+
         response = await agent.execute(task)
-        
+
         assert response.success is True
-    
+
     @pytest.mark.asyncio
     async def test_analyze_walrus_operator(self, agent):
         """Test walrus operator."""
@@ -596,11 +589,11 @@ def process(n: int) -> int:
             request="Generate tests",
             context={"action": "generate_tests", "source_code": code},
         )
-        
+
         response = await agent.execute(task)
-        
+
         assert response.success is True
-    
+
     @pytest.mark.asyncio
     async def test_analyze_match_statement(self, agent):
         """Test match statement (Python 3.10+)."""
@@ -618,7 +611,7 @@ def classify_number(n: int) -> str:
             request="Generate tests",
             context={"action": "generate_tests", "source_code": code},
         )
-        
+
         # May fail on older Python, but should handle gracefully
         response = await agent.execute(task)
         assert response.success is True or response.success is False  # Either way is ok
@@ -630,11 +623,11 @@ def classify_number(n: int) -> str:
 
 class TestASTParsingEdgeCases:
     """Tests for AST parsing robustness."""
-    
+
     @pytest.fixture
     def agent(self):
         return TestingAgent(model=MagicMock())
-    
+
     @pytest.mark.asyncio
     async def test_parse_empty_file(self, agent):
         """Empty file should not crash."""
@@ -643,10 +636,10 @@ class TestASTParsingEdgeCases:
             request="Generate tests",
             context={"action": "generate_tests", "source_code": code},
         )
-        
+
         response = await agent.execute(task)
         assert response.success is False  # Empty is invalid
-    
+
     @pytest.mark.asyncio
     async def test_parse_comments_only(self, agent):
         """File with only comments."""
@@ -658,11 +651,11 @@ class TestASTParsingEdgeCases:
             request="Generate tests",
             context={"action": "generate_tests", "source_code": code},
         )
-        
+
         response = await agent.execute(task)
         assert response.success is True
         assert len(response.data["test_cases"]) == 0
-    
+
     @pytest.mark.asyncio
     async def test_parse_docstring_only(self, agent):
         """File with only module docstring."""
@@ -675,10 +668,10 @@ Module docstring.
             request="Generate tests",
             context={"action": "generate_tests", "source_code": code},
         )
-        
+
         response = await agent.execute(task)
         assert response.success is True
-    
+
     @pytest.mark.asyncio
     async def test_parse_imports_only(self, agent):
         """File with only imports."""
@@ -690,11 +683,11 @@ from pathlib import Path
             request="Generate tests",
             context={"action": "generate_tests", "source_code": code},
         )
-        
+
         response = await agent.execute(task)
         assert response.success is True
         assert len(response.data["test_cases"]) == 0
-    
+
     @pytest.mark.asyncio
     async def test_parse_constants_only(self, agent):
         """File with only constants."""
@@ -706,10 +699,10 @@ DEFAULT_NAME = "test"
             request="Generate tests",
             context={"action": "generate_tests", "source_code": code},
         )
-        
+
         response = await agent.execute(task)
         assert response.success is True
-    
+
     @pytest.mark.asyncio
     async def test_parse_incomplete_function(self, agent):
         """Incomplete function definition."""
@@ -720,12 +713,12 @@ def incomplete(
             request="Generate tests",
             context={"action": "generate_tests", "source_code": code},
         )
-        
+
         response = await agent.execute(task)
         # Should fail to parse but not crash
         assert response.success is True
         assert len(response.data["test_cases"]) == 0
-    
+
     @pytest.mark.asyncio
     async def test_parse_incomplete_class(self, agent):
         """Incomplete class definition."""
@@ -736,11 +729,11 @@ class MyClass:
             request="Generate tests",
             context={"action": "generate_tests", "source_code": code},
         )
-        
+
         response = await agent.execute(task)
         # Should fail to parse but not crash
         assert response.success is True or response.success is False
-    
+
     @pytest.mark.asyncio
     async def test_parse_mixed_indentation(self, agent):
         """Mixed tabs and spaces (Python 3 error)."""
@@ -753,11 +746,11 @@ def func():
             request="Generate tests",
             context={"action": "generate_tests", "source_code": code},
         )
-        
+
         response = await agent.execute(task)
         # Parser should reject this
         assert response.success is True
-    
+
     @pytest.mark.asyncio
     async def test_parse_very_long_line(self, agent):
         """Very long line (should still parse)."""
@@ -768,10 +761,10 @@ def long_func(): return {"x" * 10000}
             request="Generate tests",
             context={"action": "generate_tests", "source_code": code},
         )
-        
+
         response = await agent.execute(task)
         assert response.success is True
-    
+
     @pytest.mark.asyncio
     async def test_parse_deeply_nested_structure(self, agent):
         """Deeply nested structure."""
@@ -789,10 +782,10 @@ def outer():
             request="Generate tests",
             context={"action": "generate_tests", "source_code": code},
         )
-        
+
         response = await agent.execute(task)
         assert response.success is True
-    
+
     @pytest.mark.asyncio
     async def test_parse_unicode_identifiers(self, agent):
         """Unicode in identifiers (Python 3 supports this)."""
@@ -804,10 +797,10 @@ def función():
             request="Generate tests",
             context={"action": "generate_tests", "source_code": code},
         )
-        
+
         response = await agent.execute(task)
         assert response.success is True
-    
+
     @pytest.mark.asyncio
     async def test_parse_fstring(self, agent):
         """F-string parsing."""
@@ -819,10 +812,10 @@ def greet(name: str) -> str:
             request="Generate tests",
             context={"action": "generate_tests", "source_code": code},
         )
-        
+
         response = await agent.execute(task)
         assert response.success is True
-    
+
     @pytest.mark.asyncio
     async def test_parse_raw_string(self, agent):
         """Raw string parsing."""
@@ -834,10 +827,10 @@ def regex_pattern() -> str:
             request="Generate tests",
             context={"action": "generate_tests", "source_code": code},
         )
-        
+
         response = await agent.execute(task)
         assert response.success is True
-    
+
     @pytest.mark.asyncio
     async def test_parse_bytes_literal(self, agent):
         """Bytes literal."""
@@ -849,10 +842,10 @@ def get_bytes() -> bytes:
             request="Generate tests",
             context={"action": "generate_tests", "source_code": code},
         )
-        
+
         response = await agent.execute(task)
         assert response.success is True
-    
+
     @pytest.mark.asyncio
     async def test_parse_complex_number(self, agent):
         """Complex number literal."""
@@ -864,10 +857,10 @@ def get_complex() -> complex:
             request="Generate tests",
             context={"action": "generate_tests", "source_code": code},
         )
-        
+
         response = await agent.execute(task)
         assert response.success is True
-    
+
     @pytest.mark.asyncio
     async def test_parse_ellipsis(self, agent):
         """Ellipsis literal."""
@@ -879,10 +872,10 @@ def stub_function() -> None:
             request="Generate tests",
             context={"action": "generate_tests", "source_code": code},
         )
-        
+
         response = await agent.execute(task)
         assert response.success is True
-    
+
     @pytest.mark.asyncio
     async def test_parse_type_alias(self, agent):
         """Type alias."""
@@ -897,10 +890,10 @@ def scale_vector(v: Vector, s: float) -> Vector:
             request="Generate tests",
             context={"action": "generate_tests", "source_code": code},
         )
-        
+
         response = await agent.execute(task)
         assert response.success is True
-    
+
     @pytest.mark.asyncio
     async def test_parse_generic_class(self, agent):
         """Generic class."""
@@ -917,10 +910,10 @@ class Container(Generic[T]):
             request="Generate tests",
             context={"action": "generate_tests", "source_code": code},
         )
-        
+
         response = await agent.execute(task)
         assert response.success is True
-    
+
     @pytest.mark.asyncio
     async def test_parse_protocol(self, agent):
         """Protocol class."""
@@ -935,10 +928,10 @@ class Drawable(Protocol):
             request="Generate tests",
             context={"action": "generate_tests", "source_code": code},
         )
-        
+
         response = await agent.execute(task)
         assert response.success is True
-    
+
     @pytest.mark.asyncio
     async def test_parse_final_decorator(self, agent):
         """@final decorator."""
@@ -953,10 +946,10 @@ class FinalClass:
             request="Generate tests",
             context={"action": "generate_tests", "source_code": code},
         )
-        
+
         response = await agent.execute(task)
         assert response.success is True
-    
+
     @pytest.mark.asyncio
     async def test_parse_overload(self, agent):
         """@overload decorator."""
@@ -976,10 +969,10 @@ def process(x):
             request="Generate tests",
             context={"action": "generate_tests", "source_code": code},
         )
-        
+
         response = await agent.execute(task)
         assert response.success is True
-    
+
     @pytest.mark.asyncio
     async def test_parse_multiple_inheritance(self, agent):
         """Multiple inheritance."""
@@ -997,10 +990,10 @@ class C(A, B):
             request="Generate tests",
             context={"action": "generate_tests", "source_code": code},
         )
-        
+
         response = await agent.execute(task)
         assert response.success is True
-    
+
     @pytest.mark.asyncio
     async def test_parse_mixin_pattern(self, agent):
         """Mixin pattern."""
@@ -1016,10 +1009,10 @@ class User(JSONMixin):
             request="Generate tests",
             context={"action": "generate_tests", "source_code": code},
         )
-        
+
         response = await agent.execute(task)
         assert response.success is True
-    
+
     @pytest.mark.asyncio
     async def test_parse_slots(self, agent):
         """__slots__ usage."""
@@ -1035,10 +1028,10 @@ class Point:
             request="Generate tests",
             context={"action": "generate_tests", "source_code": code},
         )
-        
+
         response = await agent.execute(task)
         assert response.success is True
-    
+
     @pytest.mark.asyncio
     async def test_parse_descriptor(self, agent):
         """Descriptor protocol."""
@@ -1054,7 +1047,7 @@ class Descriptor:
             request="Generate tests",
             context={"action": "generate_tests", "source_code": code},
         )
-        
+
         response = await agent.execute(task)
         assert response.success is True
 
@@ -1064,17 +1057,17 @@ def test_extended_test_count():
     """Verify this file has 55+ tests (part of 121 total)."""
     import sys
     import inspect
-    
+
     current_module = sys.modules[__name__]
     test_classes = [
         obj for name, obj in inspect.getmembers(current_module)
         if inspect.isclass(obj) and name.startswith("Test")
     ]
-    
+
     total = 0
     for test_class in test_classes:
         methods = [m for m in dir(test_class) if m.startswith("test_")]
         total += len(methods)
-    
+
     print(f"\nExtended tests in this file: {total}")
     assert total >= 55, f"Expected 55+ tests, found {total}"

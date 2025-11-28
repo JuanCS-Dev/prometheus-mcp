@@ -7,7 +7,6 @@ Handles: /help, /clear, /quit, /exit, /run, /read, /agents, /status,
 
 from __future__ import annotations
 
-from pathlib import Path
 from typing import TYPE_CHECKING
 
 from jdev_tui.constants import HELP_TOPICS
@@ -77,7 +76,7 @@ class BasicCommandHandler:
         # Clear UI
         view.clear_all()
         view.add_banner()
-        
+
         # Clear LLM Context (Fix for "dirty context" issues)
         self.bridge.history.clear_context()
         view.add_system_message("🧹 **Session & Context Cleared**")
@@ -195,12 +194,12 @@ class BasicCommandHandler:
             # Run evolution cycle
             iterations = int(parts[1]) if len(parts) > 1 else 5
             view.add_system_message(f"🧬 Starting evolution cycle ({iterations} iterations)...")
-            
+
             # Ensure client exists
             if self.bridge._prometheus_client is None:
                 from jdev_tui.core.prometheus_client import PrometheusClient
                 self.bridge._prometheus_client = PrometheusClient()
-                
+
             result = await self.bridge._prometheus_client.evolve(iterations)
             view.add_system_message(f"✅ Evolution complete:\n```json\n{result}\n```")
 

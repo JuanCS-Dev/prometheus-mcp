@@ -15,7 +15,7 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
 from typing import AsyncIterator, Dict, Any, List, Optional
 
-from jdev_core.types import AgentRole, TaskStatus
+from jdev_core.types import AgentRole
 
 
 @dataclass

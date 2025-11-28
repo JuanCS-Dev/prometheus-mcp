@@ -9,7 +9,7 @@ Author: JuanCS Dev
 Date: 2025-11-28
 """
 
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict
 import logging
 
 logger = logging.getLogger(__name__)
@@ -31,11 +31,11 @@ class SchemaAdapter:
         # 1. Basic fields
         name = internal_schema.get("name", "")
         description = internal_schema.get("description", "")
-        
+
         # 2. Process parameters
         raw_params = internal_schema.get("parameters", {})
         clean_params = SchemaAdapter._clean_object_schema(raw_params)
-        
+
         return {
             "name": name,
             "description": description,
@@ -57,7 +57,7 @@ class SchemaAdapter:
             return schema
 
         clean_schema = {}
-        
+
         # Copy allowed fields
         for key in ["type", "description", "enum", "format"]:
             if key in schema:
@@ -70,19 +70,19 @@ class SchemaAdapter:
             # Ensure required is a list (internal schema might have it, but we rebuild it)
             if not isinstance(required_fields, list):
                 required_fields = []
-            
+
             for prop_name, prop_def in schema["properties"].items():
                 if not isinstance(prop_def, dict):
                     continue
-                
+
                 # Check for property-level required=True (Internal format)
                 if prop_def.get("required") is True:
                     if prop_name not in required_fields:
                         required_fields.append(prop_name)
-                
+
                 # Recursively clean the property definition
                 clean_props[prop_name] = SchemaAdapter._clean_schema_node(prop_def)
-            
+
             clean_schema["properties"] = clean_props
             if required_fields:
                 clean_schema["required"] = required_fields
@@ -94,31 +94,31 @@ class SchemaAdapter:
         """Cleaning for a single schema node (property or item)."""
         if not isinstance(node, dict):
             return node
-            
+
         clean_node = {}
-        
+
         # Copy allowed fields
         # Note: 'required' is NOT allowed here for boolean usage in Gemini
         # 'default' is NOT allowed
         for key in ["type", "description", "enum", "format"]:
             if key in node:
                 clean_node[key] = node[key]
-                
+
         # Handle Array Type
         if node.get("type") == "array":
             items = node.get("items", {})
             if not items:
                 # Fallback for missing items
-                items = {"type": "string"} 
+                items = {"type": "string"}
             elif "type" not in items:
                 # Infer type if missing
                 if "properties" in items:
                     items["type"] = "object"
                 else:
                     items["type"] = "string"
-            
+
             clean_node["items"] = SchemaAdapter._clean_schema_node(items)
-            
+
         # Handle Object Type (Nested)
         elif node.get("type") == "object":
             # Recurse into object structure
@@ -126,5 +126,5 @@ class SchemaAdapter:
             # _clean_object_schema assumes it's processing the 'parameters' root or a full object definition
             nested_object = SchemaAdapter._clean_object_schema(node)
             clean_node.update(nested_object)
-            
+
         return clean_node

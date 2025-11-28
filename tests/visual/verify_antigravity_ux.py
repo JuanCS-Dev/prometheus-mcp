@@ -15,18 +15,18 @@ from rich.panel import Panel
 
 class MockGeminiStream:
     """Simulates Gemini 3 Pro gRPC stream with Antigravity pacing."""
-    
+
     SCENARIO = [
         # Phase 1: Thinking (Fast, dimmed)
         {"text": "Analyzing request...", "type": "thought"},
         {"text": " The user wants to calculate Fibonacci.", "type": "thought"},
-        
+
         # Phase 2: Native Tool Call (High visibility)
         {"text": "", "tool_call": {"name": "code_execution", "args": {"code": "def fib(n):..."}}},
-        
+
         # Phase 3: Tool Result (System feedback)
         {"text": "", "tool_result": "12586269025"},
-        
+
         # Phase 4: Status Badges
         {"text": "\n### Security Analysis\n", "type": "content"},
         {"text": "🔴 **BLOCKER**: Critical vulnerability in auth.\n", "type": "content"},
@@ -48,7 +48,7 @@ class MockGeminiStream:
     async def stream(self):
         for chunk in self.SCENARIO:
             # Simulate gRPC jitter (ultra-fast but varied)
-            await asyncio.sleep(0.05) 
+            await asyncio.sleep(0.05)
             yield chunk
 
 class AntigravityTestApp(App):
@@ -71,35 +71,35 @@ class AntigravityTestApp(App):
     async def run_simulation(self):
         mock = MockGeminiStream()
         buffer = ""
-        
+
         # --- SNAPSHOT 1: IDLE ---
         self.save_screenshot("tests/visual/snapshots/01_idle.svg")
-        
+
         async for chunk in mock.stream():
-            
+
             # -- Lógica de Renderização Simplificada (simulando seu ResponseView) --
             if chunk.get("type") == "thought":
                 # Render Thinking
                 self.container.mount(Static(f"⚡ {chunk['text']}", classes="thought"))
-                
+
             elif "tool_call" in chunk:
                 # Render Tool
                 tool = chunk['tool_call']
                 panel = Panel(
-                    f"Running: {tool['args'].get('code', '')[:20]}...", 
+                    f"Running: {tool['args'].get('code', '')[:20]}...",
                     title=f"🐍 {tool['name']}",
                     style="green"
                 )
                 self.container.mount(Static(panel))
-                
+
                 # --- SNAPSHOT 2: TOOL EXECUTION ---
                 self.save_screenshot("tests/visual/snapshots/02_tool_exec.svg")
-                
+
             elif "tool_result" in chunk:
                 # Render Result
                 from rich.text import Text
                 self.container.mount(Static(Text(f"└─ Result: {chunk['tool_result']}", style="dim green")))
-                
+
             elif chunk.get("type") == "content":
                 # Render Content
                 buffer += chunk['text']

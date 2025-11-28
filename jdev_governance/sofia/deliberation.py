@@ -45,34 +45,34 @@ import random
 
 class ThinkingMode(Enum):
     """Modos de pensamento (Framework Dual-Process)."""
-    
+
     SYSTEM_1 = auto()  # Rápido, intuitivo
     SYSTEM_2 = auto()  # Lento, deliberado
 
 
 class DeliberationTrigger(Enum):
     """Gatilhos que ativam Sistema 2."""
-    
+
     # Complexidade Ética
     ETHICAL_DILEMMA = auto()          # Dilema ético complexo
     VALUES_CONFLICT = auto()          # Valores em conflito
     MORAL_UNCERTAINTY = auto()        # Incerteza moral significativa
-    
+
     # Risco e Consequência
     HIGH_STAKES = auto()              # Decisão de alto risco
     IRREVERSIBLE = auto()             # Consequências irreversíveis
     AFFECTS_OTHERS = auto()           # Impacta múltiplas pessoas
-    
+
     # Novidade e Complexidade
     NOVEL_PROBLEM = auto()            # Problema novo sem precedentes
     MULTI_DIMENSIONAL = auto()        # Múltiplas dimensões a considerar
     AMBIGUITY = auto()                # Alta ambiguidade
-    
+
     # Sinais do Usuário
     USER_UNCERTAINTY = auto()         # Usuário expressa incerteza
     EXPLICIT_REQUEST = auto()         # Pedido explícito de análise profunda
     EMOTIONAL_WEIGHT = auto()         # Carga emocional significativa
-    
+
     # Contexto
     LONG_TERM_IMPACT = auto()         # Impacto de longo prazo
     STRATEGIC_DECISION = auto()       # Decisão estratégica
@@ -80,7 +80,7 @@ class DeliberationTrigger(Enum):
 
 class DeliberationPhase(Enum):
     """Fases do processo de deliberação Sistema 2."""
-    
+
     DECOMPOSITION = auto()        # Decompor em sub-questões
     PERSPECTIVE_TAKING = auto()   # Múltiplas perspectivas
     CONSEQUENCE_ANALYSIS = auto() # Análise de consequências
@@ -98,7 +98,7 @@ class Perspective:
     Representa um ângulo de análise baseado em um framework
     ético ou stakeholder específico.
     """
-    
+
     id: UUID = field(default_factory=uuid4)
     name: str = ""
     framework: str = ""  # Utilitarismo, Deontologia, Virtudes, Cuidado, etc.
@@ -107,7 +107,7 @@ class Perspective:
     strengths: List[str] = field(default_factory=list)
     limitations: List[str] = field(default_factory=list)
     weight: float = 1.0  # Peso relativo desta perspectiva
-    
+
     def to_dict(self) -> Dict[str, Any]:
         return {
             "id": str(self.id),
@@ -127,26 +127,26 @@ class ConsequenceAnalysis:
     Examina impactos em múltiplos horizontes temporais
     e para diferentes stakeholders.
     """
-    
+
     id: UUID = field(default_factory=uuid4)
     action_considered: str = ""
-    
+
     # Horizontes temporais
     short_term: List[str] = field(default_factory=list)   # Dias/semanas
     medium_term: List[str] = field(default_factory=list)  # Meses
     long_term: List[str] = field(default_factory=list)    # Anos
-    
+
     # Impactos por stakeholder
     stakeholder_impacts: Dict[str, List[str]] = field(default_factory=dict)
-    
+
     # Riscos e oportunidades
     risks: List[str] = field(default_factory=list)
     opportunities: List[str] = field(default_factory=list)
     unintended_consequences: List[str] = field(default_factory=list)
-    
+
     # Reversibilidade
     reversibility: str = "unknown"  # "easy", "difficult", "irreversible", "unknown"
-    
+
     def to_dict(self) -> Dict[str, Any]:
         return {
             "id": str(self.id),
@@ -166,43 +166,43 @@ class DeliberationResult:
     Contém todo o processo de raciocínio, não apenas a conclusão,
     mantendo transparência total sobre como se chegou à recomendação.
     """
-    
+
     id: UUID = field(default_factory=uuid4)
     timestamp: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
-    
+
     # Entrada
     original_question: str = ""
     trigger: DeliberationTrigger = DeliberationTrigger.NOVEL_PROBLEM
-    
+
     # Processo
     phases_completed: List[DeliberationPhase] = field(default_factory=list)
     sub_questions: List[str] = field(default_factory=list)
     perspectives_considered: List[Perspective] = field(default_factory=list)
     consequence_analysis: Optional[ConsequenceAnalysis] = None
-    
+
     # Valores e Trade-offs
     values_identified: List[str] = field(default_factory=list)
     values_in_tension: List[Tuple[str, str]] = field(default_factory=list)
     trade_offs: List[str] = field(default_factory=list)
-    
+
     # Sabedoria e Precedentes
     relevant_precedents: List[str] = field(default_factory=list)
     wisdom_applied: List[str] = field(default_factory=list)
-    
+
     # Síntese
     key_insights: List[str] = field(default_factory=list)
     recommendation: str = ""
     reasoning_chain: List[str] = field(default_factory=list)
-    
+
     # Meta
     confidence_level: float = 0.5  # 0-1
     uncertainty_areas: List[str] = field(default_factory=list)
     limitations: List[str] = field(default_factory=list)
     suggested_consultations: List[str] = field(default_factory=list)
-    
+
     # Tempo de processamento
     deliberation_time_ms: float = 0.0
-    
+
     def to_dict(self) -> Dict[str, Any]:
         return {
             "id": str(self.id),
@@ -234,11 +234,11 @@ class DeliberationEngine:
     5. Reconhecer limitações e incertezas
     6. Sugerir consultas quando apropriado
     """
-    
+
     # ════════════════════════════════════════════════════════════════════════════
     # GATILHOS PARA SISTEMA 2
     # ════════════════════════════════════════════════════════════════════════════
-    
+
     TRIGGER_KEYWORDS: Dict[DeliberationTrigger, List[str]] = {
         DeliberationTrigger.ETHICAL_DILEMMA: [
             "certo", "errado", "ético", "moral", "devo", "deveria",
@@ -277,11 +277,11 @@ class DeliberationEngine:
             "equipe", "comunidade", "outros",
         ],
     }
-    
+
     # ════════════════════════════════════════════════════════════════════════════
     # PERSPECTIVAS ÉTICAS
     # ════════════════════════════════════════════════════════════════════════════
-    
+
     ETHICAL_FRAMEWORKS = {
         "utilitarismo": {
             "name": "Utilitarismo",
@@ -314,11 +314,11 @@ class DeliberationEngine:
             "focus": "Virtudes do Cristianismo Primitivo",
         },
     }
-    
+
     # ════════════════════════════════════════════════════════════════════════════
     # TEMPLATES DE ANÁLISE
     # ════════════════════════════════════════════════════════════════════════════
-    
+
     DECOMPOSITION_TEMPLATES = [
         "Qual é a questão central aqui?",
         "Quais são as sub-questões que precisam ser respondidas?",
@@ -327,7 +327,7 @@ class DeliberationEngine:
         "Qual é o horizonte temporal relevante?",
         "Quais são as opções disponíveis?",
     ]
-    
+
     CONSEQUENCE_PROMPTS = {
         "short_term": [
             "Nas próximas semanas, o que provavelmente aconteceria?",
@@ -342,20 +342,20 @@ class DeliberationEngine:
             "Qual seria o impacto duradouro?",
         ],
     }
-    
+
     SYNTHESIS_TEMPLATES = [
         "Considerando todas as perspectivas...",
         "Pesando os trade-offs identificados...",
         "Com humildade sobre as limitações desta análise...",
         "Reconhecendo a complexidade da situação...",
     ]
-    
+
     def __init__(self):
         """Inicializa o Motor de Deliberação."""
         self._deliberation_history: List[DeliberationResult] = []
         self.total_deliberations = 0
         self.total_system2_activations = 0
-    
+
     def should_activate_system2(
         self,
         user_input: str,
@@ -373,46 +373,46 @@ class DeliberationEngine:
         """
         input_lower = user_input.lower()
         context = context or {}
-        
+
         # Verificar cada tipo de gatilho
         trigger_scores: Dict[DeliberationTrigger, int] = {}
-        
+
         for trigger, keywords in self.TRIGGER_KEYWORDS.items():
             score = sum(1 for kw in keywords if kw in input_lower)
             if score > 0:
                 trigger_scores[trigger] = score
-        
+
         # Verificar contexto adicional
         if context.get("high_stakes"):
             trigger_scores[DeliberationTrigger.HIGH_STAKES] = \
                 trigger_scores.get(DeliberationTrigger.HIGH_STAKES, 0) + 2
-        
+
         if context.get("user_confused"):
             trigger_scores[DeliberationTrigger.USER_UNCERTAINTY] = \
                 trigger_scores.get(DeliberationTrigger.USER_UNCERTAINTY, 0) + 2
-        
+
         # Verificar comprimento/complexidade
         word_count = len(user_input.split())
         if word_count > 50:  # Questão longa indica complexidade
             trigger_scores[DeliberationTrigger.MULTI_DIMENSIONAL] = \
                 trigger_scores.get(DeliberationTrigger.MULTI_DIMENSIONAL, 0) + 1
-        
+
         # Decidir
         if not trigger_scores:
             return False, None
-        
+
         # Encontrar gatilho mais forte
         primary_trigger = max(trigger_scores, key=trigger_scores.get)
         total_score = sum(trigger_scores.values())
-        
+
         # Threshold: ativar se score total >= 2
         should_activate = total_score >= 2
-        
+
         if should_activate:
             self.total_system2_activations += 1
-        
+
         return should_activate, primary_trigger if should_activate else None
-    
+
     def deliberate(
         self,
         question: str,
@@ -432,32 +432,32 @@ class DeliberationEngine:
         """
         import time
         start_time = time.time()
-        
+
         context = context or {}
-        
+
         result = DeliberationResult(
             original_question=question,
             trigger=trigger,
         )
-        
+
         # ════════════════════════════════════════════════════════════════════
         # FASE 1: DECOMPOSIÇÃO
         # ════════════════════════════════════════════════════════════════════
         result.sub_questions = self._decompose_question(question)
         result.phases_completed.append(DeliberationPhase.DECOMPOSITION)
-        
+
         # ════════════════════════════════════════════════════════════════════
         # FASE 2: MÚLTIPLAS PERSPECTIVAS
         # ════════════════════════════════════════════════════════════════════
         result.perspectives_considered = self._gather_perspectives(question, context)
         result.phases_completed.append(DeliberationPhase.PERSPECTIVE_TAKING)
-        
+
         # ════════════════════════════════════════════════════════════════════
         # FASE 3: ANÁLISE DE CONSEQUÊNCIAS
         # ════════════════════════════════════════════════════════════════════
         result.consequence_analysis = self._analyze_consequences(question, context)
         result.phases_completed.append(DeliberationPhase.CONSEQUENCE_ANALYSIS)
-        
+
         # ════════════════════════════════════════════════════════════════════
         # FASE 4: EXAME DE VALORES
         # ════════════════════════════════════════════════════════════════════
@@ -466,7 +466,7 @@ class DeliberationEngine:
         result.values_in_tension = values_data["tensions"]
         result.trade_offs = values_data["trade_offs"]
         result.phases_completed.append(DeliberationPhase.VALUES_EXAMINATION)
-        
+
         # ════════════════════════════════════════════════════════════════════
         # FASE 5: PRECEDENTES E SABEDORIA
         # ════════════════════════════════════════════════════════════════════
@@ -474,7 +474,7 @@ class DeliberationEngine:
         result.relevant_precedents = wisdom_data["precedents"]
         result.wisdom_applied = wisdom_data["wisdom"]
         result.phases_completed.append(DeliberationPhase.PRECEDENT_SEARCH)
-        
+
         # ════════════════════════════════════════════════════════════════════
         # FASE 6: SÍNTESE
         # ════════════════════════════════════════════════════════════════════
@@ -484,7 +484,7 @@ class DeliberationEngine:
         result.reasoning_chain = synthesis["reasoning"]
         result.confidence_level = synthesis["confidence"]
         result.phases_completed.append(DeliberationPhase.SYNTHESIS)
-        
+
         # ════════════════════════════════════════════════════════════════════
         # FASE 7: META-REFLEXÃO
         # ════════════════════════════════════════════════════════════════════
@@ -493,41 +493,41 @@ class DeliberationEngine:
         result.limitations = meta["limitations"]
         result.suggested_consultations = meta["consultations"]
         result.phases_completed.append(DeliberationPhase.META_REFLECTION)
-        
+
         # Finalizar
         result.deliberation_time_ms = (time.time() - start_time) * 1000
-        
+
         self._deliberation_history.append(result)
         self.total_deliberations += 1
-        
+
         return result
-    
+
     def _decompose_question(self, question: str) -> List[str]:
         """Decompõe a questão em sub-questões."""
         sub_questions = []
-        
+
         # Sub-questões básicas universais
-        sub_questions.append(f"O que exatamente está sendo decidido aqui?")
-        sub_questions.append(f"Quem são todas as pessoas afetadas por esta decisão?")
-        sub_questions.append(f"Quais são as opções realmente disponíveis?")
-        
+        sub_questions.append("O que exatamente está sendo decidido aqui?")
+        sub_questions.append("Quem são todas as pessoas afetadas por esta decisão?")
+        sub_questions.append("Quais são as opções realmente disponíveis?")
+
         # Sub-questões contextuais
         question_lower = question.lower()
-        
+
         if any(word in question_lower for word in ["devo", "deveria", "certo"]):
             sub_questions.append("Quais valores estão em jogo nesta escolha?")
             sub_questions.append("O que sua consciência diz sobre isso?")
-        
+
         if any(word in question_lower for word in ["medo", "ansiedade", "preocupação"]):
             sub_questions.append("O que especificamente gera medo nesta situação?")
             sub_questions.append("Esse medo aponta para algo importante?")
-        
+
         if any(word in question_lower for word in ["família", "relacionamento", "outros"]):
             sub_questions.append("Como isso afetaria os relacionamentos importantes?")
             sub_questions.append("As pessoas afetadas foram consultadas?")
-        
+
         return sub_questions[:6]  # Limitar a 6 sub-questões
-    
+
     def _gather_perspectives(
         self,
         question: str,
@@ -535,7 +535,7 @@ class DeliberationEngine:
     ) -> List[Perspective]:
         """Reúne múltiplas perspectivas éticas."""
         perspectives = []
-        
+
         # Aplicar cada framework ético
         for key, framework in self.ETHICAL_FRAMEWORKS.items():
             perspective = Perspective(
@@ -547,7 +547,7 @@ class DeliberationEngine:
                     f"Pergunta-chave: {framework['question']}",
                 ],
             )
-            
+
             # Gerar considerações específicas baseadas no framework
             if key == "utilitarismo":
                 perspective.strengths = [
@@ -558,7 +558,7 @@ class DeliberationEngine:
                     "Pode justificar sacrifício de minorias",
                     "Difícil calcular todos os impactos",
                 ]
-            
+
             elif key == "deontologia":
                 perspective.strengths = [
                     "Respeita dignidade individual",
@@ -568,7 +568,7 @@ class DeliberationEngine:
                     "Pode ser inflexível",
                     "Conflitos entre deveres",
                 ]
-            
+
             elif key == "virtudes":
                 perspective.strengths = [
                     "Desenvolve caráter",
@@ -578,7 +578,7 @@ class DeliberationEngine:
                     "Virtudes podem conflitar",
                     "Requer modelos de virtude",
                 ]
-            
+
             elif key == "cuidado":
                 perspective.strengths = [
                     "Valoriza relacionamentos",
@@ -588,7 +588,7 @@ class DeliberationEngine:
                     "Pode negligenciar justiça abstrata",
                     "Parcialidade a próximos",
                 ]
-            
+
             elif key == "sabedoria_crista":
                 perspective.strengths = [
                     "Humildade reconhece limitações",
@@ -599,11 +599,11 @@ class DeliberationEngine:
                     "Requer comunidade de discernimento",
                     "Nem sempre há tempo para esperar",
                 ]
-            
+
             perspectives.append(perspective)
-        
+
         return perspectives
-    
+
     def _analyze_consequences(
         self,
         question: str,
@@ -611,62 +611,62 @@ class DeliberationEngine:
     ) -> ConsequenceAnalysis:
         """Analisa consequências em múltiplos horizontes."""
         analysis = ConsequenceAnalysis(action_considered=question[:100])
-        
+
         # Consequências de curto prazo (padrão)
         analysis.short_term = [
             "Mudanças imediatas na rotina ou situação",
             "Reações iniciais das pessoas envolvidas",
             "Adaptações necessárias no dia-a-dia",
         ]
-        
+
         # Consequências de médio prazo
         analysis.medium_term = [
             "Ajustes e adaptações após período inicial",
             "Evolução dos relacionamentos afetados",
             "Surgimento de consequências secundárias",
         ]
-        
+
         # Consequências de longo prazo
         analysis.long_term = [
             "Impacto na trajetória de vida",
             "Formação de novos padrões e hábitos",
             "Legado da decisão para o futuro",
         ]
-        
+
         # Stakeholders (identificação básica)
         question_lower = question.lower()
-        
+
         if "família" in question_lower or "filhos" in question_lower:
             analysis.stakeholder_impacts["Família"] = [
                 "Impacto na dinâmica familiar",
                 "Efeitos nos filhos (se aplicável)",
             ]
-        
+
         if "trabalho" in question_lower or "carreira" in question_lower:
             analysis.stakeholder_impacts["Carreira"] = [
                 "Impacto na trajetória profissional",
                 "Efeitos em colegas e equipe",
             ]
-        
+
         analysis.stakeholder_impacts["Próprio"] = [
             "Impacto no bem-estar pessoal",
             "Alinhamento com valores e identidade",
         ]
-        
+
         # Riscos
         analysis.risks = [
             "Arrependimento se não funcionar como esperado",
             "Consequências não previstas",
             "Impacto em relacionamentos",
         ]
-        
+
         # Oportunidades
         analysis.opportunities = [
             "Crescimento através do desafio",
             "Novas possibilidades que podem surgir",
             "Aprendizado independente do resultado",
         ]
-        
+
         # Avaliar reversibilidade
         if any(word in question_lower for word in ["permanente", "irreversível", "definitivo"]):
             analysis.reversibility = "irreversible"
@@ -674,9 +674,9 @@ class DeliberationEngine:
             analysis.reversibility = "easy"
         else:
             analysis.reversibility = "difficult"
-        
+
         return analysis
-    
+
     def _examine_values(
         self,
         question: str,
@@ -684,7 +684,7 @@ class DeliberationEngine:
     ) -> Dict[str, Any]:
         """Examina valores e trade-offs."""
         question_lower = question.lower()
-        
+
         # Identificar valores mencionados ou implícitos
         value_keywords = {
             "segurança": ["seguro", "estável", "garantia", "proteção"],
@@ -698,18 +698,18 @@ class DeliberationEngine:
             "crescimento": ["crescer", "aprender", "desenvolver", "evoluir"],
             "paz": ["paz", "tranquilidade", "harmonia", "calma"],
         }
-        
+
         identified = []
         for value, keywords in value_keywords.items():
             if any(kw in question_lower for kw in keywords):
                 identified.append(value)
-        
+
         # Se poucos valores identificados, adicionar genéricos
         if len(identified) < 3:
             identified.extend(["bem-estar", "integridade", "relacionamentos"])
-        
+
         identified = list(set(identified))[:6]
-        
+
         # Identificar tensões comuns
         tensions = []
         tension_pairs = [
@@ -718,28 +718,28 @@ class DeliberationEngine:
             ("crescimento", "estabilidade"),
             ("individualidade", "relacionamentos"),
         ]
-        
+
         for v1, v2 in tension_pairs:
             if v1 in identified and v2 in identified:
                 tensions.append((v1, v2))
             elif v1 in identified or v2 in identified:
                 # Tensão potencial
                 tensions.append((v1, v2))
-        
+
         tensions = tensions[:3]
-        
+
         # Trade-offs
         trade_offs = [
             f"Escolher {t[0]} pode significar menos {t[1]}"
             for t in tensions
         ]
-        
+
         return {
             "identified": identified,
             "tensions": tensions,
             "trade_offs": trade_offs,
         }
-    
+
     def _search_precedents(
         self,
         question: str,
@@ -748,42 +748,42 @@ class DeliberationEngine:
         """Busca precedentes e sabedoria aplicável."""
         precedents = []
         wisdom = []
-        
+
         question_lower = question.lower()
-        
+
         # Precedentes baseados em tipo de situação
         if any(word in question_lower for word in ["carreira", "emprego", "trabalho"]):
             precedents.append("Muitas pessoas enfrentam decisões de carreira similares")
             wisdom.append("'Onde seus talentos encontram as necessidades do mundo' - Frederick Buechner")
-        
+
         if any(word in question_lower for word in ["mudança", "mudar", "transição"]):
             precedents.append("Todas as grandes transições envolvem perda e ganho")
             wisdom.append("'Toda jornada começa com um único passo' - Lao Tzu")
-        
+
         if any(word in question_lower for word in ["medo", "coragem", "risco"]):
             wisdom.append("'Coragem não é ausência de medo, mas decisão de agir apesar dele'")
-        
+
         if any(word in question_lower for word in ["família", "relacionamento"]):
             wisdom.append("Relacionamentos significativos requerem investimento contínuo")
-        
+
         # Sabedoria do Cristianismo Primitivo
         wisdom.extend([
             "Didaquê: 'Seja manso, paciente, sem malícia, gentil, bom'",
             "O discernimento verdadeiro acontece em comunidade (Atos 15)",
             "Humildade reconhece que não temos todas as respostas",
         ])
-        
+
         # Sabedoria prática (Phronesis)
         wisdom.extend([
             "Sabedoria prática: considerar contexto específico, não só princípios abstratos",
             "Decisões importantes merecem tempo de maturação",
         ])
-        
+
         return {
             "precedents": precedents[:4],
             "wisdom": wisdom[:5],
         }
-    
+
     def _synthesize_deliberation(
         self,
         result: DeliberationResult,
@@ -791,7 +791,7 @@ class DeliberationEngine:
         """Sintetiza toda a deliberação em insights e recomendação."""
         insights = []
         reasoning = []
-        
+
         # Insight das perspectivas
         if result.perspectives_considered:
             perspectives_summary = ", ".join(
@@ -800,51 +800,51 @@ class DeliberationEngine:
             insights.append(
                 f"Múltiplas perspectivas éticas iluminam diferentes aspectos: {perspectives_summary}"
             )
-        
+
         # Insight das consequências
         if result.consequence_analysis:
             if result.consequence_analysis.reversibility == "irreversible":
                 insights.append("Esta é uma decisão com consequências irreversíveis - merece cautela extra")
             elif result.consequence_analysis.reversibility == "easy":
                 insights.append("Esta decisão é relativamente reversível - há espaço para experimentar")
-        
+
         # Insight dos valores
         if result.values_in_tension:
             tension_str = " vs ".join(result.values_in_tension[0])
             insights.append(f"Tensão central identificada: {tension_str}")
-        
+
         # Insight da sabedoria
         if result.wisdom_applied:
             insights.append("Sabedoria tradicional oferece orientação, mas requer discernimento contextual")
-        
+
         # Construir cadeia de raciocínio
         reasoning = [
             f"1. A questão foi decomposta em {len(result.sub_questions)} sub-questões",
             f"2. {len(result.perspectives_considered)} perspectivas éticas foram consideradas",
-            f"3. Consequências em curto, médio e longo prazo foram analisadas",
+            "3. Consequências em curto, médio e longo prazo foram analisadas",
             f"4. Valores identificados: {', '.join(result.values_identified[:3])}",
             f"5. Trade-offs principais: {result.trade_offs[0] if result.trade_offs else 'nenhum crítico'}",
         ]
-        
+
         # Recomendação
         recommendation = self._generate_recommendation(result)
-        
+
         # Calcular confiança
         confidence = self._calculate_confidence(result)
-        
+
         return {
             "insights": insights[:5],
             "recommendation": recommendation,
             "reasoning": reasoning,
             "confidence": confidence,
         }
-    
+
     def _generate_recommendation(self, result: DeliberationResult) -> str:
         """Gera recomendação baseada na deliberação."""
         opener = random.choice(self.SYNTHESIS_TEMPLATES)
-        
+
         parts = [opener]
-        
+
         # Adicionar insight principal
         if result.values_in_tension:
             v1, v2 = result.values_in_tension[0]
@@ -858,7 +858,7 @@ class DeliberationEngine:
                 "\nEsta é uma decisão multifacetada que merece consideração cuidadosa "
                 "de múltiplos ângulos."
             )
-        
+
         # Adicionar consideração de consequências
         if result.consequence_analysis:
             if result.consequence_analysis.reversibility == "irreversible":
@@ -871,7 +871,7 @@ class DeliberationEngine:
                     "\n\nHá espaço para ajustes após a decisão inicial, o que permite "
                     "aprender com a experiência."
                 )
-        
+
         # Sugestão de próximos passos
         parts.append(
             "\n\nPróximos passos sugeridos:\n"
@@ -879,33 +879,33 @@ class DeliberationEngine:
             "• Converse com alguém de confiança sobre esta situação\n"
             "• Dê tempo para a decisão amadurecer se possível"
         )
-        
+
         return "".join(parts)
-    
+
     def _calculate_confidence(self, result: DeliberationResult) -> float:
         """Calcula nível de confiança na análise."""
         confidence = 0.5  # Base
-        
+
         # Aumentar por completude
         if len(result.phases_completed) >= 6:
             confidence += 0.1
-        
+
         # Aumentar por múltiplas perspectivas
         if len(result.perspectives_considered) >= 4:
             confidence += 0.1
-        
+
         # Diminuir por complexidade
         if len(result.values_in_tension) > 2:
             confidence -= 0.1
-        
+
         # Diminuir se irreversível (mais cautela)
         if result.consequence_analysis and \
            result.consequence_analysis.reversibility == "irreversible":
             confidence -= 0.1
-        
+
         # Limitar
         return max(0.3, min(0.8, confidence))  # Nunca muito confiante
-    
+
     def _meta_reflect(self, result: DeliberationResult) -> Dict[str, Any]:
         """Reflexão sobre limitações e incertezas."""
         uncertainties = [
@@ -913,32 +913,32 @@ class DeliberationEngine:
             "Não posso prever como as pessoas envolvidas reagirão",
             "O contexto completo pode revelar fatores não considerados",
         ]
-        
+
         limitations = [
             "Esta análise é baseada apenas no que foi compartilhado",
             "Não substitui conselho de profissionais ou pessoas que conhecem você",
             "A decisão final é sua - você conhece sua situação melhor",
         ]
-        
+
         consultations = [
             "Uma pessoa de confiança que conhece bem você",
             "Alguém com experiência em situação similar",
         ]
-        
+
         # Adicionar consultas específicas baseadas no contexto
         if result.trigger == DeliberationTrigger.EMOTIONAL_WEIGHT:
             consultations.append("Um profissional de saúde mental, se a angústia persistir")
-        
-        if result.trigger in [DeliberationTrigger.ETHICAL_DILEMMA, 
+
+        if result.trigger in [DeliberationTrigger.ETHICAL_DILEMMA,
                               DeliberationTrigger.VALUES_CONFLICT]:
             consultations.append("Um mentor espiritual ou conselheiro")
-        
+
         return {
             "uncertainties": uncertainties,
             "limitations": limitations,
             "consultations": consultations[:4],
         }
-    
+
     def format_deliberation_output(self, result: DeliberationResult) -> str:
         """Formata resultado da deliberação para apresentação."""
         output = [
@@ -954,39 +954,39 @@ class DeliberationEngine:
             "📝 PROCESSO DE RACIOCÍNIO:",
             "─" * 40,
         ]
-        
+
         # Fases completadas
         output.append("Fases completadas:")
         for phase in result.phases_completed:
             output.append(f"  ✓ {phase.name}")
-        
+
         # Sub-questões
         if result.sub_questions:
             output.append("\n🔍 SUB-QUESTÕES EXPLORADAS:")
             for i, sq in enumerate(result.sub_questions[:4], 1):
                 output.append(f"  {i}. {sq}")
-        
+
         # Perspectivas
         if result.perspectives_considered:
             output.append("\n🎭 PERSPECTIVAS CONSIDERADAS:")
             for p in result.perspectives_considered[:4]:
                 output.append(f"  • {p.name}: {p.viewpoint[:60]}...")
-        
+
         # Valores
         if result.values_identified:
             output.append(f"\n💎 VALORES EM JOGO: {', '.join(result.values_identified[:4])}")
-        
+
         if result.values_in_tension:
             output.append("⚖️ TENSÕES:")
             for v1, v2 in result.values_in_tension[:2]:
                 output.append(f"  • {v1} ↔ {v2}")
-        
+
         # Insights
         if result.key_insights:
             output.append("\n💡 INSIGHTS-CHAVE:")
             for insight in result.key_insights[:3]:
                 output.append(f"  • {insight}")
-        
+
         # Recomendação
         output.extend([
             "",
@@ -998,23 +998,23 @@ class DeliberationEngine:
             "─" * 60,
             f"📊 Confiança na análise: {result.confidence_level:.0%}",
         ])
-        
+
         # Limitações
         if result.limitations:
             output.append("\n⚠️ LIMITAÇÕES:")
             for lim in result.limitations[:2]:
                 output.append(f"  • {lim}")
-        
+
         # Consultas sugeridas
         if result.suggested_consultations:
             output.append("\n👥 CONSIDERE CONSULTAR:")
             for cons in result.suggested_consultations[:3]:
                 output.append(f"  • {cons}")
-        
+
         output.append("═" * 60)
-        
+
         return "\n".join(output)
-    
+
     def get_thinking_mode_indicator(self, mode: ThinkingMode) -> str:
         """Retorna indicador textual do modo de pensamento."""
         indicators = {
@@ -1022,7 +1022,7 @@ class DeliberationEngine:
             ThinkingMode.SYSTEM_2: "🧠 Deliberação profunda",
         }
         return indicators.get(mode, "🤔 Pensando...")
-    
+
     def get_trigger_description(self, trigger: DeliberationTrigger) -> str:
         """Retorna descrição do gatilho."""
         descriptions = {
@@ -1042,7 +1042,7 @@ class DeliberationEngine:
             DeliberationTrigger.STRATEGIC_DECISION: "Decisão estratégica",
         }
         return descriptions.get(trigger, "Questão complexa identificada")
-    
+
     def get_metrics(self) -> Dict[str, Any]:
         """Retorna métricas do motor de deliberação."""
         return {
@@ -1052,7 +1052,7 @@ class DeliberationEngine:
                 d.confidence_level for d in self._deliberation_history
             ) / max(1, len(self._deliberation_history)),
         }
-    
+
     def __repr__(self) -> str:
         return f"DeliberationEngine(deliberations={self.total_deliberations}, system2_activations={self.total_system2_activations})"
 
@@ -1063,12 +1063,12 @@ class DeliberationEngine:
 
 if __name__ == "__main__":
     engine = DeliberationEngine()
-    
+
     print("═" * 70)
     print("  MOTOR DE DELIBERAÇÃO SISTEMA 2")
     print("  'Questão complexa merece consideração cuidadosa...'")
     print("═" * 70)
-    
+
     # Testar detecção de Sistema 2
     test_inputs = [
         "Qual é a capital da França?",  # Não deve ativar
@@ -1076,22 +1076,22 @@ if __name__ == "__main__":
         "Estou em dúvida se devo terminar meu relacionamento de 5 anos.",  # Deve ativar
         "Como fazer um bolo de chocolate?",  # Não deve ativar
     ]
-    
+
     print("\n📊 TESTE DE DETECÇÃO SISTEMA 2:")
     print("─" * 50)
-    
+
     for test_input in test_inputs:
         should_activate, trigger = engine.should_activate_system2(test_input)
         status = "✓ SISTEMA 2" if should_activate else "○ Sistema 1"
         trigger_str = f"({trigger.name})" if trigger else ""
         print(f"\n{status} {trigger_str}")
         print(f"  \"{test_input[:60]}...\"" if len(test_input) > 60 else f"  \"{test_input}\"")
-    
+
     # Demonstrar deliberação completa
     print(f"\n{'═' * 70}")
     print("DEMONSTRAÇÃO DE DELIBERAÇÃO COMPLETA")
     print("═" * 70)
-    
+
     complex_question = """
     Recebi uma oferta de emprego em outra cidade com salário 50% maior.
     Isso significa mudar minha família, tirar meus filhos da escola,
@@ -1099,14 +1099,14 @@ if __name__ == "__main__":
     Ao mesmo tempo, sinto que estou estagnado profissionalmente aqui.
     O que devo fazer?
     """
-    
+
     result = engine.deliberate(
         complex_question,
         trigger=DeliberationTrigger.HIGH_STAKES,
     )
-    
+
     print(engine.format_deliberation_output(result))
-    
+
     # Métricas
     print(f"\n{'═' * 70}")
     print("MÉTRICAS:")

@@ -11,7 +11,6 @@ import pytest
 from unittest.mock import Mock, AsyncMock, patch
 from jdev_cli.agents.planner import PlannerAgent
 from jdev_cli.agents.base import AgentTask
-from jdev_cli.tools.base import ToolResult
 
 
 class TestCLAUDEmdOptional:
@@ -185,14 +184,14 @@ class TestPlannerWithoutContext:
     def mock_mcp_with_tools(self):
         """Create mock MCP with registered tools."""
         from jdev_cli.tools.base import ToolRegistry
-        
+
         registry = ToolRegistry()
-        
+
         # Mock read_file tool
         read_tool = Mock()
         read_tool.name = 'read_file'
         registry.register(read_tool)
-        
+
         mcp = Mock()
         mcp.registry = registry
         return mcp
@@ -249,16 +248,15 @@ class TestContextFileDocumentation:
     @pytest.mark.asyncio
     async def test_error_message_mentions_creating_claude_md(self, caplog):
         """Error messages should suggest creating CLAUDE.md."""
-        from jdev_cli.core.llm import LLMClient
         from jdev_cli.tools.base import ToolRegistry
         from jdev_cli.core.mcp_client import MCPClient
 
         llm = Mock()
         llm.generate = AsyncMock(return_value="output")
-        
+
         registry = ToolRegistry()
         mcp = MCPClient(registry)
-        
+
         agent = PlannerAgent(llm, mcp)
 
         with patch.object(agent, '_execute_tool', new_callable=AsyncMock) as mock_exec:

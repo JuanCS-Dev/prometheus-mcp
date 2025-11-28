@@ -16,10 +16,9 @@ Date: 2025-11-26
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, AsyncGenerator, Optional
+from typing import TYPE_CHECKING, Any, AsyncGenerator
 
 if TYPE_CHECKING:
-    from jdev_tui.app import QwenApp
     from jdev_tui.core.bridge import Bridge
 
 

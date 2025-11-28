@@ -6,11 +6,9 @@ Tests:
 - Context auto-compact
 """
 
-import asyncio
 import pytest
 import tempfile
 from pathlib import Path
-from unittest.mock import patch, MagicMock
 
 
 # =============================================================================
@@ -393,14 +391,8 @@ class TestSprint3Integration:
         from jdev_cli.tools import (
             ImageReadTool,
             PDFReadTool,
-            ScreenshotReadTool,
-            GitStatusEnhancedTool,
             GitCommitTool,
-            GitLogTool,
-            GitDiffEnhancedTool,
             GitPRCreateTool,
-            get_media_tools,
-            get_git_workflow_tools,
         )
 
         assert ImageReadTool is not None

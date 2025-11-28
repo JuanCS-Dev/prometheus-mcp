@@ -5,7 +5,6 @@ Validates step execution, self-correction, validation.
 """
 
 import pytest
-import json
 from unittest.mock import AsyncMock, MagicMock
 
 from jdev_cli.agents.refactorer import RefactorerAgent

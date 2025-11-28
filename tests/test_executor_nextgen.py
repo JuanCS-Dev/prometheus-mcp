@@ -6,9 +6,6 @@ Adapted for qwen-dev-cli architecture
 import asyncio
 import pytest
 import time
-import json
-from pathlib import Path
-from datetime import datetime
 
 # Import our agent
 from jdev_cli.agents.executor import (
@@ -19,7 +16,6 @@ from jdev_cli.agents.executor import (
     AdvancedSecurityValidator,
     CodeExecutionEngine,
     CommandResult,
-    ExecutionMetrics,
 )
 from jdev_cli.agents.base import AgentTask, AgentResponse
 from jdev_cli.core.llm import LLMClient
@@ -409,7 +405,7 @@ class TestComparisonBenchmark:
         # Calculate reduction
         reduction = ((traditional_tokens - new_tokens) / traditional_tokens) * 100
 
-        print(f"\n📊 Token Efficiency Benchmark:")
+        print("\n📊 Token Efficiency Benchmark:")
         print(f"   Traditional: {traditional_tokens:,} tokens")
         print(f"   New Pattern: {new_tokens:,} tokens")
         print(f"   Reduction: {reduction:.1f}%")

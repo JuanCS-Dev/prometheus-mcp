@@ -16,7 +16,6 @@ Date: 2025-11-27
 """
 
 import modal
-import os
 
 # =============================================================================
 # MODAL APP
@@ -165,7 +164,6 @@ class EmbeddingsService:
             {"indexed": N, "index_path": "..."}
         """
         import faiss
-        import numpy as np
         import json
 
         texts = [f["content"][:2000] for f in files]  # Trunca para embedding
@@ -202,7 +200,6 @@ class EmbeddingsService:
             [{"path": "...", "score": 0.95}, ...]
         """
         import faiss
-        import numpy as np
         import json
 
         # Carrega índice

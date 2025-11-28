@@ -20,9 +20,9 @@ Design Philosophy:
 from __future__ import annotations
 
 import time
-from typing import Any, Callable, Dict, List, Optional, Set, Tuple, TypeVar
+from typing import Any, Dict, List, Optional, Set, Tuple
 from dataclasses import dataclass, field
-from enum import Enum, auto
+from enum import Enum
 from contextlib import contextmanager
 import logging
 

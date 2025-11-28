@@ -21,22 +21,11 @@
 
 import pytest
 import asyncio
-import os
-import sys
-import tempfile
-import subprocess
-from pathlib import Path
-from unittest.mock import Mock, AsyncMock, patch, MagicMock
-from typing import Any, Dict, List
+from unittest.mock import Mock, AsyncMock
 
 # Import everything
 from jdev_cli.maestro_governance import MaestroGovernance
-from jdev_cli.core.governance_pipeline import GovernancePipeline
-from jdev_cli.agents.base import AgentTask, AgentResponse, AgentRole
-from jdev_cli.agents.executor import ExecutorAgent
-from jdev_cli.agents.planner import PlannerAgent  # Was planner_v6
-from jdev_cli.agents.architect import ArchitectAgent  # Was architect_v2
-from jdev_cli.agents.reviewer import ReviewerAgent
+from jdev_cli.agents.base import AgentTask
 from jdev_cli.core.llm import LLMClient
 from jdev_cli.core.mcp_client import MCPClient
 
@@ -264,7 +253,6 @@ class TestSeniorProgrammer:
         # ISSUE: Are there memory leaks?
 
         import gc
-        import sys
 
         llm = Mock(spec=LLMClient)
         mcp = Mock(spec=MCPClient)

@@ -9,7 +9,6 @@ Generates PROVA-CABAL.md report.
 
 import sys
 import os
-import traceback
 from datetime import datetime
 from typing import List, Tuple
 

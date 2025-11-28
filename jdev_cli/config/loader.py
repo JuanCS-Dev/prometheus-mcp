@@ -15,7 +15,7 @@ console = Console()
 
 class ConfigLoader:
     """Load and manage project configuration from YAML files."""
-    
+
     CONFIG_FILENAMES = [
         ".qwenrc",
         ".qwenrc.yaml",
@@ -25,7 +25,7 @@ class ConfigLoader:
         "qwen.yaml",
         "qwen.yml",
     ]
-    
+
     def __init__(self, cwd: Optional[Path] = None):
         """Initialize config loader.
         
@@ -36,7 +36,7 @@ class ConfigLoader:
         self.config: QwenConfig = get_default_config()
         self.config_file: Optional[Path] = None
         self._load()
-    
+
     def _find_config_file(self) -> Optional[Path]:
         """Find first existing config file in CONFIG_FILENAMES.
         
@@ -48,39 +48,39 @@ class ConfigLoader:
             if path.exists() and path.is_file():
                 return path
         return None
-    
+
     def _load(self) -> None:
         """Load configuration from file or use defaults."""
         config_file = self._find_config_file()
-        
+
         if config_file:
             try:
                 with open(config_file, 'r') as f:
                     data = yaml.safe_load(f)
-                
+
                 if data:
                     self.config = QwenConfig.from_dict(data)
                     self.config_file = config_file
-                    
+
                     # Validate configuration
                     is_valid, errors, warnings = ConfigValidator.validate_config(
                         self.config, self.cwd
                     )
-                    
+
                     if not is_valid:
-                        console.print(f"[red]✗ Security issues in config:[/red]")
+                        console.print("[red]✗ Security issues in config:[/red]")
                         for error in errors:
                             console.print(f"  [red]•[/red] {error}")
-                    
+
                     if warnings:
                         for warning in warnings:
                             console.print(f"[yellow]⚠[/yellow]  {warning}")
-                    
+
                     # Always sanitize if there are any issues
                     if not is_valid or warnings:
                         console.print("[yellow]Sanitizing config...[/yellow]")
                         self.config = ConfigValidator.sanitize_config(self.config, self.cwd)
-                    
+
                     console.print(f"[dim]Config loaded from:[/dim] {config_file.name}")
             except yaml.YAMLError as e:
                 console.print(f"[yellow]Warning: Invalid YAML in {config_file}:[/yellow] {e}")
@@ -91,7 +91,7 @@ class ConfigLoader:
         else:
             # No config file found, use defaults
             self.config = get_default_config()
-    
+
     def save(self, path: Optional[Path] = None) -> None:
         """Save current configuration to YAML file.
         
@@ -100,9 +100,9 @@ class ConfigLoader:
         """
         if path is None:
             path = self.cwd / ".qwenrc"
-        
+
         data = self.config.to_dict()
-        
+
         try:
             with open(path, 'w') as f:
                 yaml.dump(data, f, default_flow_style=False, sort_keys=False)
@@ -110,11 +110,11 @@ class ConfigLoader:
         except Exception as e:
             console.print(f"[red]✗ Failed to save config:[/red] {e}")
             raise
-    
+
     def get_rules(self) -> list:
         """Get coding rules as list of strings."""
         return self.config.rules.rules
-    
+
     def get_hooks(self, event: str) -> list:
         """Get hooks for specific event.
         
@@ -125,7 +125,7 @@ class ConfigLoader:
             List of hook commands
         """
         return getattr(self.config.hooks, event, [])
-    
+
     def is_path_allowed(self, path: Path) -> bool:
         """Check if path is in allowed paths.
         
@@ -137,7 +137,7 @@ class ConfigLoader:
         """
         path = path.resolve()
         cwd = self.cwd.resolve()
-        
+
         for allowed in self.config.safety.allowed_paths:
             allowed_path = (cwd / allowed).resolve()
             try:
@@ -145,9 +145,9 @@ class ConfigLoader:
                 return True
             except ValueError:
                 continue
-        
+
         return False
-    
+
     def is_command_dangerous(self, command: str) -> bool:
         """Check if command contains dangerous patterns.
         
@@ -163,7 +163,7 @@ class ConfigLoader:
             if pattern in norm_cmd:
                 return True
         return False
-    
+
     def requires_approval(self, command: str) -> bool:
         """Check if command requires user approval.
         
@@ -177,7 +177,7 @@ class ConfigLoader:
             if command.startswith(pattern):
                 return True
         return False
-    
+
     def get_context_patterns(self) -> tuple:
         """Get context include/exclude patterns.
         
@@ -188,7 +188,7 @@ class ConfigLoader:
             self.config.context.file_extensions,
             self.config.context.exclude_patterns
         )
-    
+
     def reload(self) -> None:
         """Reload configuration from file."""
         self._load()

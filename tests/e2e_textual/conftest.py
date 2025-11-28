@@ -1,7 +1,6 @@
 """Pytest configuration for E2E Textual tests."""
 
 import pytest
-import asyncio
 import tempfile
 import shutil
 import os
@@ -243,18 +242,18 @@ def pytest_sessionfinish(session, exitstatus):
     # Generate markdown report
     md_path = Path(__file__).parent / "E2E_REPORT.md"
     with open(md_path, "w") as f:
-        f.write(f"# E2E Test Report - Juan-Dev-Code\n\n")
+        f.write("# E2E Test Report - Juan-Dev-Code\n\n")
         f.write(f"**Generated:** {report.timestamp}\n\n")
-        f.write(f"## Summary\n\n")
-        f.write(f"| Metric | Value |\n")
-        f.write(f"|--------|-------|\n")
+        f.write("## Summary\n\n")
+        f.write("| Metric | Value |\n")
+        f.write("|--------|-------|\n")
         f.write(f"| Total Tests | {report.total_tests} |\n")
         f.write(f"| Passed | {report.passed} |\n")
         f.write(f"| Failed | {report.failed} |\n")
         f.write(f"| Errors | {report.errors} |\n")
         f.write(f"| Pass Rate | {(report.passed/report.total_tests*100):.1f}% |\n" if report.total_tests > 0 else "| Pass Rate | N/A |\n")
         f.write(f"| Duration | {report.duration:.2f}s |\n")
-        f.write(f"\n## Test Results\n\n")
+        f.write("\n## Test Results\n\n")
 
         for result in report.results:
             status_emoji = {"passed": "✅", "failed": "❌", "error": "💥", "skipped": "⏭️"}.get(result.status, "❓")
@@ -266,7 +265,7 @@ def pytest_sessionfinish(session, exitstatus):
                 f.write(f"- **Error:** `{result.error}`\n")
 
             if result.screenshots:
-                f.write(f"\n**Screenshots:**\n")
+                f.write("\n**Screenshots:**\n")
                 for ss in result.screenshots:
                     f.write(f"![{ss}](screenshots/{ss})\n")
 

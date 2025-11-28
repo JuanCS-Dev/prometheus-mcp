@@ -21,7 +21,6 @@ from jdev_cli.core.agent_identity import (
     check_permission,
     enforce_permission
 )
-from jdev_cli.core.governance_pipeline import GovernancePipeline
 
 
 class TestConstitutionalAuditFixes:

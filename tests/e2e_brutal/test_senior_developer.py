@@ -14,14 +14,9 @@ Seniors expect:
 import pytest
 import asyncio
 import os
-import subprocess
-import tempfile
-import json
 from pathlib import Path
-from datetime import datetime
 
 # Import test infrastructure
-from .helpers import IssueCollector, SeniorDeveloper
 
 
 @pytest.mark.senior
@@ -471,7 +466,7 @@ class TestSeniorAgentBehavior:
 
         Senior expectation: PLANNER can't write files.
         """
-        from jdev_cli.agents.base import BaseAgent, AgentRole, AgentCapability
+        from jdev_cli.agents.base import AgentCapability
         from jdev_cli.agents.planner import PlannerAgent
 
         # Create planner (should be READ_ONLY + DESIGN)
@@ -604,9 +599,6 @@ class TestSeniorErrorHandling:
 
         Senior expectation: Clean shutdown, no orphan processes.
         """
-        import signal
-        import subprocess
-        import time
 
         # Start shell in subprocess
         # Note: This is a simplified test - real test would need process management

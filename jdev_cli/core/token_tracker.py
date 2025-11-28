@@ -1,7 +1,7 @@
 """Token tracking system with budget management and real-time monitoring."""
 
 from typing import Dict, Optional, List
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from datetime import datetime
 import json
 
@@ -19,7 +19,7 @@ class TokenUsage:
 
 class TokenTracker:
     """Real-time token tracking with budget enforcement."""
-    
+
     def __init__(self, budget: int = 1000000, cost_per_1k: float = 0.002):
         """
         Initialize tracker.
@@ -33,15 +33,15 @@ class TokenTracker:
         self.history: List[TokenUsage] = []
         self.total_input = 0
         self.total_output = 0
-        
+
     def track_tokens(self, input_tokens: int, output_tokens: int, context: str = "") -> None:
         """Record token usage."""
         if input_tokens < 0 or output_tokens < 0:
             raise ValueError("Token counts must be non-negative")
-            
+
         total = input_tokens + output_tokens
         cost = (total / 1000) * self.cost_per_1k
-        
+
         usage = TokenUsage(
             timestamp=datetime.now(),
             input_tokens=input_tokens,
@@ -50,11 +50,11 @@ class TokenTracker:
             cost_estimate=cost,
             context=context
         )
-        
+
         self.history.append(usage)
         self.total_input += input_tokens
         self.total_output += output_tokens
-        
+
     def get_usage(self) -> Dict:
         """Get current usage statistics."""
         total = self.total_input + self.total_output
@@ -68,11 +68,11 @@ class TokenTracker:
             "total_cost": sum(u.cost_estimate for u in self.history),
             "requests": len(self.history)
         }
-        
+
     def is_over_budget(self) -> bool:
         """Check if budget exceeded."""
         return (self.total_input + self.total_output) > self.budget
-        
+
     def get_warning_level(self) -> Optional[str]:
         """Get budget warning level."""
         usage_pct = (self.total_input + self.total_output) / self.budget * 100
@@ -81,7 +81,7 @@ class TokenTracker:
         elif usage_pct >= 70:
             return "warning"
         return None
-        
+
     def export_stats(self) -> str:
         """Export usage stats as JSON."""
         stats = self.get_usage()

@@ -13,10 +13,8 @@ https://www.anthropic.com/engineering/multi-agent-research-system
 """
 
 from dataclasses import dataclass, field
-from typing import AsyncIterator, List, Dict, Optional, Any, Callable
+from typing import AsyncIterator, List, Dict, Optional, Any
 from datetime import datetime
-import asyncio
-import json
 import os
 
 from .llm_client import GeminiClient
@@ -146,7 +144,7 @@ class PrometheusOrchestrator:
         tools_used = []
 
         try:
-            yield f"🔥 PROMETHEUS: Starting task execution...\n\n"
+            yield "🔥 PROMETHEUS: Starting task execution...\n\n"
 
             # 1. MEMORY: Retrieve context
             yield "📚 Retrieving relevant context from memory...\n"

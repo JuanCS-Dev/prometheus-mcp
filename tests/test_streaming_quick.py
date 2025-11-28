@@ -49,9 +49,6 @@ async def test_imports():
     """Test 3: Verificar imports necessários"""
     print("\n🔍 Test 3: Verificando imports...")
 
-    from typing import AsyncIterator
-    import asyncio
-    import uuid
 
     print("✅ Imports OK (AsyncIterator, asyncio, uuid)")
     return True

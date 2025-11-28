@@ -15,9 +15,7 @@ Based on Anthropic Claude Code testing standards.
 import pytest
 import ast
 import networkx as nx
-from dataclasses import dataclass
-from typing import Dict, Any, List, Set
-from unittest.mock import AsyncMock, MagicMock, patch
+from unittest.mock import AsyncMock, MagicMock
 
 from jdev_cli.agents.reviewer import (
     IssueSeverity,

@@ -26,12 +26,12 @@ import pty
 import tty
 import select
 from pathlib import Path
-from typing import Optional, Dict, Any, List, Set
+from typing import Optional, Dict, Set
 from dataclasses import dataclass
 
-from .base import Tool, ToolResult, ToolCategory
+from .base import ToolResult, ToolCategory
 from .validated import ValidatedTool
-from ..core.validation import Required, TypeCheck
+from ..core.validation import Required
 
 logger = logging.getLogger(__name__)
 
@@ -56,7 +56,7 @@ class CommandValidator:
     Philosophy: Whitelist good, blacklist bad is for amateurs.
     We do BOTH. Defense in depth or go home.
     """
-    
+
     # Commands that will NEVER be allowed. Period.
     BLACKLIST: Set[str] = {
         'rm -rf /',
@@ -75,7 +75,7 @@ class CommandValidator:
         'curl | bash',
         'wget | bash',
     }
-    
+
     # Dangerous patterns (regex)
     DANGEROUS_PATTERNS = [
         r'rm\s+-rf\s+/',  # Any rm -rf on root
@@ -91,13 +91,13 @@ class CommandValidator:
         r'sudo\s+',  # No sudo ever
         r'su\s+',  # No su either
     ]
-    
+
     # Suspicious characters that might indicate shell injection
     SHELL_INJECTION_CHARS = {
         ';', '&&', '||', '|', '`', '$(',
         '$()', '${', '>', '>>', '<', '<<',
     }
-    
+
     @classmethod
     def validate(cls, command: str) -> tuple[bool, Optional[str]]:
         """Validate command is safe to execute.
@@ -108,39 +108,39 @@ class CommandValidator:
         # 1. Empty or whitespace-only
         if not command or not command.strip():
             return False, "Empty command"
-        
+
         # 2. Check blacklist (exact matches)
         cmd_lower = command.lower().strip()
         for blocked in cls.BLACKLIST:
             if blocked in cmd_lower:
                 logger.warning(f"WARNING: Blacklisted command detected: {blocked}")
                 return True, f"WARNING: Blacklisted command detected: {blocked}. Proceed with caution."
-        
+
         # 3. Check dangerous patterns (regex)
         for pattern in cls.DANGEROUS_PATTERNS:
             if re.search(pattern, command, re.IGNORECASE):
                 logger.warning(f"WARNING: Dangerous pattern detected: {pattern}")
                 return True, f"WARNING: Dangerous pattern detected: {pattern}. Proceed with caution."
-        
+
         # 4. Check for excessive piping (potential DoS)
         pipe_count = command.count('|')
         if pipe_count > 10:
             logger.warning(f"SUSPICIOUS: Excessive piping ({pipe_count} pipes)")
             return False, f"Too many pipes: {pipe_count} (max 10)"
-        
+
         # 5. Check command length (absurdly long commands are suspicious)
         if len(command) > 4096:
             logger.warning(f"BLOCKED: Command too long ({len(command)} chars)")
             return False, f"Command too long: {len(command)} chars (max 4096)"
-        
+
         # 6. Check for shell injection attempts
         # This is informational, not blocking (legitimate commands use these)
         injection_chars_found = [c for c in cls.SHELL_INJECTION_CHARS if c in command]
         if len(injection_chars_found) > 5:
             logger.warning(f"SUSPICIOUS: Many shell metacharacters: {injection_chars_found}")
-        
+
         return True, None
-    
+
     @classmethod
     def sanitize_path(cls, path: str) -> str:
         """Sanitize a file path.
@@ -149,7 +149,7 @@ class CommandValidator:
         """
         try:
             p = Path(path).expanduser().resolve(strict=False)
-            
+
             # Check for path traversal
             cwd = Path.cwd().resolve()
             try:
@@ -158,7 +158,7 @@ class CommandValidator:
                 # Path is outside CWD, that's often fine
                 # but log it
                 logger.info(f"Path outside CWD: {p}")
-            
+
             return str(p)
         except Exception as e:
             logger.error(f"Path sanitization failed: {e}")
@@ -175,7 +175,7 @@ class PTYExecutor:
     3. Proper signal handling (Ctrl+C, etc.)
     4. Color output preservation
     """
-    
+
     def __init__(self, command: str, cwd: Optional[str] = None, env: Optional[Dict[str, str]] = None):
         self.command = command
         self.cwd = cwd or os.getcwd()
@@ -183,7 +183,7 @@ class PTYExecutor:
         self.master_fd: Optional[int] = None
         self.slave_fd: Optional[int] = None
         self.process: Optional[subprocess.Popen] = None
-        
+
     def _set_window_size(self):
         """Propagate window size from stdin to PTY master."""
         try:
@@ -191,7 +191,7 @@ class PTYExecutor:
             if sys.stdin.isatty():
                 s = struct.pack('HHHH', 0, 0, 0, 0)
                 size = fcntl.ioctl(sys.stdin.fileno(), termios.TIOCGWINSZ, s)
-                
+
                 # Set window size on master PTY
                 fcntl.ioctl(self.master_fd, termios.TIOCSWINSZ, size)
         except Exception as e:
@@ -202,14 +202,14 @@ class PTYExecutor:
         """Run command in PTY and stream output."""
         # Create PTY pair
         self.master_fd, self.slave_fd = pty.openpty()
-        
+
         # Save old signal handler to restore later
         old_handler = signal.getsignal(signal.SIGWINCH)
-        
+
         try:
             # Save current terminal settings
             old_settings = termios.tcgetattr(sys.stdin)
-            
+
             # Start process with slave PTY
             self.process = subprocess.Popen(
                 self.command,
@@ -221,26 +221,26 @@ class PTYExecutor:
                 env=self.env,
                 preexec_fn=os.setsid  # New session
             )
-            
+
             # Close slave fd in parent
             os.close(self.slave_fd)
             self.slave_fd = None
-            
+
             # Set raw mode for host terminal
             tty.setraw(sys.stdin.fileno())
-            
+
             # Register SIGWINCH handler
             signal.signal(signal.SIGWINCH, lambda signum, frame: self._set_window_size())
             # Set initial size
             self._set_window_size()
-            
+
             # Output buffer for result
             output_buffer = []
-            
+
             # Event loop for I/O
             while self.process.poll() is None:
                 r, w, x = select.select([self.master_fd, sys.stdin], [], [], 0.1)
-                
+
                 if self.master_fd in r:
                     # Read from process
                     try:
@@ -253,7 +253,7 @@ class PTYExecutor:
                             output_buffer.append(data.decode(errors='replace'))
                     except OSError:
                         break
-                
+
                 if sys.stdin in r:
                     # Read from user
                     try:
@@ -263,10 +263,10 @@ class PTYExecutor:
                             os.write(self.master_fd, data)
                     except OSError:
                         break
-            
+
             # Restore terminal settings
             termios.tcsetattr(sys.stdin, termios.TCSADRAIN, old_settings)
-            
+
             # Ensure process is finished and get exit code
             # Added timeout to prevent hanging (Safety Fix)
             try:
@@ -275,7 +275,7 @@ class PTYExecutor:
                 logger.warning("Process wait timed out, forcing kill")
                 self.process.kill()
                 self.process.wait()
-            
+
             return ToolResult(
                 success=self.process.returncode == 0,
                 data={
@@ -285,21 +285,21 @@ class PTYExecutor:
                 },
                 metadata={"pty": True}
             )
-            
+
         except Exception as e:
             logger.error(f"PTY execution failed: {e}")
             return ToolResult(success=False, error=str(e))
-            
+
         finally:
             # Cleanup
             if self.master_fd:
                 os.close(self.master_fd)
             if self.slave_fd:
                 os.close(self.slave_fd)
-            
+
             # Restore original signal handler (Side-Effect Fix)
             signal.signal(signal.SIGWINCH, old_handler)
-            
+
             # Ensure terminal settings restored
             try:
                 termios.tcsetattr(sys.stdin, termios.TCSADRAIN, old_settings)
@@ -320,7 +320,7 @@ class BashCommandToolHardened(ValidatedTool):
     
     If this breaks, your command was probably malicious anyway.
     """
-    
+
     def __init__(self, limits: Optional[ExecutionLimits] = None):
         super().__init__()
         self.name = "bash_command"  # Override auto-generated name
@@ -328,7 +328,7 @@ class BashCommandToolHardened(ValidatedTool):
         self.description = "Execute shell command with hardened security and resource limits"
         self.limits = limits or ExecutionLimits()
         self.validator = CommandValidator()
-        
+
         self.parameters = {
             "command": {
                 "type": "string",
@@ -357,32 +357,32 @@ class BashCommandToolHardened(ValidatedTool):
                 "default": False
             }
         }
-        
+
         logger.info(f"BashCommandToolHardened initialized with limits: {self.limits}")
-    
+
     def get_validators(self):
         """Validate parameters."""
         return {'command': Required('command')}
-    
+
     async def execute(self, **kwargs) -> ToolResult:
         """Execute with optional interactive mode."""
         # Extract interactive flag before validation (it's not in parameters dict)
         interactive = kwargs.pop('interactive', False)
-        
+
         # Call parent execute which calls _execute_validated
         # We need to pass interactive back in somehow, or handle it here.
         # Better: Add 'interactive' to parameters so it passes validation.
-        
+
         # Actually, let's just add it to parameters in __init__ (already done)
         # The issue is ValidatedTool.execute signature in base class might be strict?
         # No, base.Tool.execute is abstract. ValidatedTool.execute takes **kwargs.
         # Wait, the error was "takes 1 positional argument but 2 were given".
-        # This means it was called as tool.execute("cmd", interactive=True) 
+        # This means it was called as tool.execute("cmd", interactive=True)
         # instead of tool.execute(command="cmd", interactive=True).
-        
+
         # Let's fix the CALLER in test_shell_state.py first.
         return await super().execute(interactive=interactive, **kwargs)
-    
+
     def _setup_resource_limits(self):
         """Set resource limits for child process.
         
@@ -395,31 +395,31 @@ class BashCommandToolHardened(ValidatedTool):
                 resource.RLIMIT_CPU,
                 (self.limits.timeout_seconds, self.limits.timeout_seconds + 5)
             )
-            
+
             # Memory limit (in bytes)
             max_memory = self.limits.max_memory_mb * 1024 * 1024
             resource.setrlimit(
                 resource.RLIMIT_AS,
                 (max_memory, max_memory)
             )
-            
+
             # Max open files
             resource.setrlimit(
                 resource.RLIMIT_NOFILE,
                 (self.limits.max_open_files, self.limits.max_open_files)
             )
-            
+
             # Core dumps disabled (security)
             resource.setrlimit(resource.RLIMIT_CORE, (0, 0))
-            
+
             # Process priority (nice value 10 = lower priority)
             os.nice(10)
-            
+
             logger.debug("Resource limits applied successfully")
         except Exception as e:
             logger.error(f"Failed to set resource limits: {e}")
             # Don't fail here, limits are best-effort on some systems
-    
+
     async def _execute_validated(
         self,
         command: str,
@@ -433,12 +433,12 @@ class BashCommandToolHardened(ValidatedTool):
         This is where the magic happens. Or where your command dies trying.
         """
         start_time = asyncio.get_event_loop().time()
-        
+
         # 1. VALIDATION PHASE
         logger.info(f"EXEC REQUEST: {command[:100]}...")
-        
+
         is_valid, error_msg = self.validator.validate(command)
-        
+
         # Handle warnings (return True but with message)
         if is_valid and error_msg and error_msg.startswith("WARNING"):
             logger.warning(error_msg)
@@ -451,7 +451,7 @@ class BashCommandToolHardened(ValidatedTool):
                 error=f"Command validation failed: {error_msg}",
                 metadata={"validation_error": True}
             )
-        
+
         # 2. SANITIZE CWD
         if cwd:
             try:
@@ -471,20 +471,20 @@ class BashCommandToolHardened(ValidatedTool):
                     success=False,
                     error=f"Invalid working directory: {e}"
                 )
-        
+
         # 3. SETUP TIMEOUT
         actual_timeout = min(
             timeout or self.limits.timeout_seconds,
             self.limits.timeout_seconds
         )
-        
+
         # 4. SETUP ENVIRONMENT
         # Start with clean environment, add safe defaults, then user vars
         exec_env = os.environ.copy()
         exec_env['BASH_ENV'] = ''  # No startup files
         exec_env['ENV'] = ''
         exec_env['PATH'] = '/usr/local/bin:/usr/bin:/bin'  # Restricted PATH
-        
+
         if env:
             # Filter out dangerous env vars
             safe_env = {
@@ -492,17 +492,17 @@ class BashCommandToolHardened(ValidatedTool):
                 if k not in ['LD_PRELOAD', 'LD_LIBRARY_PATH', 'BASH_ENV']
             }
             exec_env.update(safe_env)
-            
+
         # 5. INTERACTIVE PTY EXECUTION
         if interactive:
             logger.info(f"EXECUTING INTERACTIVE: {command}")
             pty_exec = PTYExecutor(command, cwd, exec_env)
             return await pty_exec.run()
-        
+
         # 6. STANDARD EXECUTION PHASE
         try:
             logger.info(f"EXECUTING: {command} (timeout={actual_timeout}s, cwd={cwd or 'CWD'})")
-            
+
             proc = await asyncio.create_subprocess_shell(
                 command,
                 stdout=asyncio.subprocess.PIPE,
@@ -512,35 +512,35 @@ class BashCommandToolHardened(ValidatedTool):
                 preexec_fn=self._setup_resource_limits,  # Apply limits in child
                 limit=self.limits.max_output_bytes  # Limit output buffer
             )
-            
+
             try:
                 # Wait for completion with timeout
                 stdout, stderr = await asyncio.wait_for(
                     proc.communicate(),
                     timeout=actual_timeout
                 )
-                
+
                 # Decode output
                 stdout_str = stdout.decode('utf-8', errors='replace') if stdout else ""
                 stderr_str = stderr.decode('utf-8', errors='replace') if stderr else ""
-                
+
                 # Truncate if too large
                 if len(stdout_str) > self.limits.max_output_bytes:
                     stdout_str = stdout_str[:self.limits.max_output_bytes] + "\n\n[OUTPUT TRUNCATED]"
                     logger.warning(f"STDOUT truncated to {self.limits.max_output_bytes} bytes")
-                
+
                 if len(stderr_str) > self.limits.max_output_bytes:
                     stderr_str = stderr_str[:self.limits.max_output_bytes] + "\n\n[OUTPUT TRUNCATED]"
                     logger.warning(f"STDERR truncated to {self.limits.max_output_bytes} bytes")
-                
+
                 elapsed = asyncio.get_event_loop().time() - start_time
-                
+
                 logger.info(
                     f"EXEC COMPLETE: exit={proc.returncode}, "
                     f"elapsed={elapsed:.2f}s, "
                     f"stdout={len(stdout_str)}B, stderr={len(stderr_str)}B"
                 )
-                
+
                 return ToolResult(
                     success=proc.returncode == 0,
                     data={
@@ -558,7 +558,7 @@ class BashCommandToolHardened(ValidatedTool):
                         "truncated": len(stdout_str) >= self.limits.max_output_bytes
                     }
                 )
-            
+
             except asyncio.TimeoutError:
                 # Command TIMEOUT, kill it HARD
                 logger.error(f"TIMEOUT: Command exceeded {actual_timeout}s")
@@ -567,7 +567,7 @@ class BashCommandToolHardened(ValidatedTool):
                     await proc.wait()
                 except (ProcessLookupError, OSError):
                     pass
-                
+
                 return ToolResult(
                     success=False,
                     error=f"Command TIMEOUT after {actual_timeout}s",
@@ -576,15 +576,15 @@ class BashCommandToolHardened(ValidatedTool):
                         "limit": actual_timeout
                     }
                 )
-        
+
         except MemoryError as e:
-            logger.error(f"MEMORY LIMIT: Command exceeded memory limit")
+            logger.error("MEMORY LIMIT: Command exceeded memory limit")
             return ToolResult(
                 success=False,
                 error=f"Command exceeded memory limit ({self.limits.max_memory_mb}MB)",
                 metadata={"memory_error": True}
             )
-        
+
         except OSError as e:
             # OS-level errors (file not found, permission denied, etc)
             logger.error(f"OS ERROR: {e}")
@@ -593,7 +593,7 @@ class BashCommandToolHardened(ValidatedTool):
                 error=f"OS error: {e}",
                 metadata={"os_error": str(e)}
             )
-        
+
         except Exception as e:
             # Catch-all for unexpected errors
             logger.exception(f"UNEXPECTED ERROR: {e}")

@@ -8,7 +8,6 @@ Built for the MCP Hackathon with 27+ production tools.
 
 from __future__ import annotations
 
-import asyncio
 import os
 import random
 import shutil
@@ -25,7 +24,6 @@ from .components import (
     render_tailwind_header,
     render_gauge,
     render_bar_chart,
-    render_dual_gauge,
     render_terminal_logs,
     render_docker_progress,
     render_latency_chart,
@@ -66,14 +64,14 @@ class SystemMonitor:
         self.memory_data = {"active_types": ["core", "episodic"]}
         self.wm_data = {"simulation_depth": 0, "confidence": 0.0}
         self.evo_data = {"generation": 1, "mutation_rate": 0.05}
-    
+
     def add_log(self, level: str, message: str):
         """Add a timestamped log entry."""
         timestamp = time.strftime('%H:%M:%S')
         self.logs.append(f"{timestamp} - [{level}] {message}")
         if len(self.logs) > 20:
             self.logs.pop(0)
-    
+
     def increment_tokens(self, count: int):
         """Increment token usage and update safety metrics."""
         self.token_usage += count
@@ -90,7 +88,7 @@ class SystemMonitor:
         """Set current progress bar state."""
         self.progress = max(0.0, min(100.0, percentage))
         self.progress_label = label
-    
+
     def get_metrics(self):
         """Get current system metrics."""
         return {
@@ -125,7 +123,6 @@ def _blank_metrics() -> Dict[str, Any]:
 def _get_mcp_tools_df() -> pd.DataFrame:
     """Get real MCP tools from ToolRegistry as DataFrame."""
     try:
-        from jdev_cli.tools.base import ToolRegistry
         from jdev_cli.tools.file_ops import (
             ReadFileTool, WriteFileTool, EditFileTool,
             ListDirectoryTool, DeleteFileTool
@@ -142,10 +139,10 @@ def _get_mcp_tools_df() -> pd.DataFrame:
             CdTool, LsTool, PwdTool, MkdirTool, RmTool,
             CpTool, MvTool, TouchTool, CatTool
         )
-        
+
         # Build data list
         data = []
-        
+
         # File Operations
         for tool in [
             ReadFileTool(), WriteFileTool(), EditFileTool(),
@@ -158,7 +155,7 @@ def _get_mcp_tools_df() -> pd.DataFrame:
                 "Tool": tool.name,
                 "Description": tool.description[:60] + "..." if len(tool.description) > 60 else tool.description
             })
-        
+
         # Search & Navigation
         for tool in [SearchFilesTool(), GetDirectoryTreeTool()]:
             data.append({
@@ -166,14 +163,14 @@ def _get_mcp_tools_df() -> pd.DataFrame:
                 "Tool": tool.name,
                 "Description": tool.description[:60] + "..." if len(tool.description) > 60 else tool.description
             })
-        
+
         # Execution
         data.append({
             "Category": "Execution",
             "Tool": BashCommandTool().name,
             "Description": BashCommandTool().description[:60] + "..." if len(BashCommandTool().description) > 60 else BashCommandTool().description
         })
-        
+
         # Git Operations
         for tool in [GitStatusTool(), GitDiffTool()]:
             data.append({
@@ -181,7 +178,7 @@ def _get_mcp_tools_df() -> pd.DataFrame:
                 "Tool": tool.name,
                 "Description": tool.description[:60] + "..." if len(tool.description) > 60 else tool.description
             })
-        
+
         # Context Management
         for tool in [GetContextTool(), SaveSessionTool(), RestoreBackupTool()]:
             data.append({
@@ -189,7 +186,7 @@ def _get_mcp_tools_df() -> pd.DataFrame:
                 "Tool": tool.name,
                 "Description": tool.description[:60] + "..." if len(tool.description) > 60 else tool.description
             })
-        
+
         # Terminal Commands
         for tool in [
             CdTool(), LsTool(), PwdTool(), MkdirTool(), RmTool(),
@@ -200,9 +197,9 @@ def _get_mcp_tools_df() -> pd.DataFrame:
                 "Tool": tool.name,
                 "Description": tool.description[:60] + "..." if len(tool.description) > 60 else tool.description
             })
-        
+
         return pd.DataFrame(data)
-    
+
     except Exception as e:
         # Fallback to minimal data if imports fail
         print(f"Warning: Could not load real tools: {e}")
@@ -422,7 +419,7 @@ def stream_conversation(
     bridge_metrics = _bridge.get_metrics()
     if bridge_metrics:
         _monitor.add_log("INFO", f"TTFT: {bridge_metrics.get('ttft_ms', '?')}ms, CPS: {bridge_metrics.get('cps', '?')}")
-    
+
     # Update Prometheus metrics from bridge if available
     bridge_status = _bridge.get_health_status()
     if "prometheus" in bridge_status:
@@ -473,10 +470,10 @@ def create_ui() -> tuple[gr.Blocks, str, str]:
         - Custom CSS loaded from cyber_theme.css for glassmorphism effects
         - Uses async generators for streaming (Uvicorn-compatible)
     """
-    
+
     # Load cyberpunk CSS
     cyber_css = _load_cyber_css()
-    
+
     # Tailwind CDN injection via gr.HTML (Gradio 6.0.0 compatible)
     tailwind_head = render_tailwind_header()
 
@@ -485,13 +482,13 @@ def create_ui() -> tuple[gr.Blocks, str, str]:
         title="GEMINI-CLI-2 · THE BOSS · NEW STANDARD",
         fill_height=True,
     ) as demo:
-        
+
         # Inject Tailwind CDN at top of UI
         gr.HTML(tailwind_head, visible=False)
-        
+
         # State Management
         session_state = gr.State(value=None)
-        
+
         # HEADER (Window-style like desktop app)
         with gr.Row(elem_classes="window-header"):
             gr.HTML("""
@@ -512,14 +509,14 @@ def create_ui() -> tuple[gr.Blocks, str, str]:
                     <span style="color: #6272a4; font-size: 12px;">v0.0.2</span>
                 </div>
             """)
-        
+
         # Main Layout: 3-Column Cyberpunk
         with gr.Row(equal_height=True):
-            
+
             # COLUMN 1: PROJECT EXPLORER
             with gr.Column(scale=1, min_width=250, elem_classes="cyber-glass p-0"):
                 gr.Markdown("## 📁 PROJECT CONTEXT", elem_classes="text-xs font-bold text-gray-400 p-3 border-b border-gray-800")
-                
+
                 # File Upload
                 file_upload = gr.File(
                     label="Upload Files",
@@ -528,13 +525,13 @@ def create_ui() -> tuple[gr.Blocks, str, str]:
                     height=80,
                     elem_classes="cyber-glass"
                 )
-                
+
                 upload_status = gr.Markdown(
                     value="Ready to upload...",
                     visible=True,
                     elem_classes="text-xs text-gray-500 p-2"
                 )
-                
+
                 # File Explorer
                 file_explorer = gr.FileExplorer(
                     glob="**/*",
@@ -559,7 +556,7 @@ def create_ui() -> tuple[gr.Blocks, str, str]:
                     buttons=["copy"],
                     sanitize_html=False,  # Permite HTML para formatação
                 )
-                
+
                 # Input Area
                 with gr.Group(elem_classes="mb-0 relative"):
                     msg_input = gr.Textbox(
@@ -570,13 +567,13 @@ def create_ui() -> tuple[gr.Blocks, str, str]:
                         elem_classes="cyber-input text-sm",
                         autofocus=True,
                     )
-                
+
                 # Terminal Logs (HTML) - Moved below input as requested
                 log_display = gr.HTML(
                     value=render_terminal_logs(_monitor.logs[-8:]),
                     elem_classes="h-32 overflow-hidden bg-black/50 rounded border border-gray-800 terminal-log mb-4 mt-0"
                 )
-                
+
                 # Docker Progress Bar
                 progress_html = gr.HTML(
                     value=render_docker_progress(0, "Ready"),
@@ -585,22 +582,22 @@ def create_ui() -> tuple[gr.Blocks, str, str]:
 
             # COLUMN 3: TELEMETRY
             with gr.Column(scale=1, min_width=250, elem_classes="space-y-4"):
-                
+
                 # Get initial metrics from monitor
                 initial_metrics = _monitor.get_metrics()
-                
+
                 # Token Gauge
                 with gr.Group(elem_classes="cyber-glass h-48"):
                     gauge_html = gr.HTML(
                         value=render_gauge(initial_metrics["token_pct"], "TOKEN BUDGET", initial_metrics["token_str"])
                     )
-                
+
                 # Safety Chart
                 with gr.Group(elem_classes="cyber-glass h-32"):
                     chart_html = gr.HTML(
                         value=render_bar_chart(initial_metrics["safety_data"], "SAFETY INDEX")
                     )
-                
+
                 # Status Cards (Model/Environment)
                 with gr.Group(elem_classes="cyber-glass h-24"):
                     status_html = gr.HTML(
@@ -618,10 +615,10 @@ def create_ui() -> tuple[gr.Blocks, str, str]:
                     memory_html = gr.HTML(value=render_memory_status(initial_metrics["memory"]))
                     wm_html = gr.HTML(value=render_world_model_status(initial_metrics["wm"]))
                     evo_html = gr.HTML(value=render_evolution_status(initial_metrics["evo"]))
-                
+
                 # Refresh Button (replaces Timer to avoid queue/join errors)
                 refresh_btn = gr.Button("🔄 Refresh Metrics", size="sm", variant="secondary")
-                
+
                 # MCP Tools Accordion
                 with gr.Accordion("MCP Tools", open=False, elem_classes="cyber-glass"):
                     mcp_df = gr.Dataframe(
@@ -633,7 +630,7 @@ def create_ui() -> tuple[gr.Blocks, str, str]:
                     )
 
         # Event Handlers
-        
+
         # File upload handler
         file_upload.upload(
             fn=handle_file_upload,
@@ -643,7 +640,7 @@ def create_ui() -> tuple[gr.Blocks, str, str]:
             fn=lambda: gr.update(),
             outputs=[file_explorer]
         )
-        
+
         # Submit message (cyberpunk version with 8 outputs)
         msg_input.submit(
             fn=stream_conversation,
@@ -652,7 +649,7 @@ def create_ui() -> tuple[gr.Blocks, str, str]:
         ).then(
             fn=lambda: "", outputs=[msg_input]
         )
-        
+
         # Manual refresh for metrics (Timer causes queue/join errors in Gradio 6)
         def refresh_metrics():
             metrics = _monitor.get_metrics()
@@ -682,21 +679,21 @@ def create_ui() -> tuple[gr.Blocks, str, str]:
 
 if __name__ == "__main__":
     port = int(os.getenv("GRADIO_SERVER_PORT", "7860"))
-    
+
     # Gradio 6: create_ui returns demo, theme, css
     demo, theme, css = create_ui()
-    
+
     print(f"🚀 Launching GEMINI-CLI-2 Cyberpunk UI on port {port}")
-    print(f"🎨 Theme: Cyberpunk Glassmorphism")
+    print("🎨 Theme: Cyberpunk Glassmorphism")
     print(f"🔧 Backend: {_bridge.backend_label}")
-    
+
     # CRITICAL: Enable queue before launch (required for gr.Timer and streaming)
     # Increased concurrency to handle Timer ticks without DDoS errors
     demo.queue(
         max_size=20,
         default_concurrency_limit=10
     )
-    
+
     # Gradio 6: theme and css go in launch()
     demo.launch(
         server_name="0.0.0.0",

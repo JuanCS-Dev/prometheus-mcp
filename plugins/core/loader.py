@@ -18,9 +18,9 @@ import importlib.util
 import logging
 import sys
 from pathlib import Path
-from typing import List, Dict, Optional, Set, Type
+from typing import List, Dict, Optional, Type
 
-from .base import Plugin, PluginMetadata, PluginPriority
+from .base import Plugin, PluginMetadata
 
 logger = logging.getLogger(__name__)
 

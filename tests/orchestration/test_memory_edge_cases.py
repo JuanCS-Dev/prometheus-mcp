@@ -9,9 +9,8 @@ Tests cover:
     - Session lifecycle edge cases
 """
 
-import pytest
 import time
-from datetime import datetime, timedelta
+from datetime import timedelta
 from threading import Thread
 from typing import List
 

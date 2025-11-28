@@ -15,7 +15,6 @@ Target Standards (Constituição Vértice v3.0):
 import time
 from dataclasses import dataclass, field
 from typing import Dict, List, Optional
-from datetime import datetime
 import json
 from pathlib import Path
 
@@ -47,24 +46,24 @@ class SessionMetrics:
     session_id: str
     start_time: float
     end_time: Optional[float] = None
-    
+
     # Tool execution metrics
     tool_calls: List[ToolCallMetrics] = field(default_factory=list)
     total_tool_calls: int = 0
     successful_tool_calls: int = 0
     failed_tool_calls: int = 0
-    
+
     # Parse metrics
     parse_attempts: List[ParseMetrics] = field(default_factory=list)
     total_parses: int = 0
     successful_parses: int = 0
     failed_parses: int = 0
-    
+
     # DETER-AGENT metrics
     lei: float = 0.0  # Lazy Execution Index
     hri: float = 0.0  # Hallucination Rate Index
     cpi: float = 0.0  # Completeness-Precision Index
-    
+
     # User interaction
     user_messages: int = 0
     assistant_messages: int = 0
@@ -81,7 +80,7 @@ class MetricsCollector:
     - Calculates LEI, HRI, CPI metrics
     - Provides session-level aggregates
     """
-    
+
     def __init__(self, session_id: str = "default"):
         self.session_id = session_id
         self.metrics = SessionMetrics(
@@ -90,7 +89,7 @@ class MetricsCollector:
         )
         self._metrics_dir = Path.home() / ".qwen_logs" / "metrics"
         self._metrics_dir.mkdir(parents=True, exist_ok=True)
-    
+
     def record_tool_call(
         self,
         tool_name: str,
@@ -107,15 +106,15 @@ class MetricsCollector:
         )
         self.metrics.tool_calls.append(metric)
         self.metrics.total_tool_calls += 1
-        
+
         if success:
             self.metrics.successful_tool_calls += 1
         else:
             self.metrics.failed_tool_calls += 1
-        
+
         # Update HRI (hallucination = invalid tool calls)
         self._update_hri()
-    
+
     def record_parse_attempt(
         self,
         success: bool,
@@ -134,25 +133,25 @@ class MetricsCollector:
         )
         self.metrics.parse_attempts.append(metric)
         self.metrics.total_parses += 1
-        
+
         if success:
             self.metrics.successful_parses += 1
         else:
             self.metrics.failed_parses += 1
-        
+
         # Update HRI (parse failures indicate potential hallucination)
         self._update_hri()
-    
+
     def record_user_message(self, tokens_estimate: int = 0):
         """Record a user message."""
         self.metrics.user_messages += 1
         self.metrics.total_tokens_estimated += tokens_estimate
-    
+
     def record_assistant_message(self, tokens_estimate: int = 0):
         """Record an assistant message."""
         self.metrics.assistant_messages += 1
         self.metrics.total_tokens_estimated += tokens_estimate
-    
+
     def record_lei_event(self, event_type: str, severity: float = 1.0):
         """
         Record a lazy execution event.
@@ -163,7 +162,7 @@ class MetricsCollector:
         """
         # LEI accumulates - each lazy event adds to the index
         self.metrics.lei += severity
-    
+
     def set_cpi(self, completeness: float, precision: float):
         """
         Set Completeness-Precision Index.
@@ -175,7 +174,7 @@ class MetricsCollector:
         CPI = (completeness + precision) / 2
         """
         self.metrics.cpi = (completeness + precision) / 2.0
-    
+
     def _update_hri(self):
         """
         Update Hallucination Rate Index.
@@ -188,10 +187,10 @@ class MetricsCollector:
         if total_operations == 0:
             self.metrics.hri = 0.0
             return
-        
+
         failures = self.metrics.failed_tool_calls + self.metrics.failed_parses
         self.metrics.hri = failures / total_operations
-    
+
     def track_execution(
         self,
         prompt_tokens: int = 0,
@@ -210,18 +209,18 @@ class MetricsCollector:
         """
         # Record user message with token count
         self.record_user_message(prompt_tokens)
-        
+
         # Record tool call
         self.record_tool_call(
             tool_name="generic_tool",
             success=success,
             execution_time=0.1
         )
-        
+
         # Record LEI event (lazy if multiple LLM calls for simple task)
         if llm_calls > 1:
             self.record_lei_event("multiple_llm_calls", severity=llm_calls * 0.1)
-    
+
     def calculate_lei(self) -> float:
         """
         Calculate Lazy Execution Index.
@@ -230,7 +229,7 @@ class MetricsCollector:
             LEI value (lower is better, < 1.0 is good)
         """
         return self.metrics.lei
-    
+
     def get_summary(self) -> Dict:
         """Get a summary of current metrics."""
         return {
@@ -266,7 +265,7 @@ class MetricsCollector:
                 "total_tokens_estimated": self.metrics.total_tokens_estimated
             }
         }
-    
+
     def _check_compliance(self) -> Dict[str, bool]:
         """Check if metrics meet Constitutional standards."""
         return {
@@ -274,13 +273,13 @@ class MetricsCollector:
             "hri_compliant": self.metrics.hri < 0.1,
             "cpi_compliant": self.metrics.cpi > 0.9
         }
-    
+
     def save_metrics(self):
         """Save metrics to disk for analysis."""
         self.metrics.end_time = time.time()
-        
+
         metrics_file = self._metrics_dir / f"{self.session_id}.json"
-        
+
         # Convert to JSON-serializable format
         data = {
             "session_id": self.metrics.session_id,
@@ -327,28 +326,28 @@ class MetricsCollector:
             },
             "summary": self.get_summary()
         }
-        
+
         with open(metrics_file, 'w') as f:
             json.dump(data, f, indent=2)
-        
+
         return metrics_file
-    
+
     @staticmethod
     def load_metrics(session_id: str) -> Optional['MetricsCollector']:
         """Load metrics from a previous session."""
         metrics_dir = Path.home() / ".qwen_logs" / "metrics"
         metrics_file = metrics_dir / f"{session_id}.json"
-        
+
         if not metrics_file.exists():
             return None
-        
+
         with open(metrics_file, 'r') as f:
             data = json.load(f)
-        
+
         collector = MetricsCollector(session_id)
         collector.metrics.start_time = data["start_time"]
         collector.metrics.end_time = data.get("end_time")
-        
+
         # Restore aggregates
         agg = data["aggregates"]
         collector.metrics.total_tool_calls = agg["total_tool_calls"]
@@ -360,28 +359,28 @@ class MetricsCollector:
         collector.metrics.user_messages = agg["user_messages"]
         collector.metrics.assistant_messages = agg["assistant_messages"]
         collector.metrics.total_tokens_estimated = agg["total_tokens_estimated"]
-        
+
         # Restore DETER-AGENT metrics
         dam = data["deter_agent_metrics"]
         collector.metrics.lei = dam["lei"]
         collector.metrics.hri = dam["hri"]
         collector.metrics.cpi = dam["cpi"]
-        
+
         return collector
 
 
 class MetricsAggregator:
     """Aggregate metrics across multiple sessions for analysis."""
-    
+
     @staticmethod
     def get_all_sessions() -> List[str]:
         """Get all session IDs with metrics."""
         metrics_dir = Path.home() / ".qwen_logs" / "metrics"
         if not metrics_dir.exists():
             return []
-        
+
         return [f.stem for f in metrics_dir.glob("*.json")]
-    
+
     @staticmethod
     def aggregate_metrics() -> Dict:
         """
@@ -390,37 +389,37 @@ class MetricsAggregator:
         Returns project-wide DETER-AGENT compliance stats.
         """
         sessions = MetricsAggregator.get_all_sessions()
-        
+
         if not sessions:
             return {
                 "total_sessions": 0,
                 "error": "No metrics found"
             }
-        
+
         total_lei = 0.0
         total_hri = 0.0
         total_cpi = 0.0
         total_tool_calls = 0
         total_parses = 0
         compliant_sessions = 0
-        
+
         for session_id in sessions:
             collector = MetricsCollector.load_metrics(session_id)
             if not collector:
                 continue
-            
+
             total_lei += collector.metrics.lei
             total_hri += collector.metrics.hri
             total_cpi += collector.metrics.cpi
             total_tool_calls += collector.metrics.total_tool_calls
             total_parses += collector.metrics.total_parses
-            
+
             compliance = collector._check_compliance()
             if all(compliance.values()):
                 compliant_sessions += 1
-        
+
         num_sessions = len(sessions)
-        
+
         return {
             "total_sessions": num_sessions,
             "compliant_sessions": compliant_sessions,

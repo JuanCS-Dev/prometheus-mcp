@@ -12,7 +12,7 @@ async def test_concurrent_renderer_init():
     assert renderer._panels == {}
 
 
-@pytest.mark.asyncio  
+@pytest.mark.asyncio
 async def test_add_process():
     """Test adding process to renderer."""
     renderer = ConcurrentRenderer()
@@ -25,8 +25,8 @@ async def test_race_condition_free():
     """Test concurrent updates without race conditions."""
     renderer = ConcurrentRenderer()
     await renderer.add_process("proc1", "Test")
-    
+
     updates = [renderer.update_process("proc1", f"Update {i}") for i in range(50)]
     await asyncio.gather(*updates)
-    
+
     assert "proc1" in renderer._panels

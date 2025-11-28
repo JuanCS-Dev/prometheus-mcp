@@ -121,7 +121,7 @@ class ExecutorAgent:
         # Add hints if requested and available
         hints_section = ""
         if use_hints and task.hints:
-            hints_section = f"\nHINTS:\n" + "\n".join(f"- {h}" for h in task.hints)
+            hints_section = "\nHINTS:\n" + "\n".join(f"- {h}" for h in task.hints)
 
         # Plan and execute
         solution = await self._generate_solution(task, context, hints_section)

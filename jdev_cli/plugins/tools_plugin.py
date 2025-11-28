@@ -29,10 +29,10 @@ def _create_registry():
         CdTool, LsTool, PwdTool, MkdirTool, RmTool,
         CpTool, MvTool, TouchTool, CatTool
     )
-    
+
     # Create registry
     registry = ToolRegistry()
-    
+
     # Register all tools
     tools = [
         # File reading
@@ -53,20 +53,20 @@ def _create_registry():
         CdTool(), LsTool(), PwdTool(), MkdirTool(), RmTool(),
         CpTool(), MvTool(), TouchTool(), CatTool()
     ]
-    
+
     for tool in tools:
         registry.register(tool)
-    
+
     return registry
 
 
 def __getattr__(name):
     """Lazy load tool_registry on first access."""
     global _tool_registry
-    
+
     if name == 'tool_registry':
         if _tool_registry is None:
             _tool_registry = _create_registry()
         return _tool_registry
-    
+
     raise AttributeError(f"module {__name__!r} has no attribute {name!r}")

@@ -11,7 +11,7 @@ UX Polish Sprint additions:
 import time
 import math
 import asyncio
-from typing import Callable, Optional, Literal
+from typing import Callable, Optional
 from dataclasses import dataclass
 from rich.console import Console
 from rich.text import Text
@@ -27,34 +27,34 @@ class AnimationConfig:
 
 class Easing:
     """Easing functions for smooth animations"""
-    
+
     @staticmethod
     def linear(t: float) -> float:
         """Linear easing"""
         return t
-    
+
     @staticmethod
     def ease_in(t: float) -> float:
         """Ease-in (cubic)"""
         return t * t * t
-    
+
     @staticmethod
     def ease_out(t: float) -> float:
         """Ease-out (cubic) - Apple's favorite"""
         return 1 - pow(1 - t, 3)
-    
+
     @staticmethod
     def ease_in_out(t: float) -> float:
         """Ease-in-out (cubic)"""
         if t < 0.5:
             return 4 * t * t * t
         return 1 - pow(-2 * t + 2, 3) / 2
-    
+
     @staticmethod
     def spring(t: float) -> float:
         """Spring easing (bouncy)"""
         return 1 - math.cos(t * math.pi * 2) * (1 - t)
-    
+
     @staticmethod
     def elastic(t: float) -> float:
         """Elastic easing"""
@@ -79,11 +79,11 @@ def get_easing_function(name: str) -> Callable[[float], float]:
 
 class Animator:
     """Handles smooth animations"""
-    
+
     def __init__(self, config: Optional[AnimationConfig] = None):
         self.config = config or AnimationConfig()
         self.easing_func = get_easing_function(self.config.easing)
-    
+
     def animate(
         self,
         start: float,
@@ -103,23 +103,23 @@ class Animator:
         duration = duration or self.config.duration
         frame_time = 1.0 / self.config.fps
         elapsed = 0.0
-        
+
         while elapsed < duration:
             t = elapsed / duration
             eased = self.easing_func(t)
             value = start + (end - start) * eased
             callback(value)
-            
+
             time.sleep(frame_time)
             elapsed += frame_time
-        
+
         # Final frame
         callback(end)
-    
+
     def fade_in(self, callback: Callable[[float], None]) -> None:
         """Fade in from 0 to 1"""
         self.animate(0.0, 1.0, callback)
-    
+
     def fade_out(self, callback: Callable[[float], None]) -> None:
         """Fade out from 1 to 0"""
         self.animate(1.0, 0.0, callback)
@@ -127,11 +127,11 @@ class Animator:
 
 class StateTransition:
     """Manages state transitions with animations"""
-    
+
     def __init__(self, initial_state: str):
         self.current_state = initial_state
         self.animator = Animator(AnimationConfig(duration=0.2))
-    
+
     def transition_to(
         self,
         new_state: str,
@@ -148,15 +148,15 @@ class StateTransition:
         """
         if new_state == self.current_state:
             return
-        
+
         # Exit current state with fade-out
         if on_exit:
             self.animator.fade_out(lambda opacity: on_exit(opacity))
-        
+
         # Update state
         old_state = self.current_state
         self.current_state = new_state
-        
+
         # Enter new state with fade-in
         if on_enter:
             self.animator.fade_in(lambda opacity: on_enter(opacity))
@@ -164,7 +164,7 @@ class StateTransition:
 
 class LoadingAnimation:
     """Smooth loading animations"""
-    
+
     SPINNERS = {
         "dots": ["⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"],
         "line": ["—", "\\", "|", "/"],
@@ -172,43 +172,43 @@ class LoadingAnimation:
         "box": ["◰", "◳", "◲", "◱"],
         "bounce": ["⠁", "⠂", "⠄", "⡀", "⢀", "⠠", "⠐", "⠈"],
     }
-    
+
     def __init__(self, style: str = "dots", speed: float = 0.08):
         self.frames = self.SPINNERS.get(style, self.SPINNERS["dots"])
         self.speed = speed
         self.current_frame = 0
-    
+
     def next_frame(self) -> str:
         """Get next frame in animation"""
         frame = self.frames[self.current_frame]
         self.current_frame = (self.current_frame + 1) % len(self.frames)
         return frame
-    
+
     def animate_pulse(self, text: str, width: int = 40) -> str:
         """Animate a pulsing progress bar"""
         frame = self.current_frame % width
         bar = " " * width
-        
+
         if frame < width // 2:
             pos = frame
         else:
             pos = width - frame - 1
-        
+
         bar = bar[:pos] + "█" + bar[pos + 1:]
         self.current_frame += 1
-        
+
         return f"{text} [{bar}]"
 
 
 class SlideTransition:
     """Slide-in/slide-out transitions"""
-    
+
     @staticmethod
     def slide_in(text: str, width: int, progress: float) -> str:
         """Slide text in from right"""
         visible_chars = int(len(text) * progress)
         return text[:visible_chars].rjust(width)
-    
+
     @staticmethod
     def slide_out(text: str, width: int, progress: float) -> str:
         """Slide text out to left"""
@@ -235,7 +235,7 @@ class LoadingSpinner:
     - dots3: "⣾⣽⣻⢿⡿⣟⣯⣷" (3-dot, 8 frames)
     - pulse: "●○○ ●●○ ●●● ○●● ○○●" (pulse, 5 frames)
     """
-    
+
     SPINNERS = {
         "dots": ["⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"],
         "line": ["|", "/", "-", "\\"],
@@ -244,7 +244,7 @@ class LoadingSpinner:
         "pulse": ["●○○", "●●○", "●●●", "○●●", "○○●"],
         "bounce": ["⠁", "⠂", "⠄", "⡀", "⢀", "⠠", "⠐", "⠈"],
     }
-    
+
     def __init__(self, style: str = "dots", color: str = "cyan"):
         """
         Initialize spinner
@@ -257,13 +257,13 @@ class LoadingSpinner:
         self.color = color
         self.current_frame = 0
         self.running = False
-    
+
     def get_frame(self) -> Text:
         """Get current frame as Rich Text"""
         frame = self.frames[self.current_frame % len(self.frames)]
         self.current_frame += 1
         return Text(frame, style=f"bold {self.color}")
-    
+
     async def spin(self, console: Console, message: str = "Loading", duration: float = 2.0):
         """
         Animate spinner for duration
@@ -274,10 +274,10 @@ class LoadingSpinner:
             duration: How long to spin (seconds)
         """
         from rich.live import Live
-        
+
         self.running = True
         start_time = time.time()
-        
+
         with Live(console=console, refresh_per_second=10) as live:
             while self.running and (time.time() - start_time) < duration:
                 frame = self.get_frame()
@@ -286,7 +286,7 @@ class LoadingSpinner:
                 text.append(f" {message}", style="dim")
                 live.update(text)
                 await asyncio.sleep(0.1)
-    
+
     def stop(self):
         """Stop spinner"""
         self.running = False
@@ -298,7 +298,7 @@ class FadeEffect:
     
     Uses opacity simulation with dim/bold styles
     """
-    
+
     @staticmethod
     def fade_in(text: str, progress: float, color: str = "white") -> Text:
         """
@@ -310,7 +310,7 @@ class FadeEffect:
             color: Text color
         """
         result = Text(text)
-        
+
         if progress < 0.3:
             # Very dim (0-30%)
             result.stylize(f"dim {color}")
@@ -320,9 +320,9 @@ class FadeEffect:
         else:
             # Bold (60-100%)
             result.stylize(f"bold {color}")
-        
+
         return result
-    
+
     @staticmethod
     def fade_out(text: str, progress: float, color: str = "white") -> Text:
         """
@@ -334,7 +334,7 @@ class FadeEffect:
             color: Text color
         """
         return FadeEffect.fade_in(text, 1.0 - progress, color)
-    
+
     @staticmethod
     async def fade_in_animated(
         console: Console,
@@ -344,10 +344,10 @@ class FadeEffect:
     ):
         """Animate fade in effect"""
         from rich.live import Live
-        
+
         steps = 20
         delay = duration / steps
-        
+
         with Live(console=console, refresh_per_second=30) as live:
             for i in range(steps + 1):
                 progress = i / steps
@@ -365,7 +365,7 @@ class MicroInteraction:
     - Bounce: Attention grabber
     - Shake: Error indication
     """
-    
+
     @staticmethod
     def pulse(text: str, scale: float = 1.2) -> str:
         """
@@ -379,7 +379,7 @@ class MicroInteraction:
         if scale > 1.0:
             return f" {text} "
         return text
-    
+
     @staticmethod
     async def bounce_text(console: Console, text: str, color: str = "cyan"):
         """
@@ -391,10 +391,10 @@ class MicroInteraction:
             color: Text color
         """
         from rich.live import Live
-        
+
         # Bounce positions (vertical offset simulation)
         positions = [0, -1, -2, -1, 0]  # Simulate bounce
-        
+
         with Live(console=console, refresh_per_second=30) as live:
             for pos in positions:
                 # Simulate vertical offset with newlines
@@ -404,7 +404,7 @@ class MicroInteraction:
                 bounced.append(text, style=f"bold {color}")
                 live.update(bounced)
                 await asyncio.sleep(0.1)
-    
+
     @staticmethod
     async def shake_text(console: Console, text: str, color: str = "red"):
         """
@@ -416,10 +416,10 @@ class MicroInteraction:
             color: Text color (typically red for errors)
         """
         from rich.live import Live
-        
+
         # Shake offsets (horizontal simulation)
         offsets = [0, -1, 1, -1, 1, 0]
-        
+
         with Live(console=console, refresh_per_second=30) as live:
             for offset in offsets:
                 shaken = Text()

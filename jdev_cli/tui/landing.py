@@ -3,12 +3,11 @@ Neuroshell Landing Screen - 2025 Cyberpunk Edition
 High-fidelity TUI with neon aesthetics and system integration.
 """
 
-import asyncio
 import time
 import psutil
 import os
 import random
-from typing import Optional, List, Dict
+from typing import Optional
 from datetime import datetime
 
 from rich.console import Console
@@ -17,10 +16,7 @@ from rich.panel import Panel
 from rich.table import Table
 from rich.text import Text
 from rich.align import Align
-from rich.box import HEAVY, ROUNDED, DOUBLE, SIMPLE
-from rich.style import Style
-from rich.live import Live
-from rich.columns import Columns
+from rich.box import ROUNDED, DOUBLE, SIMPLE
 
 try:
     import pyfiglet
@@ -56,7 +52,7 @@ class LandingScreen:
 
         # Create a gradient effect (simulated with rich styles)
         text = Text(ascii_art, style=f"bold {NEON_CYAN}")
-        
+
         # Subtitle with "glitch" effect
         subtitle = Text()
         subtitle.append(" v2.5 PRO ", style=f"bold black on {NEON_GREEN}")
@@ -79,7 +75,7 @@ class LandingScreen:
         cpu = psutil.cpu_percent()
         mem = psutil.virtual_memory()
         disk = psutil.disk_usage('/')
-        
+
         # HUD Grid
         table = Table.grid(padding=(0, 2), expand=True)
         table.add_column(style=f"bold {NEON_GREEN}")
@@ -89,12 +85,12 @@ class LandingScreen:
         # CPU
         cpu_bar = "█" * int(cpu / 10) + "░" * (10 - int(cpu / 10))
         table.add_row("CPU CORE", f"{cpu}%", f"[{cpu_bar}]")
-        
+
         # MEMORY
         mem_pct = mem.percent
         mem_bar = "█" * int(mem_pct / 10) + "░" * (10 - int(mem_pct / 10))
         table.add_row("NEURAL MEM", f"{mem_pct}%", f"[{mem_bar}]")
-        
+
         # DISK
         disk_pct = disk.percent
         disk_bar = "█" * int(disk_pct / 10) + "░" * (10 - int(disk_pct / 10))
@@ -147,12 +143,12 @@ class LandingScreen:
             table = Table.grid(padding=(0, 1), expand=True)
             table.add_column(style=f"{NEON_MAGENTA}")
             table.add_column(justify="right", style="dim white")
-            
+
             for s in sessions:
                 dt = datetime.fromisoformat(s['last_activity'])
                 time_str = dt.strftime("%H:%M")
                 cwd_name = os.path.basename(s['cwd']) or "root"
-                
+
                 table.add_row(f"⚡ {cwd_name}", time_str)
                 table.add_row(f"   [dim]{s['id'][:8]}...[/dim]", "")
 
@@ -176,7 +172,7 @@ class LandingScreen:
             "TIP: Use natural language for complex tasks"
         ]
         tip = random.choice(tips)
-        
+
         # 2025 style: minimal, tech-focused
         return Panel(
             Align.center(Text(tip, style=f"italic {NEON_CYAN}")),

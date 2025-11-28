@@ -16,7 +16,7 @@ Features:
 """
 
 import time
-from typing import Optional, Callable
+from typing import Optional
 from dataclasses import dataclass
 from rich.console import Console
 from rich.text import Text
@@ -37,7 +37,7 @@ class FeedbackConfig:
 
 class MicroInteraction:
     """Micro-interactions for common UI actions"""
-    
+
     @staticmethod
     def button_press(text: str, pressed: bool = False) -> Text:
         """
@@ -56,9 +56,9 @@ class MicroInteraction:
         else:
             # Normal state
             styled = Text(f"[ {text} ]", style=f"bold {COLORS['text_primary']}")
-        
+
         return styled
-    
+
     @staticmethod
     def selection_highlight(
         text: str,
@@ -88,7 +88,7 @@ class MicroInteraction:
         else:
             # Normal state
             return Text(f"   {text} ", style=COLORS['text_secondary'])
-    
+
     @staticmethod
     def error_shake(console: Console, message: str, shakes: int = 3) -> None:
         """
@@ -104,22 +104,22 @@ class MicroInteraction:
             border_style=COLORS['error'],
             title="❌ Error",
         )
-        
+
         for i in range(shakes * 2):
             # Calculate shake offset
             offset = 2 if i % 2 == 0 else -2
-            
+
             # Clear and reprint with offset
             console.clear()
             console.print(" " * abs(offset) if offset > 0 else "")
             console.print(panel)
-            
+
             time.sleep(0.05)
-        
+
         # Final position (centered)
         console.clear()
         console.print(panel)
-    
+
     @staticmethod
     def success_pulse(
         console: Console,
@@ -138,30 +138,30 @@ class MicroInteraction:
             # Scale up
             for scale in [1.0, 1.1, 1.2, 1.1, 1.0]:
                 console.clear()
-                
+
                 # Simulate scale with extra padding/spacing
                 padding = int(scale * 2) - 2
-                
+
                 panel = Panel(
                     message,
                     border_style=COLORS['success'],
                     title="✅ Success",
                     padding=(padding, padding),
                 )
-                
+
                 console.print(panel)
                 time.sleep(0.05)
-            
+
             time.sleep(0.1)
 
 
 class LoadingState:
     """Loading states with Biblical wisdom"""
-    
+
     def __init__(self, console: Optional[Console] = None):
         self.console = console or Console()
         self.current_verse = None
-    
+
     def show_thinking(
         self,
         operation: str = "Processing",
@@ -175,32 +175,32 @@ class LoadingState:
             show_wisdom: Show Biblical verse
         """
         from .components.status import StatusBadge, SpinnerType
-        
+
         # Get verse if enabled
         verse_text = ""
         if show_wisdom:
             self.current_verse = get_random_verse(category="perseverance")
             verse_text = f"\n\n💎 {self.current_verse['text']}\n   — {self.current_verse['reference']}"
-        
+
         # Create loading panel
         spinner = StatusBadge.loading(
             f"{operation}...",
             spinner_type=SpinnerType.DOTS,
         )
-        
+
         content = Text()
         content.append(spinner.render())
         content.append(verse_text, style=COLORS['text_secondary'])
-        
+
         panel = Panel(
             content,
             border_style=COLORS['accent_purple'],
             title="⏳ Please wait",
             padding=(1, 2),
         )
-        
+
         self.console.print(panel)
-    
+
     def show_progress(
         self,
         current: int,
@@ -216,31 +216,31 @@ class LoadingState:
             operation: Operation description
         """
         from .components.progress import ProgressBar, ProgressConfig
-        
+
         percentage = int((current / total) * 100) if total > 0 else 0
-        
+
         config = ProgressConfig(
             width=40,
             show_percentage=True,
             show_bar=True,
             show_time=True,
         )
-        
+
         progress = ProgressBar(current, total, config)
-        
+
         panel = Panel(
             progress.render(),
             border_style=COLORS['accent_blue'],
             title=f"⚡ {operation}",
             padding=(1, 2),
         )
-        
+
         self.console.print(panel)
 
 
 class StateTransition:
     """Smooth state transitions"""
-    
+
     @staticmethod
     def fade_in(console: Console, content: str, steps: int = 10) -> None:
         """
@@ -254,13 +254,13 @@ class StateTransition:
         for step in range(steps + 1):
             opacity = step / steps
             eased = Easing.ease_out(opacity)
-            
+
             # Simulate opacity with color intensity
             # This is a simplification - real terminals don't support opacity
             alpha_char = " ░▒▓█"[int(eased * 4)]
-            
+
             console.clear()
-            
+
             # Show content with increasing "opacity"
             if eased < 0.3:
                 console.print(f"[dim]{content}[/dim]")
@@ -268,9 +268,9 @@ class StateTransition:
                 console.print(content)
             else:
                 console.print(f"[bold]{content}[/bold]")
-            
+
             time.sleep(0.03)
-    
+
     @staticmethod
     def slide_in(
         console: Console,
@@ -288,13 +288,13 @@ class StateTransition:
             steps: Number of animation steps
         """
         width = console.width
-        
+
         for step in range(steps + 1):
             progress = step / steps
             eased = Easing.ease_out(progress)
-            
+
             console.clear()
-            
+
             if direction == "left":
                 offset = int(width * (1 - eased))
                 console.print(" " * offset + content)
@@ -306,7 +306,7 @@ class StateTransition:
                     lines_offset = int(10 * (1 - eased))
                     console.print("\n" * lines_offset)
                 console.print(content)
-            
+
             time.sleep(0.02)
 
 
@@ -317,14 +317,14 @@ class HapticFeedback:
     Since terminal can't provide true haptic feedback,
     we use rapid visual changes to create similar effect
     """
-    
+
     @staticmethod
     def tap(console: Console) -> None:
         """Light tap feedback"""
         # Quick flash
         console.print("✓", style="bold green")
         time.sleep(0.05)
-    
+
     @staticmethod
     def error_buzz(console: Console) -> None:
         """Error buzz feedback (like wrong password)"""
@@ -334,7 +334,7 @@ class HapticFeedback:
             time.sleep(0.05)
             console.clear()
             time.sleep(0.05)
-    
+
     @staticmethod
     def success_pop(console: Console) -> None:
         """Success pop feedback"""

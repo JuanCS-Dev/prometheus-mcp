@@ -12,12 +12,12 @@ def main():
         level=logging.INFO,
         format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
     )
-    
+
     config = MCPConfig.from_env()
     config.enabled = True
-    
+
     registry = get_default_registry()
-    
+
     try:
         asyncio.run(run_mcp_server(registry, config))
     except KeyboardInterrupt:

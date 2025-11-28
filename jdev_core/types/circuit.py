@@ -124,7 +124,7 @@ class CircuitBreaker:
             return True, "Circuit closed"
 
         if current_state == CircuitState.OPEN:
-            return False, f"Circuit open (cooling down)"
+            return False, "Circuit open (cooling down)"
 
         # HALF_OPEN state
         if self._half_open_calls < self.config.half_open_max_calls:

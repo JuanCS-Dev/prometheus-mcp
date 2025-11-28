@@ -13,9 +13,9 @@ import asyncio
 import time
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import Any, Dict, List, Optional
+from typing import Dict, List, Optional
 
-from .context import get_current_tenant, TenantContext
+from .context import get_current_tenant
 from .tenant import Tenant, TenantConfig
 
 

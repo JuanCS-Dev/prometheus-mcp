@@ -19,7 +19,7 @@ import subprocess
 from typing import Any, Dict, List
 
 from jdev_cli.tools.base import Tool, ToolCategory, ToolResult
-from jdev_cli.tools.git.safety import validate_git_command, validate_commit_message
+from jdev_cli.tools.git.safety import validate_commit_message
 from jdev_cli.tools.git.inspect_tools import run_git_command
 
 logger = logging.getLogger(__name__)

@@ -20,7 +20,7 @@ from __future__ import annotations
 import json
 import logging
 import re
-from typing import Any, Dict, List, Optional, Set, Tuple
+from typing import Any, Dict, List, Set, Tuple
 
 logger = logging.getLogger(__name__)
 
@@ -368,7 +368,7 @@ class ToolCallParser:
             Cleaned text without markers
         """
         text = MARKER_PATTERN.sub('', text)
-        
+
         # Remove legacy JSON patterns
         text = LEGACY_JSON_PATTERN.sub('', text)
 

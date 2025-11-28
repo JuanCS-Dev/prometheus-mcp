@@ -12,7 +12,6 @@ Date: 2025-11-27
 import pytest
 import asyncio
 import time
-from pathlib import Path
 
 
 class TestParallelToolExecution:
@@ -34,7 +33,7 @@ class TestParallelToolExecution:
         # Find multiple files
         files = list(sample_python_project.rglob("*.py"))[:5]
 
-        tool_calls = [(f"read_file", {"path": str(f)}) for f in files]
+        tool_calls = [("read_file", {"path": str(f)}) for f in files]
 
         start = time.time()
         result = await executor.execute(tool_calls)
@@ -368,7 +367,7 @@ class TestConcurrentStressTest:
         # Get all python files
         files = list(sample_python_project.rglob("*.py"))[:50]
 
-        tool_calls = [(f"read_file", {"path": str(f)}) for f in files]
+        tool_calls = [("read_file", {"path": str(f)}) for f in files]
 
         result = await executor.execute(tool_calls)
 

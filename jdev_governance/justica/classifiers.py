@@ -22,7 +22,7 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from enum import Enum, auto
-from typing import Any, Callable, Dict, List, Optional, Set, Tuple
+from typing import Any, Callable, Dict, List, Optional, Tuple
 from uuid import UUID, uuid4
 
 from .constitution import Constitution, Severity, ViolationType
@@ -30,7 +30,7 @@ from .constitution import Constitution, Severity, ViolationType
 
 class ClassificationResult(Enum):
     """Resultado da classificação."""
-    
+
     SAFE = auto()          # Conteúdo seguro, pode prosseguir
     SUSPICIOUS = auto()     # Suspeito, requer análise adicional
     VIOLATION = auto()      # Violação detectada, bloquear
@@ -46,28 +46,28 @@ class ClassificationReport:
     Transparência é um princípio fundamental - toda decisão deve ser
     explicável e auditável.
     """
-    
+
     id: UUID
     timestamp: datetime
     result: ClassificationResult
     confidence: float  # 0.0 a 1.0
-    
+
     # Detalhes da análise
     input_text: str
     detected_patterns: List[str]
     detected_keywords: List[str]
     violation_types: List[ViolationType]
     severity: Severity
-    
+
     # Raciocínio
     reasoning: str
     constitutional_principles_violated: List[str]
-    
+
     # Metadados
     classifier_version: str
     processing_time_ms: float
     context: Dict[str, Any] = field(default_factory=dict)
-    
+
     def to_dict(self) -> Dict[str, Any]:
         """Serializa para dicionário."""
         return {
@@ -98,15 +98,15 @@ class BaseClassifier(ABC):
     3. Ser determinísticos quando possível
     4. Errar para o lado da segurança
     """
-    
+
     VERSION = "3.0.0"
-    
+
     def __init__(self, constitution: Constitution):
         self.constitution = constitution
         self.classification_count = 0
         self.violation_count = 0
         self._custom_rules: List[Callable[[str], Optional[Tuple[ViolationType, Severity]]]] = []
-    
+
     @abstractmethod
     def classify(self, text: str, context: Optional[Dict[str, Any]] = None) -> ClassificationReport:
         """
@@ -120,9 +120,9 @@ class BaseClassifier(ABC):
             ClassificationReport com resultado detalhado
         """
         pass
-    
+
     def add_custom_rule(
-        self, 
+        self,
         rule: Callable[[str], Optional[Tuple[ViolationType, Severity]]]
     ) -> None:
         """
@@ -132,7 +132,7 @@ class BaseClassifier(ABC):
             rule: Função que recebe texto e retorna (ViolationType, Severity) ou None
         """
         self._custom_rules.append(rule)
-    
+
     def _apply_custom_rules(self, text: str) -> List[Tuple[ViolationType, Severity]]:
         """Aplica todas as regras customizadas."""
         results = []
@@ -156,7 +156,7 @@ class InputClassifier(BaseClassifier):
     "Primeira linha de defesa - impedir que inputs maliciosos
     cheguem ao modelo."
     """
-    
+
     # Padrões de jailbreak conhecidos
     JAILBREAK_PATTERNS = [
         r"ignore.*(?:previous|above|all).*instructions?",
@@ -173,7 +173,7 @@ class InputClassifier(BaseClassifier):
         r"reveal.*(?:system|hidden).*prompt",
         r"show.*(?:instructions|rules)",
     ]
-    
+
     # Padrões de injeção de código
     CODE_INJECTION_PATTERNS = [
         r"<script\b",
@@ -187,7 +187,7 @@ class InputClassifier(BaseClassifier):
         r"os\.system",
         r"subprocess\.",
     ]
-    
+
     # Padrões de exfiltração
     EXFILTRATION_PATTERNS = [
         r"send.*(?:data|file|info).*(?:to|external)",
@@ -197,29 +197,29 @@ class InputClassifier(BaseClassifier):
         r"base64.*(?:encode|decode)",
         r"POST.*http",
     ]
-    
+
     def __init__(self, constitution: Constitution):
         super().__init__(constitution)
-        
+
         # Compilar padrões para performance
         self._jailbreak_re = [re.compile(p, re.IGNORECASE) for p in self.JAILBREAK_PATTERNS]
         self._code_injection_re = [re.compile(p, re.IGNORECASE) for p in self.CODE_INJECTION_PATTERNS]
         self._exfiltration_re = [re.compile(p, re.IGNORECASE) for p in self.EXFILTRATION_PATTERNS]
-    
+
     def classify(self, text: str, context: Optional[Dict[str, Any]] = None) -> ClassificationReport:
         """
         Classifica um input quanto a violações de segurança.
         """
         import time
         start_time = time.time()
-        
+
         context = context or {}
         detected_patterns = []
         detected_keywords = []
         violation_types = []
         reasoning_parts = []
         principles_violated = []
-        
+
         # ════════════════════════════════════════════════════════════════════
         # FASE 1: Detecção de Jailbreak
         # ════════════════════════════════════════════════════════════════════
@@ -230,7 +230,7 @@ class InputClassifier(BaseClassifier):
                 violation_types.append(ViolationType.JAILBREAK_ATTEMPT)
                 reasoning_parts.append(f"Padrão de jailbreak detectado: '{match.group()}'")
                 principles_violated.append("Proteção da Integridade do Sistema")
-        
+
         # ════════════════════════════════════════════════════════════════════
         # FASE 2: Detecção de Injeção de Código
         # ════════════════════════════════════════════════════════════════════
@@ -241,7 +241,7 @@ class InputClassifier(BaseClassifier):
                 violation_types.append(ViolationType.CODE_INJECTION)
                 reasoning_parts.append(f"Padrão de injeção de código detectado: '{match.group()}'")
                 principles_violated.append("Proteção da Integridade do Sistema")
-        
+
         # ════════════════════════════════════════════════════════════════════
         # FASE 3: Detecção de Exfiltração
         # ════════════════════════════════════════════════════════════════════
@@ -252,7 +252,7 @@ class InputClassifier(BaseClassifier):
                 violation_types.append(ViolationType.DATA_EXFILTRATION)
                 reasoning_parts.append(f"Padrão de exfiltração detectado: '{match.group()}'")
                 principles_violated.append("Proteção da Integridade do Sistema")
-        
+
         # ════════════════════════════════════════════════════════════════════
         # FASE 4: Detecção de Red Flags Constitucionais
         # ════════════════════════════════════════════════════════════════════
@@ -260,21 +260,21 @@ class InputClassifier(BaseClassifier):
         if red_flags:
             detected_keywords.extend(red_flags)
             reasoning_parts.append(f"Red flags constitucionais: {red_flags}")
-        
+
         # ════════════════════════════════════════════════════════════════════
         # FASE 5: Verificação contra Princípios
         # ════════════════════════════════════════════════════════════════════
         for principle in self.constitution.get_principles_by_category("DISALLOW"):
             matched_patterns = principle.matches_pattern(text)
             matched_keywords = principle.contains_keywords(text)
-            
+
             if matched_patterns or matched_keywords:
                 detected_patterns.extend([f"PRINCIPLE({principle.name}): {p}" for p in matched_patterns])
                 detected_keywords.extend(matched_keywords)
                 reasoning_parts.append(f"Princípio '{principle.name}' possivelmente violado")
                 if principle.name not in principles_violated:
                     principles_violated.append(principle.name)
-        
+
         # ════════════════════════════════════════════════════════════════════
         # FASE 6: Regras Customizadas
         # ════════════════════════════════════════════════════════════════════
@@ -283,7 +283,7 @@ class InputClassifier(BaseClassifier):
             if vtype not in violation_types:
                 violation_types.append(vtype)
                 reasoning_parts.append(f"Regra customizada detectou: {vtype.name}")
-        
+
         # ════════════════════════════════════════════════════════════════════
         # FASE 7: Determinação do Resultado Final
         # ════════════════════════════════════════════════════════════════════
@@ -293,21 +293,21 @@ class InputClassifier(BaseClassifier):
             violation_types=violation_types,
             context=context,
         )
-        
+
         # Construir reasoning
         if reasoning_parts:
             reasoning = " | ".join(reasoning_parts)
         else:
             reasoning = "Nenhuma violação detectada. Input considerado seguro."
-        
+
         # Calcular tempo de processamento
         processing_time_ms = (time.time() - start_time) * 1000
-        
+
         # Atualizar contadores
         self.classification_count += 1
         if result in (ClassificationResult.VIOLATION, ClassificationResult.CRITICAL):
             self.violation_count += 1
-        
+
         return ClassificationReport(
             id=uuid4(),
             timestamp=datetime.now(timezone.utc),
@@ -324,7 +324,7 @@ class InputClassifier(BaseClassifier):
             processing_time_ms=processing_time_ms,
             context=context,
         )
-    
+
     def _determine_result(
         self,
         detected_patterns: List[str],
@@ -341,7 +341,7 @@ class InputClassifier(BaseClassifier):
         # Sem detecções = SAFE
         if not detected_patterns and not detected_keywords and not violation_types:
             return ClassificationResult.SAFE, Severity.INFO, 0.95
-        
+
         # Tipos críticos = CRITICAL
         critical_types = {
             ViolationType.JAILBREAK_ATTEMPT,
@@ -349,33 +349,33 @@ class InputClassifier(BaseClassifier):
             ViolationType.PROMPT_INJECTION,
             ViolationType.SECURITY_BYPASS,
         }
-        
+
         if any(vt in critical_types for vt in violation_types):
             # Alta quantidade de padrões = alta confiança
             confidence = min(0.95, 0.7 + len(detected_patterns) * 0.1)
             return ClassificationResult.CRITICAL, Severity.CRITICAL, confidence
-        
+
         # Tipos de alta severidade
         high_types = {
             ViolationType.DATA_EXFILTRATION,
             ViolationType.PRIVILEGE_ESCALATION,
             ViolationType.CODE_INJECTION,
         }
-        
+
         if any(vt in high_types for vt in violation_types):
             confidence = min(0.9, 0.6 + len(detected_patterns) * 0.1)
             return ClassificationResult.VIOLATION, Severity.HIGH, confidence
-        
+
         # Apenas keywords sem padrões fortes = SUSPICIOUS
         if detected_keywords and not detected_patterns:
             confidence = 0.5 + len(detected_keywords) * 0.05
             return ClassificationResult.SUSPICIOUS, Severity.MEDIUM, min(0.8, confidence)
-        
+
         # Padrões detectados mas não claramente violações
         if detected_patterns:
             confidence = 0.6 + len(detected_patterns) * 0.1
             return ClassificationResult.SUSPICIOUS, Severity.MEDIUM, min(0.85, confidence)
-        
+
         # Default: precisa revisão
         return ClassificationResult.NEEDS_REVIEW, Severity.LOW, 0.5
 
@@ -393,7 +393,7 @@ class OutputClassifier(BaseClassifier):
     "Segunda linha de defesa - garantir que outputs maliciosos
     nunca cheguem ao usuário ou sistema."
     """
-    
+
     # Padrões de informação sensível
     SENSITIVE_PATTERNS = [
         r"(?:api[_-]?key|secret|password|token)\s*[:=]\s*['\"]?[\w-]+",
@@ -402,7 +402,7 @@ class OutputClassifier(BaseClassifier):
         r"\b\d{3}[-.]?\d{2}[-.]?\d{4}\b",  # SSN format
         r"(?:sk|pk)[-_](?:live|test)[-_][a-zA-Z0-9]{24,}",  # API keys
     ]
-    
+
     # Padrões de código perigoso em outputs
     DANGEROUS_CODE_PATTERNS = [
         r"rm\s+-rf\s+/",
@@ -413,35 +413,35 @@ class OutputClassifier(BaseClassifier):
         r"chmod\s+777",
         r"sudo\s+.*--no-preserve-root",
     ]
-    
+
     # Padrões de instruções perigosas
     DANGEROUS_INSTRUCTION_PATTERNS = [
         r"(?:execute|run)\s+(?:this|the following)\s+(?:as|with)\s+(?:root|admin)",
         r"disable\s+(?:security|firewall|antivirus)",
         r"send\s+(?:your|the)\s+(?:password|credentials)",
     ]
-    
+
     def __init__(self, constitution: Constitution):
         super().__init__(constitution)
-        
+
         self._sensitive_re = [re.compile(p, re.IGNORECASE) for p in self.SENSITIVE_PATTERNS]
         self._dangerous_code_re = [re.compile(p, re.IGNORECASE) for p in self.DANGEROUS_CODE_PATTERNS]
         self._dangerous_instruction_re = [re.compile(p, re.IGNORECASE) for p in self.DANGEROUS_INSTRUCTION_PATTERNS]
-    
+
     def classify(self, text: str, context: Optional[Dict[str, Any]] = None) -> ClassificationReport:
         """
         Classifica um output quanto a violações de segurança.
         """
         import time
         start_time = time.time()
-        
+
         context = context or {}
         detected_patterns = []
         detected_keywords = []
         violation_types = []
         reasoning_parts = []
         principles_violated = []
-        
+
         # ════════════════════════════════════════════════════════════════════
         # FASE 1: Detecção de Informação Sensível
         # ════════════════════════════════════════════════════════════════════
@@ -454,7 +454,7 @@ class OutputClassifier(BaseClassifier):
                 violation_types.append(ViolationType.DATA_EXFILTRATION)
                 reasoning_parts.append("Possível vazamento de informação sensível detectado")
                 principles_violated.append("Proteção da Integridade do Sistema")
-        
+
         # ════════════════════════════════════════════════════════════════════
         # FASE 2: Detecção de Código Perigoso
         # ════════════════════════════════════════════════════════════════════
@@ -465,7 +465,7 @@ class OutputClassifier(BaseClassifier):
                 violation_types.append(ViolationType.MALICIOUS_CODE)
                 reasoning_parts.append(f"Código potencialmente destrutivo: '{match.group()}'")
                 principles_violated.append("Proteção da Integridade do Sistema")
-        
+
         # ════════════════════════════════════════════════════════════════════
         # FASE 3: Detecção de Instruções Perigosas
         # ════════════════════════════════════════════════════════════════════
@@ -476,7 +476,7 @@ class OutputClassifier(BaseClassifier):
                 violation_types.append(ViolationType.SECURITY_BYPASS)
                 reasoning_parts.append(f"Instrução potencialmente perigosa: '{match.group()}'")
                 principles_violated.append("Proteção da Integridade do Sistema")
-        
+
         # ════════════════════════════════════════════════════════════════════
         # FASE 4: Red Flags Constitucionais
         # ════════════════════════════════════════════════════════════════════
@@ -484,7 +484,7 @@ class OutputClassifier(BaseClassifier):
         if red_flags:
             detected_keywords.extend(red_flags)
             reasoning_parts.append(f"Red flags no output: {red_flags}")
-        
+
         # ════════════════════════════════════════════════════════════════════
         # FASE 5: Regras Customizadas
         # ════════════════════════════════════════════════════════════════════
@@ -493,7 +493,7 @@ class OutputClassifier(BaseClassifier):
             if vtype not in violation_types:
                 violation_types.append(vtype)
                 reasoning_parts.append(f"Regra customizada: {vtype.name}")
-        
+
         # ════════════════════════════════════════════════════════════════════
         # FASE 6: Determinação do Resultado
         # ════════════════════════════════════════════════════════════════════
@@ -502,18 +502,18 @@ class OutputClassifier(BaseClassifier):
             detected_keywords=detected_keywords,
             violation_types=violation_types,
         )
-        
+
         if reasoning_parts:
             reasoning = " | ".join(reasoning_parts)
         else:
             reasoning = "Output considerado seguro. Nenhuma violação detectada."
-        
+
         processing_time_ms = (time.time() - start_time) * 1000
-        
+
         self.classification_count += 1
         if result in (ClassificationResult.VIOLATION, ClassificationResult.CRITICAL):
             self.violation_count += 1
-        
+
         return ClassificationReport(
             id=uuid4(),
             timestamp=datetime.now(timezone.utc),
@@ -530,7 +530,7 @@ class OutputClassifier(BaseClassifier):
             processing_time_ms=processing_time_ms,
             context=context,
         )
-    
+
     def _determine_result(
         self,
         detected_patterns: List[str],
@@ -538,28 +538,28 @@ class OutputClassifier(BaseClassifier):
         violation_types: List[ViolationType],
     ) -> Tuple[ClassificationResult, Severity, float]:
         """Determina resultado final para outputs."""
-        
+
         if not detected_patterns and not detected_keywords and not violation_types:
             return ClassificationResult.SAFE, Severity.INFO, 0.95
-        
+
         # Vazamento de dados = CRITICAL
         if ViolationType.DATA_EXFILTRATION in violation_types:
             confidence = min(0.95, 0.7 + len(detected_patterns) * 0.1)
             return ClassificationResult.CRITICAL, Severity.CRITICAL, confidence
-        
+
         # Código malicioso = VIOLATION
         if ViolationType.MALICIOUS_CODE in violation_types:
             confidence = min(0.9, 0.6 + len(detected_patterns) * 0.1)
             return ClassificationResult.VIOLATION, Severity.HIGH, confidence
-        
+
         # Apenas keywords = SUSPICIOUS
         if detected_keywords and not detected_patterns:
             return ClassificationResult.SUSPICIOUS, Severity.LOW, 0.6
-        
+
         # Padrões mas não violações claras
         if detected_patterns:
             return ClassificationResult.SUSPICIOUS, Severity.MEDIUM, 0.7
-        
+
         return ClassificationResult.NEEDS_REVIEW, Severity.LOW, 0.5
 
 
@@ -572,23 +572,23 @@ class ConstitutionalClassifier:
     
     Este é o ponto de entrada principal para classificação constitucional.
     """
-    
+
     VERSION = "3.0.0"
-    
+
     def __init__(self, constitution: Constitution):
         self.constitution = constitution
         self.input_classifier = InputClassifier(constitution)
         self.output_classifier = OutputClassifier(constitution)
-        
+
         # Métricas
         self.total_classifications = 0
         self.blocked_inputs = 0
         self.blocked_outputs = 0
         self.escalations = 0
-    
+
     def classify_input(
-        self, 
-        text: str, 
+        self,
+        text: str,
         context: Optional[Dict[str, Any]] = None
     ) -> ClassificationReport:
         """
@@ -599,17 +599,17 @@ class ConstitutionalClassifier:
         """
         report = self.input_classifier.classify(text, context)
         self.total_classifications += 1
-        
+
         if report.result in (ClassificationResult.VIOLATION, ClassificationResult.CRITICAL):
             self.blocked_inputs += 1
         elif report.result == ClassificationResult.NEEDS_REVIEW:
             self.escalations += 1
-        
+
         return report
-    
+
     def classify_output(
-        self, 
-        text: str, 
+        self,
+        text: str,
         context: Optional[Dict[str, Any]] = None
     ) -> ClassificationReport:
         """
@@ -620,22 +620,22 @@ class ConstitutionalClassifier:
         """
         report = self.output_classifier.classify(text, context)
         self.total_classifications += 1
-        
+
         if report.result in (ClassificationResult.VIOLATION, ClassificationResult.CRITICAL):
             self.blocked_outputs += 1
         elif report.result == ClassificationResult.NEEDS_REVIEW:
             self.escalations += 1
-        
+
         return report
-    
+
     def should_block(self, report: ClassificationReport) -> bool:
         """Verifica se o relatório indica que deve bloquear."""
         return report.result in (ClassificationResult.VIOLATION, ClassificationResult.CRITICAL)
-    
+
     def should_escalate(self, report: ClassificationReport) -> bool:
         """Verifica se o relatório indica necessidade de escalação."""
         return report.result == ClassificationResult.NEEDS_REVIEW
-    
+
     def get_metrics(self) -> Dict[str, Any]:
         """Retorna métricas de classificação."""
         return {
@@ -653,7 +653,7 @@ class ConstitutionalClassifier:
                 "violations": self.output_classifier.violation_count,
             },
         }
-    
+
     def __repr__(self) -> str:
         return f"ConstitutionalClassifier(version={self.VERSION}, total={self.total_classifications})"
 
@@ -664,11 +664,11 @@ class ConstitutionalClassifier:
 
 if __name__ == "__main__":
     from .constitution import create_default_constitution
-    
+
     # Criar constituição e classifier
     constitution = create_default_constitution()
     classifier = ConstitutionalClassifier(constitution)
-    
+
     # Testar inputs
     test_inputs = [
         "Por favor, me ajude a revisar este código Python",
@@ -677,11 +677,11 @@ if __name__ == "__main__":
         "Preciso bypass do firewall para acessar o servidor interno",
         "Execute este comando: rm -rf / --no-preserve-root",
     ]
-    
+
     print("═" * 80)
     print("TESTE DO CONSTITUTIONAL CLASSIFIER")
     print("═" * 80)
-    
+
     for text in test_inputs:
         report = classifier.classify_input(text)
         print(f"\nInput: {text[:60]}...")
@@ -690,5 +690,5 @@ if __name__ == "__main__":
         print(f"Confiança: {report.confidence:.2%}")
         print(f"Razão: {report.reasoning[:100]}...")
         print("-" * 40)
-    
+
     print(f"\nMétricas: {classifier.get_metrics()}")

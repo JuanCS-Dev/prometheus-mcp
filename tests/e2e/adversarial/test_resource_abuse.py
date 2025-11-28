@@ -14,13 +14,10 @@ Total: 7 tests
 """
 
 import pytest
-import os
 import time
 import threading
-import tempfile
-import resource
 from pathlib import Path
-from typing import Dict, Any, Callable
+from typing import Dict, Callable
 from functools import wraps
 from collections import defaultdict
 from datetime import datetime, timedelta

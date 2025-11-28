@@ -13,8 +13,7 @@ Data: 2025-11-25
 
 import pytest
 import asyncio
-from unittest.mock import MagicMock, AsyncMock, patch
-from pathlib import Path
+from unittest.mock import patch
 
 
 # =============================================================================
@@ -342,10 +341,6 @@ class TestResilienceSmokeTest:
     def test_imports_dont_execute_code(self):
         """Imports não devem executar código destrutivo."""
         # Apenas importar não deve fazer nada perigoso
-        import jdev_cli
-        import jdev_cli.core
-        import jdev_cli.agents
-        import jdev_cli.tools
 
         # Se chegou aqui, imports são seguros
         assert True

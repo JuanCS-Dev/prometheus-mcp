@@ -22,38 +22,23 @@ pip install pytest pytest-asyncio pytest-timeout pytest-benchmark pytest-cov fak
 import pytest
 import asyncio
 import time
-import sys
 import io
-import threading
-from unittest.mock import Mock, AsyncMock, patch, MagicMock
-from contextlib import contextmanager
-from typing import List, Dict, Any
 import gc
 import tracemalloc
-from dataclasses import dataclass
 
 # Import components to test
 from jdev_cli.tui.components.maestro_shell_ui import (
     MaestroShellUI,
-    AgentStreamPanel,
-    create_maestro_ui
+    AgentStreamPanel
 )
 from jdev_cli.tui.components.agent_stream_panel import (
-    AgentStreamPanel,
-    create_executor_panel,
-    create_planner_panel
+    AgentStreamPanel
 )
 from jdev_cli.tui.components.file_operations_panel import (
-    FileOperationsPanel,
-    create_file_operation_from_event
-)
-from jdev_cli.tui.components.command_palette_bar import (
-    CommandPaletteBar,
-    create_default_palette
+    FileOperationsPanel
 )
 from jdev_cli.tui.components.metrics_dashboard import (
-    MetricsDashboard,
-    create_metrics_text
+    MetricsDashboard
 )
 from jdev_cli.tui.components.maestro_data_structures import (
     AgentState,

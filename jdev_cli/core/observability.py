@@ -115,7 +115,7 @@ def setup_observability(
 
         logger.info(f"✓ Observability initialized: {service_name}")
         logger.info(f"  - Console export: {enable_console}")
-        logger.info(f"  - OpenTelemetry enabled")
+        logger.info("  - OpenTelemetry enabled")
 
     except Exception as e:
         logger.error(f"❌ Failed to setup observability: {e}")

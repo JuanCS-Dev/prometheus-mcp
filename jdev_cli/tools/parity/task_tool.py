@@ -13,7 +13,6 @@ Date: 2025-11-27
 
 from __future__ import annotations
 
-import asyncio
 import datetime
 import logging
 from typing import Any, Dict, List, Optional
@@ -417,7 +416,7 @@ Report results clearly."""
         return {
             "type": agent_type,
             "summary": f"Task queued for {agent_type}: {prompt[:200]}...",
-            "hint": f"LLM not available. Configure GEMINI_API_KEY to enable full subagent capabilities.",
+            "hint": "LLM not available. Configure GEMINI_API_KEY to enable full subagent capabilities.",
             "status": "queued",
             "fallback": True
         }

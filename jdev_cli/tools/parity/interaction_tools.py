@@ -19,7 +19,7 @@ import datetime
 import logging
 import time
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List
 
 from jdev_cli.tools.base import Tool, ToolCategory, ToolResult
 from jdev_cli.tools._parity_utils import COMMAND_SEARCH_PATHS, SKILL_CACHE_TTL

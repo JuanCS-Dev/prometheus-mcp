@@ -4,14 +4,12 @@ Implements smooth token-by-token display with intelligent truncation and batchin
 """
 
 import time
-import asyncio
 from typing import AsyncIterator, Optional
 from collections import deque
 
 from rich.console import Console
 from rich.panel import Panel
 from rich.text import Text
-from rich.markdown import Markdown
 from rich.live import Live
 
 

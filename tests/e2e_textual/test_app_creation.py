@@ -4,13 +4,9 @@ Tests the ability to create complete applications from scratch.
 """
 
 import pytest
-import asyncio
 import time
-import os
-from pathlib import Path
-from unittest.mock import patch, MagicMock, AsyncMock
 
-from .conftest import TestResult, get_report
+from .conftest import TestResult
 
 
 class TestAppCreation:
@@ -30,7 +26,6 @@ class TestAppCreation:
         try:
             # Import tools
             from jdev_cli.tools.file_ops import WriteFileTool, ReadFileTool
-            from jdev_cli.tools.search import SearchFilesTool
 
             write_tool = WriteFileTool()
             read_tool = ReadFileTool()

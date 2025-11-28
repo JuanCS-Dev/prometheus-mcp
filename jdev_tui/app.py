@@ -27,7 +27,7 @@ from textual.widgets import Footer, Header, Input
 from textual import on, events
 
 # Local imports
-from jdev_tui.constants import BANNER, HELP_TEXT
+from jdev_tui.constants import HELP_TEXT
 from jdev_tui.widgets import AutocompleteDropdown, ResponseView, StatusBar
 from jdev_tui.handlers import CommandRouter
 from jdev_tui.themes import THEME_LIGHT, THEME_DARK, ThemeManager

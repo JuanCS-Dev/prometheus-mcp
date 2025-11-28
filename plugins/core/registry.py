@@ -14,9 +14,9 @@ Date: 2025-11-26
 
 import logging
 from pathlib import Path
-from typing import Dict, List, Optional, Set, Any, Callable, Awaitable
+from typing import Dict, List, Optional, Set, Any
 
-from .base import Plugin, PluginMetadata, PluginContext, PluginState
+from .base import Plugin, PluginMetadata, PluginContext
 from .loader import PluginLoader
 
 logger = logging.getLogger(__name__)

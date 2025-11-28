@@ -25,16 +25,16 @@ async def test_shell_squad_command(mock_squad_class):
     with patch("jdev_cli.shell.MCPClient"):
         shell = InteractiveShell()
     shell.console = MagicMock()
-    
+
     # Test /squad command
     await shell._handle_system_command("/squad Create a new feature")
-    
+
     # Verify output
     shell.console.print.assert_called()
     calls = [str(call) for call in shell.console.print.mock_calls]
     assert any("DevSquad Mission" in c for c in calls)
     assert any("Create a new feature" in c for c in calls)
-    
+
     # Verify execution
     shell.squad.execute_workflow.assert_called_once()
     assert any("Workflow Completed Successfully" in c for c in calls)
@@ -46,10 +46,10 @@ async def test_shell_workflow_list_command():
     with patch("jdev_cli.shell.MCPClient"), patch("jdev_cli.shell.DevSquad"):
         shell = InteractiveShell()
     shell.console = MagicMock()
-    
+
     # Test /workflow list
     await shell._handle_system_command("/workflow list")
-    
+
     # Verify output
     shell.console.print.assert_called()
     # Check if any call argument is a Table with correct title
@@ -69,17 +69,17 @@ async def test_shell_workflow_run_command(mock_squad_class):
     with patch("jdev_cli.shell.MCPClient"):
         shell = InteractiveShell()
     shell.console = MagicMock()
-    
+
     # Test /workflow run
     await shell._handle_system_command("/workflow run setup-fastapi")
-    
+
     # Verify output
     shell.console.print.assert_called()
     calls = [str(call) for call in shell.console.print.mock_calls]
     assert any("Starting Workflow" in c for c in calls)
     assert any("setup-fastapi" in c for c in calls)
     assert any("Execution Plan" in c for c in calls)
-    
+
     # Verify execution
     shell.squad.execute_workflow.assert_called_once()
     assert any("Workflow Completed Successfully" in c for c in calls)

@@ -4,7 +4,6 @@ Tests for connection pool.
 SCALE & SUSTAIN Phase 3.2 validation.
 """
 
-import asyncio
 import pytest
 
 from jdev_core.connections import (

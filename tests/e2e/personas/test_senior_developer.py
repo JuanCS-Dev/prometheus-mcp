@@ -19,21 +19,17 @@ Total: 30 tests
 
 import pytest
 import asyncio
-import tempfile
 import os
-import json
 from pathlib import Path
-from datetime import datetime
-from typing import Dict, Any, List
-from unittest.mock import AsyncMock, MagicMock, patch
+from unittest.mock import patch
 
 # Import test utilities
 import sys
 sys.path.insert(0, str(Path(__file__).parent.parent.parent.parent))
 
-from jdev_cli.core.input_validator import InputValidator, ValidationResult
-from jdev_cli.core.atomic_ops import AtomicFileOps, AtomicResult
-from jdev_cli.core.error_presenter import ErrorPresenter, PresentedError
+from jdev_cli.core.input_validator import InputValidator
+from jdev_cli.core.atomic_ops import AtomicFileOps
+from jdev_cli.core.error_presenter import ErrorPresenter
 from jdev_cli.core.session_manager import SessionManager
 from jdev_cli.core.audit_logger import AuditLogger, AuditEventType
 

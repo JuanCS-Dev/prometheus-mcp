@@ -3,12 +3,11 @@
 
 import asyncio
 import tempfile
-import shutil
 from pathlib import Path
 
 from jdev_cli.tools.file_ops import (
     ReadFileTool, WriteFileTool, EditFileTool,
-    ListDirectoryTool, DeleteFileTool
+    ListDirectoryTool
 )
 from jdev_cli.tools.file_mgmt import (
     MoveFileTool, CopyFileTool, CreateDirectoryTool,
@@ -22,10 +21,10 @@ from jdev_cli.tools.git_ops import GitStatusTool, GitDiffTool
 async def test_file_ops():
     """Test file operation tools."""
     print("\n🧪 Testing File Operations...")
-    
+
     with tempfile.TemporaryDirectory() as tmpdir:
         test_file = Path(tmpdir) / "test.txt"
-        
+
         # Test write_file
         print("  Testing write_file...")
         write_tool = WriteFileTool()
@@ -36,7 +35,7 @@ async def test_file_ops():
         assert result.success, f"write_file failed: {result.error}"
         assert test_file.exists()
         print("    ✓ write_file works")
-        
+
         # Test read_file
         print("  Testing read_file...")
         read_tool = ReadFileTool()
@@ -45,7 +44,7 @@ async def test_file_ops():
         assert "Hello World" in result.data
         assert result.metadata['lines'] == 2
         print("    ✓ read_file works")
-        
+
         # Test edit_file
         print("  Testing edit_file...")
         edit_tool = EditFileTool()
@@ -57,7 +56,7 @@ async def test_file_ops():
         content = test_file.read_text()
         assert "Hello Python" in content
         print("    ✓ edit_file works")
-        
+
         # Test list_directory
         print("  Testing list_directory...")
         list_tool = ListDirectoryTool()
@@ -65,7 +64,7 @@ async def test_file_ops():
         assert result.success
         assert len(result.data['files']) == 1
         print("    ✓ list_directory works")
-        
+
         # Test insert_lines
         print("  Testing insert_lines...")
         insert_tool = InsertLinesTool()
@@ -83,14 +82,14 @@ async def test_file_ops():
 async def test_file_mgmt():
     """Test file management tools."""
     print("\n🧪 Testing File Management...")
-    
+
     with tempfile.TemporaryDirectory() as tmpdir:
         tmpdir = Path(tmpdir)
-        
+
         # Create test file
         test_file = tmpdir / "original.txt"
         test_file.write_text("Test content")
-        
+
         # Test copy_file
         print("  Testing copy_file...")
         copy_tool = CopyFileTool()
@@ -101,7 +100,7 @@ async def test_file_mgmt():
         assert result.success
         assert (tmpdir / "copy.txt").exists()
         print("    ✓ copy_file works")
-        
+
         # Test move_file
         print("  Testing move_file...")
         move_tool = MoveFileTool()
@@ -113,7 +112,7 @@ async def test_file_mgmt():
         assert (tmpdir / "moved.txt").exists()
         assert not (tmpdir / "copy.txt").exists()
         print("    ✓ move_file works")
-        
+
         # Test create_directory
         print("  Testing create_directory...")
         mkdir_tool = CreateDirectoryTool()
@@ -121,7 +120,7 @@ async def test_file_mgmt():
         assert result.success
         assert (tmpdir / "newdir").is_dir()
         print("    ✓ create_directory works")
-        
+
         # Test read_multiple_files
         print("  Testing read_multiple_files...")
         read_multi_tool = ReadMultipleFilesTool()
@@ -136,14 +135,14 @@ async def test_file_mgmt():
 async def test_search():
     """Test search tools."""
     print("\n🧪 Testing Search Tools...")
-    
+
     with tempfile.TemporaryDirectory() as tmpdir:
         tmpdir = Path(tmpdir)
-        
+
         # Create test files
         (tmpdir / "file1.py").write_text("def hello():\n    print('Hello')")
         (tmpdir / "file2.py").write_text("def world():\n    print('World')")
-        
+
         # Test search_files
         print("  Testing search_files...")
         search_tool = SearchFilesTool()
@@ -155,7 +154,7 @@ async def test_search():
         assert result.success
         assert len(result.data) >= 2
         print("    ✓ search_files works")
-        
+
         # Test get_directory_tree
         print("  Testing get_directory_tree...")
         tree_tool = GetDirectoryTreeTool()
@@ -168,7 +167,7 @@ async def test_search():
 async def test_execution():
     """Test execution tools."""
     print("\n🧪 Testing Execution Tools...")
-    
+
     # Test bash_command
     print("  Testing bash_command...")
     bash_tool = BashCommandTool()
@@ -176,13 +175,13 @@ async def test_execution():
     assert result.success
     assert "Hello from bash" in result.data['stdout']
     print("    ✓ bash_command works")
-    
+
     # Test with timeout
     print("  Testing bash_command timeout...")
     result = await bash_tool.execute(command="sleep 0.1", timeout=1)
     assert result.success
     print("    ✓ bash_command timeout works")
-    
+
     # Test dangerous command blocking
     print("  Testing dangerous command blocking...")
     result = await bash_tool.execute(command="rm -rf /")
@@ -194,7 +193,7 @@ async def test_execution():
 async def test_git():
     """Test git tools."""
     print("\n🧪 Testing Git Tools...")
-    
+
     # Test git_status
     print("  Testing git_status...")
     status_tool = GitStatusTool()
@@ -205,7 +204,7 @@ async def test_git():
         print("    ✓ git_status works")
     else:
         print("    ⚠ git_status skipped (not in repo)")
-    
+
     # Test git_diff
     print("  Testing git_diff...")
     diff_tool = GitDiffTool()
@@ -221,14 +220,14 @@ async def run_all_tests():
     print("=" * 60)
     print("🚀 QWEN-DEV-CLI Tool Test Suite")
     print("=" * 60)
-    
+
     try:
         await test_file_ops()
         await test_file_mgmt()
         await test_search()
         await test_execution()
         await test_git()
-        
+
         print("\n" + "=" * 60)
         print("✅ ALL TESTS PASSED!")
         print("=" * 60)

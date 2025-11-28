@@ -1,16 +1,14 @@
 """File operation tools - read, write, edit files."""
 
-import os
 import shutil
 from pathlib import Path
 from typing import Optional, Dict, Any
 from datetime import datetime
 import logging
 
-from .base import Tool, ToolResult, ToolCategory
+from .base import ToolResult, ToolCategory
 from .validated import ValidatedTool
-from .preview_mixin import PreviewMixin
-from ..core.validation import Required, TypeCheck, PathExists
+from ..core.validation import Required, TypeCheck
 
 logger = logging.getLogger(__name__)
 
@@ -20,7 +18,7 @@ class ReadFileTool(ValidatedTool):
     
     Boris Cherny: Type-safe file reading with validation.
     """
-    
+
     def __init__(self):
         super().__init__()
         self.category = ToolCategory.FILE_READ
@@ -37,40 +35,40 @@ class ReadFileTool(ValidatedTool):
                 "required": False
             }
         }
-    
+
     def get_validators(self) -> Dict[str, Any]:
         """Validate input parameters."""
         return {
             'path': Required('path'),
             'line_range': TypeCheck((list, tuple, type(None)), 'line_range')
         }
-    
+
     async def _execute_validated(self, path: str, line_range: Optional[tuple] = None, **kwargs) -> ToolResult:
         """Read file contents."""
         try:
             file_path = Path(path)
-            
+
             if not file_path.exists():
                 return ToolResult(
                     success=False,
                     error=f"File not found: {path}"
                 )
-            
+
             if not file_path.is_file():
                 return ToolResult(
                     success=False,
                     error=f"Path is not a file: {path}"
                 )
-            
+
             content = file_path.read_text()
             lines = content.split('\n')
-            
+
             # Apply line range if specified
             if line_range and len(line_range) == 2:
                 start, end = line_range
                 lines = lines[start-1:end]  # 1-indexed
                 content = '\n'.join(lines)
-            
+
             # Detect language
             suffix = file_path.suffix.lstrip('.')
             lang_map = {
@@ -79,7 +77,7 @@ class ReadFileTool(ValidatedTool):
                 'rs': 'rust', 'rb': 'ruby', 'php': 'php'
             }
             language = lang_map.get(suffix, suffix or 'text')
-            
+
             return ToolResult(
                 success=True,
                 data={"content": content, "lines": len(lines), "path": str(file_path)},
@@ -96,7 +94,7 @@ class ReadFileTool(ValidatedTool):
 
 class WriteFileTool(ValidatedTool):
     """Create new file with content."""
-    
+
     def __init__(self, hook_executor=None, config_loader=None):
         super().__init__()
         self.category = ToolCategory.FILE_WRITE
@@ -120,21 +118,21 @@ class WriteFileTool(ValidatedTool):
                 "required": False
             }
         }
-    
+
     def get_validators(self):
         return {'path': Required('path'), 'content': Required('content')}
-    
-    async def _execute_validated(self, path: str, content: str, create_dirs: bool = True, 
+
+    async def _execute_validated(self, path: str, content: str, create_dirs: bool = True,
                      preview: bool = True, console=None) -> ToolResult:
         """Create file with content."""
         try:
             file_path = Path(path)
-            
+
             # Show preview if file exists (Integration Sprint Week 1: Task 1.3)
             if file_path.exists():
                 if preview and console:
                     from ..tui.components.preview import EditPreview
-                    
+
                     original_content = file_path.read_text()
                     preview_component = EditPreview()
                     accepted = await preview_component.show_diff_interactive(
@@ -143,7 +141,7 @@ class WriteFileTool(ValidatedTool):
                         file_path=str(file_path),
                         console=console
                     )
-                    
+
                     if not accepted:
                         return ToolResult(
                             success=False,
@@ -155,13 +153,13 @@ class WriteFileTool(ValidatedTool):
                         success=False,
                         error=f"File already exists: {path}. Use edit_file to modify."
                     )
-            
+
             # Create parent directories if needed
             if create_dirs and not file_path.parent.exists():
                 file_path.parent.mkdir(parents=True, exist_ok=True)
-            
+
             file_path.write_text(content)
-            
+
             result = ToolResult(
                 success=True,
                 data=f"Created {path}",
@@ -171,31 +169,31 @@ class WriteFileTool(ValidatedTool):
                     "lines": len(content.split('\n'))
                 }
             )
-            
+
             # Execute post_write hooks
             await self._execute_hooks("post_write", file_path)
-            
+
             return result
         except Exception as e:
             return ToolResult(success=False, error=str(e))
-    
+
     async def _execute_hooks(self, event_name: str, file_path: Path):
         """Execute hooks for this event."""
         if not self.hook_executor or not self.config_loader:
             return
-        
+
         try:
             from jdev_cli.hooks import HookEvent, HookContext
-            
+
             # Get hooks from config
             config = self.config_loader.config
             if not config or not config.hooks:
                 return
-            
+
             hooks_to_run = getattr(config.hooks, event_name, [])
             if not hooks_to_run:
                 return
-            
+
             # Create context
             context = HookContext(
                 file_path=file_path,
@@ -203,18 +201,18 @@ class WriteFileTool(ValidatedTool):
                 cwd=Path.cwd(),
                 project_name=config.project.name if config.project else "unknown"
             )
-            
+
             # Execute hooks
             event = HookEvent(event_name)
             results = await self.hook_executor.execute_hooks(event, context, hooks_to_run)
-            
+
             # Log results
             for result in results:
                 if result.success:
                     logger.debug(f"Hook succeeded: {result.command}")
                 else:
                     logger.warning(f"Hook failed: {result.command} - {result.error}")
-                    
+
         except Exception as e:
             logger.error(f"Error executing hooks: {e}")
 
@@ -255,14 +253,14 @@ class EditFileTool(ValidatedTool):
                 "default": False
             }
         }
-    
+
     def get_validators(self) -> Dict[str, Any]:
         """Validate input parameters."""
         return {
             'path': Required('path'),
             'edits': TypeCheck(list, 'edits')
         }
-    
+
     async def _execute_validated(
         self,
         path: str,
@@ -325,11 +323,11 @@ class EditFileTool(ValidatedTool):
                         success=False,
                         error=f"Search string not found: {search[:50]}..."
                     )
-            
+
             # Show preview if enabled (Integration Sprint Week 1: Task 1.3)
             if preview and console and original_content != modified_content:
                 from ..tui.components.preview import EditPreview
-                
+
                 preview_component = EditPreview()
                 accepted = await preview_component.show_diff_interactive(
                     original_content=original_content,
@@ -337,17 +335,17 @@ class EditFileTool(ValidatedTool):
                     file_path=str(file_path),
                     console=console
                 )
-                
+
                 if not accepted:
                     return ToolResult(
                         success=False,
                         data={"path": str(path), "message": "Edit cancelled by user"},
                         error="Edit cancelled by user"
                     )
-            
+
             # Write modified content
             file_path.write_text(modified_content)
-            
+
             result = ToolResult(
                 success=True,
                 data=f"Applied {changes} edits to {path}",
@@ -359,31 +357,31 @@ class EditFileTool(ValidatedTool):
                     "lines_after": len(modified_content.split('\n'))
                 }
             )
-            
+
             # Execute post_edit hooks
             await self._execute_hooks("post_edit", file_path)
-            
+
             return result
         except Exception as e:
             return ToolResult(success=False, error=str(e))
-    
+
     async def _execute_hooks(self, event_name: str, file_path: Path):
         """Execute hooks for this event."""
         if not self.hook_executor or not self.config_loader:
             return
-        
+
         try:
             from jdev_cli.hooks import HookEvent, HookContext
-            
+
             # Get hooks from config
             config = self.config_loader.config
             if not config or not config.hooks:
                 return
-            
+
             hooks_to_run = getattr(config.hooks, event_name, [])
             if not hooks_to_run:
                 return
-            
+
             # Create context
             context = HookContext(
                 file_path=file_path,
@@ -391,25 +389,25 @@ class EditFileTool(ValidatedTool):
                 cwd=Path.cwd(),
                 project_name=config.project.name if config.project else "unknown"
             )
-            
+
             # Execute hooks
             event = HookEvent(event_name)
             results = await self.hook_executor.execute_hooks(event, context, hooks_to_run)
-            
+
             # Log results
             for result in results:
                 if result.success:
                     logger.debug(f"Hook succeeded: {result.command}")
                 else:
                     logger.warning(f"Hook failed: {result.command} - {result.error}")
-                    
+
         except Exception as e:
             logger.error(f"Error executing hooks: {e}")
 
 
 class ListDirectoryTool(ValidatedTool):
     """List files and directories."""
-    
+
     def __init__(self):
         super().__init__()
         self.category = ToolCategory.FILE_READ
@@ -431,27 +429,27 @@ class ListDirectoryTool(ValidatedTool):
                 "required": False
             }
         }
-    
+
     def get_validators(self):
         return {}
-    
+
     async def _execute_validated(self, path: str = ".", recursive: bool = False, pattern: Optional[str] = None, **kwargs) -> ToolResult:
         """List directory contents."""
         try:
             dir_path = Path(path)
-            
+
             if not dir_path.exists():
                 return ToolResult(
                     success=False,
                     error=f"Directory not found: {path}"
                 )
-            
+
             if not dir_path.is_dir():
                 return ToolResult(
                     success=False,
                     error=f"Path is not a directory: {path}"
                 )
-            
+
             # List files
             if pattern:
                 if recursive:
@@ -463,27 +461,27 @@ class ListDirectoryTool(ValidatedTool):
                     files = list(dir_path.rglob("*"))
                 else:
                     files = list(dir_path.glob("*"))
-            
+
             # Format results
             file_list = []
             dir_list = []
-            
+
             for f in files:
                 if f.name.startswith('.'):
                     continue  # Skip hidden files
-                
+
                 info = {
                     "name": f.name,
                     "path": str(f.relative_to(dir_path)),
                     "type": "directory" if f.is_dir() else "file",
                     "size": f.stat().st_size if f.is_file() else 0
                 }
-                
+
                 if f.is_dir():
                     dir_list.append(info)
                 else:
                     file_list.append(info)
-            
+
             return ToolResult(
                 success=True,
                 data={
@@ -502,7 +500,7 @@ class ListDirectoryTool(ValidatedTool):
 
 class DeleteFileTool(ValidatedTool):
     """Delete file (moves to .trash for safety)."""
-    
+
     def __init__(self):
         super().__init__()
         self.category = ToolCategory.FILE_MGMT
@@ -519,28 +517,28 @@ class DeleteFileTool(ValidatedTool):
                 "required": False
             }
         }
-    
+
     def get_validators(self):
         return {'path': Required('path')}
-    
+
     async def _execute_validated(self, path: str, permanent: bool = False, **kwargs) -> ToolResult:
         """Delete file."""
         try:
             file_path = Path(path)
-            
+
             if not file_path.exists():
                 return ToolResult(
                     success=False,
                     error=f"File not found: {path}"
                 )
-            
+
             if permanent:
                 # Permanent delete
                 if file_path.is_dir():
                     shutil.rmtree(file_path)
                 else:
                     file_path.unlink()
-                
+
                 return ToolResult(
                     success=True,
                     data=f"Permanently deleted {path}",
@@ -550,12 +548,12 @@ class DeleteFileTool(ValidatedTool):
                 # Move to trash
                 trash_dir = Path(".trash")
                 trash_dir.mkdir(exist_ok=True)
-                
+
                 timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
                 trash_path = trash_dir / f"{file_path.name}.{timestamp}"
-                
+
                 shutil.move(str(file_path), str(trash_path))
-                
+
                 return ToolResult(
                     success=True,
                     data=f"Moved {path} to trash",

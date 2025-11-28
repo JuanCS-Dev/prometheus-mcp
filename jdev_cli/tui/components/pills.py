@@ -20,7 +20,7 @@ Philosophy:
 Created: 2025-11-18 21:44 UTC
 """
 
-from typing import List, Optional, Dict, Callable
+from typing import Optional, Dict, Callable
 from dataclasses import dataclass
 from pathlib import Path
 from enum import Enum
@@ -108,7 +108,7 @@ def detect_pill_type(path: Path) -> PillType:
         PillType enum
     """
     ext = path.suffix.lower()
-    
+
     type_map = {
         ".py": PillType.PYTHON,
         ".pyi": PillType.PYTHON,
@@ -125,7 +125,7 @@ def detect_pill_type(path: Path) -> PillType:
         ".markdown": PillType.MARKDOWN,
         ".txt": PillType.TEXT,
     }
-    
+
     return type_map.get(ext, PillType.OTHER)
 
 
@@ -150,7 +150,7 @@ class ContextPill:
     token_count: Optional[int] = None
     closeable: bool = True
     on_close: Optional[Callable] = None
-    
+
     @classmethod
     def from_path(cls, path: str, token_count: Optional[int] = None) -> 'ContextPill':
         """
@@ -171,7 +171,7 @@ class ContextPill:
             pill_type=detect_pill_type(path_obj),
             token_count=token_count,
         )
-    
+
     def render(self, selected: bool = False, show_close: bool = True) -> Text:
         """
         Render pill as Text.
@@ -184,27 +184,27 @@ class ContextPill:
             Rich Text object
         """
         style = PILL_STYLES[self.pill_type]
-        
+
         result = Text()
-        
+
         # Icon
         result.append(f"{style['icon']} ", style=style['color'])
-        
+
         # Display name
         name_style = PRESET_STYLES.EMPHASIS if selected else PRESET_STYLES.PRIMARY
         result.append(self.display_name, style=name_style)
-        
+
         # Token count (if available)
         if self.token_count is not None:
             result.append(f" ({self.token_count}t)", style=PRESET_STYLES.TERTIARY)
-        
+
         # Close button
         if self.closeable and show_close:
             close_style = PRESET_STYLES.ERROR if selected else PRESET_STYLES.TERTIARY
             result.append(" ×", style=close_style)
-        
+
         return result
-    
+
     def close(self) -> bool:
         """
         Close pill (trigger callback).
@@ -214,14 +214,14 @@ class ContextPill:
         """
         if not self.closeable:
             return False
-        
+
         if self.on_close:
             try:
                 self.on_close(self)
                 return True
             except Exception:
                 return False
-        
+
         return True
 
 
@@ -242,7 +242,7 @@ class PillContainer:
         container.add_pill(pill)
         console.print(container.render())
     """
-    
+
     def __init__(self, max_display: int = 10):
         """
         Initialize pill container.
@@ -253,7 +253,7 @@ class PillContainer:
         self.pills: Dict[str, ContextPill] = {}
         self.selected_id: Optional[str] = None
         self.max_display = max_display
-    
+
     def add_pill(self, pill: ContextPill) -> None:
         """
         Add pill to container.
@@ -262,11 +262,11 @@ class PillContainer:
             pill: ContextPill to add
         """
         self.pills[pill.id] = pill
-        
+
         # Auto-select if first pill
         if len(self.pills) == 1:
             self.selected_id = pill.id
-    
+
     def remove_pill(self, pill_id: str) -> bool:
         """
         Remove pill by ID.
@@ -279,30 +279,30 @@ class PillContainer:
         """
         if pill_id in self.pills:
             pill = self.pills[pill_id]
-            
+
             # Trigger close callback
             if pill.on_close:
                 pill.close()
-            
+
             del self.pills[pill_id]
-            
+
             # Update selection
             if self.selected_id == pill_id:
                 self.selected_id = next(iter(self.pills), None)
-            
+
             return True
-        
+
         return False
-    
+
     def clear_all(self) -> None:
         """Remove all pills."""
         for pill_id in list(self.pills.keys()):
             self.remove_pill(pill_id)
-    
+
     def get_pill(self, pill_id: str) -> Optional[ContextPill]:
         """Get pill by ID."""
         return self.pills.get(pill_id)
-    
+
     def select_pill(self, pill_id: str) -> bool:
         """
         Select pill by ID.
@@ -317,12 +317,12 @@ class PillContainer:
             self.selected_id = pill_id
             return True
         return False
-    
+
     def select_next(self) -> None:
         """Select next pill (circular)."""
         if not self.pills:
             return
-        
+
         pill_ids = list(self.pills.keys())
         if self.selected_id is None:
             self.selected_id = pill_ids[0]
@@ -333,12 +333,12 @@ class PillContainer:
                 self.selected_id = pill_ids[next_idx]
             except ValueError:
                 self.selected_id = pill_ids[0]
-    
+
     def select_previous(self) -> None:
         """Select previous pill (circular)."""
         if not self.pills:
             return
-        
+
         pill_ids = list(self.pills.keys())
         if self.selected_id is None:
             self.selected_id = pill_ids[-1]
@@ -349,13 +349,13 @@ class PillContainer:
                 self.selected_id = pill_ids[prev_idx]
             except ValueError:
                 self.selected_id = pill_ids[-1]
-    
+
     def remove_selected(self) -> bool:
         """Remove currently selected pill."""
         if self.selected_id:
             return self.remove_pill(self.selected_id)
         return False
-    
+
     def get_total_tokens(self) -> int:
         """
         Get total token count across all pills.
@@ -364,7 +364,7 @@ class PillContainer:
             Total tokens
         """
         return sum(p.token_count or 0 for p in self.pills.values())
-    
+
     def render(
         self,
         title: Optional[str] = None,
@@ -387,28 +387,28 @@ class PillContainer:
             content = Text()
             content.append("No files loaded", style=PRESET_STYLES.TERTIARY)
             content.append("\nAdd files to see them here", style=PRESET_STYLES.DIM)
-            
+
             return Panel(
                 content,
                 title=title or "[bold]Context Files[/bold]",
                 border_style=COLORS['border_muted'],
                 padding=(1, 2),
             )
-        
+
         # Build pills grid
         table = Table.grid(padding=(0, 1))
         table.add_column()
-        
+
         # Display pills (with overflow handling)
         pills_list = list(self.pills.values())
         display_pills = pills_list[:self.max_display]
         overflow_count = len(pills_list) - self.max_display
-        
+
         # Add each pill
         for pill in display_pills:
             selected = (pill.id == self.selected_id)
             pill_text = pill.render(selected=selected)
-            
+
             # Add selection indicator
             if selected:
                 indicator = Text("▶ ", style=PRESET_STYLES.SUCCESS)
@@ -416,24 +416,24 @@ class PillContainer:
                 table.add_row(indicator)
             else:
                 table.add_row(Text("  ") + pill_text)
-        
+
         # Show overflow indicator
         if show_overflow and overflow_count > 0:
             overflow_text = Text()
             overflow_text.append(f"  ... and {overflow_count} more", style=PRESET_STYLES.DIM)
             table.add_row(overflow_text)
-        
+
         # Build subtitle with stats
         subtitle = None
         if show_stats:
             total_tokens = self.get_total_tokens()
             stats_text = Text()
-            stats_text.append(f"{len(self.pills)} file{'s' if len(self.pills) != 1 else ''}", 
+            stats_text.append(f"{len(self.pills)} file{'s' if len(self.pills) != 1 else ''}",
                             style=PRESET_STYLES.INFO)
             if total_tokens > 0:
                 stats_text.append(f" • {total_tokens:,} tokens", style=PRESET_STYLES.SECONDARY)
             subtitle = stats_text
-        
+
         return Panel(
             table,
             title=title or "[bold]📄 Context Files[/bold]",
@@ -474,10 +474,10 @@ def create_pill_from_file(
 
 if __name__ == "__main__":
     console = Console()
-    
+
     # Create container
     container = PillContainer(max_display=5)
-    
+
     # Add some pills
     files = [
         ("src/main.py", 250),
@@ -488,15 +488,15 @@ if __name__ == "__main__":
         ("styles.css", 200),
         ("index.html", 100),
     ]
-    
+
     for path, tokens in files:
         pill = create_pill_from_file(path, token_count=tokens)
         container.add_pill(pill)
-    
+
     # Render
     console.print(container.render())
     console.print()
-    
+
     # Select and show again
     container.select_next()
     container.select_next()

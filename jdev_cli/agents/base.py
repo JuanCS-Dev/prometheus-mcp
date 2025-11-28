@@ -145,7 +145,7 @@ class BaseAgent(abc.ABC):
                 ):
                     buffer.append(chunk)
                 response = ''.join(buffer)
-                
+
             self.execution_count += 1
             return cast(str, response)
         except Exception as e:
@@ -222,13 +222,13 @@ class BaseAgent(abc.ABC):
             "package_search": AgentCapability.READ_ONLY,
             "download_file": AgentCapability.FILE_EDIT,  # Writes to disk
         }
-        
+
         required = tool_map.get(tool_name)
         if not required:
             # If tool is unknown, default to blocking it for safety
             self.logger.warning(f"Unknown tool requested: {tool_name}")
             return False
-            
+
         return required in self.capabilities
 
     async def _execute_tool(
@@ -244,12 +244,12 @@ class BaseAgent(abc.ABC):
 
         try:
             self.logger.info(f"Executing {tool_name} with params: {parameters.keys()}")
-            
+
             # Handle case where mcp_client is None (fallback to direct calls)
             if self.mcp_client is None:
                 self.logger.warning("MCP client not available, tool execution skipped")
                 return {"success": False, "error": "MCP client not initialized"}
-            
+
             result = await self.mcp_client.call_tool(tool_name=tool_name, arguments=parameters)
             return cast(Dict[str, Any], result)
         except Exception as e:

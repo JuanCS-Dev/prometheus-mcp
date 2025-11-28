@@ -13,16 +13,14 @@ This test suite searches for AIR GAPS in the integration.
 """
 
 import pytest
-import asyncio
-from unittest.mock import Mock, MagicMock, AsyncMock, patch
+from unittest.mock import Mock, AsyncMock, patch
 
 # Validate all imports work
 from jdev_cli.maestro_governance import MaestroGovernance, render_sofia_counsel
 from jdev_cli.core.governance_pipeline import GovernancePipeline
 from jdev_cli.agents.justica_agent import JusticaIntegratedAgent
 from jdev_cli.agents.sofia_agent import SofiaIntegratedAgent
-from jdev_cli.agents.base import AgentTask, AgentResponse, AgentRole
-from jdev_cli.core.agent_identity import AgentPermission
+from jdev_cli.agents.base import AgentTask, AgentResponse
 
 
 class TestMaestroGovernanceImports:
@@ -252,10 +250,6 @@ class TestAirGapValidation:
     def test_no_circular_imports(self):
         """Test that there are no circular import dependencies."""
         # If we got this far, imports worked - no circular dependencies
-        from jdev_cli.maestro_governance import MaestroGovernance
-        from jdev_cli.core.governance_pipeline import GovernancePipeline
-        from jdev_cli.agents.justica_agent import JusticaIntegratedAgent
-        from jdev_cli.agents.sofia_agent import SofiaIntegratedAgent
 
         assert True  # If imports succeed, no circular deps
 

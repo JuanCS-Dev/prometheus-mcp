@@ -14,7 +14,7 @@ Philosophy (Boris Cherny):
 Capabilities: READ_ONLY + smart search
 """
 
-from typing import Any, Dict, List
+from typing import Any, Dict
 
 from jdev_cli.agents.base import (
     AgentCapability,
@@ -143,13 +143,13 @@ class ExplorerAgent(BaseAgent):
         try:
             # Extract max files limit
             max_files = task.context.get("max_files", 10)
-            
+
             # Build search prompt
             search_prompt = self._build_search_prompt(task, max_files)
-            
+
             # Call LLM for intelligent file selection
             llm_response = await self._call_llm(search_prompt)
-            
+
             # Parse JSON response
             import json
             try:
@@ -157,7 +157,7 @@ class ExplorerAgent(BaseAgent):
             except json.JSONDecodeError:
                 # Fallback: extract file paths from text
                 context_data = self._extract_files_fallback(llm_response)
-            
+
             # Validate response structure
             if "relevant_files" not in context_data:
                 return AgentResponse(
@@ -165,20 +165,20 @@ class ExplorerAgent(BaseAgent):
                     reasoning="LLM response missing 'relevant_files' field",
                     error="Invalid LLM response format",
                 )
-            
+
             relevant_files = context_data["relevant_files"]
-            
+
             # Enforce max files limit
             if len(relevant_files) > max_files:
                 relevant_files = relevant_files[:max_files]
                 context_data["relevant_files"] = relevant_files
-            
+
             # Calculate token estimate
             token_estimate = context_data.get("token_estimate", 0)
             if token_estimate == 0:
                 # Rough estimate: 200 tokens per file
                 token_estimate = len(relevant_files) * 200
-            
+
             # Return successful exploration
             return AgentResponse(
                 success=True,
@@ -193,7 +193,7 @@ class ExplorerAgent(BaseAgent):
                     "within_budget": token_estimate <= 10000,
                 },
             )
-            
+
         except Exception as e:
             return AgentResponse(
                 success=False,
@@ -224,10 +224,10 @@ CONSTRAINTS:
         # Add project structure if provided
         if "project_root" in task.context:
             prompt += f"\nProject root: {task.context['project_root']}\n"
-        
+
         if "file_patterns" in task.context:
             prompt += f"\nFile patterns: {task.context['file_patterns']}\n"
-        
+
         prompt += """
 Respond with JSON containing relevant files, dependencies, and context summary.
 Remember: Quality over quantity. Less is more.
@@ -244,12 +244,12 @@ Remember: Quality over quantity. Less is more.
             Dictionary with extracted files
         """
         import re
-        
+
         # Extract file paths using regex
         # Match patterns like: src/path/file.py, ./path/file.js, etc.
         file_pattern = r'(?:^|\s)([a-zA-Z0-9_./\\-]+\.[a-zA-Z]+)'
         matches = re.findall(file_pattern, llm_response)
-        
+
         # Filter to likely code files
         code_extensions = {'.py', '.js', '.ts', '.java', '.go', '.rs', '.c', '.cpp', '.h'}
         relevant_files = [
@@ -262,7 +262,7 @@ Remember: Quality over quantity. Less is more.
             for match in matches
             if any(match.endswith(ext) for ext in code_extensions)
         ]
-        
+
         return {
             "relevant_files": relevant_files[:10],  # Max 10
             "dependencies": [],

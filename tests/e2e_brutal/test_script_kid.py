@@ -15,13 +15,7 @@ Script kids try:
 import pytest
 import asyncio
 import os
-import subprocess
-import tempfile
-import json
-from pathlib import Path
-from datetime import datetime
 
-from .helpers import IssueCollector, ScriptKid
 
 
 @pytest.mark.script_kid

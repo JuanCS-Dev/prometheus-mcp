@@ -8,7 +8,6 @@ Tests cover:
     - Thread safety (future)
 """
 
-import pytest
 from datetime import datetime
 
 from jdev_cli.orchestration.memory import (

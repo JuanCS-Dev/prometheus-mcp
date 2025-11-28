@@ -24,7 +24,7 @@ class Verse:
     text: str
     reference: str
     category: str
-    
+
     def format(self, max_width: Optional[int] = None) -> str:
         """Format verse for display."""
         full_text = f'"{self.text}" - {self.reference}'
@@ -219,7 +219,7 @@ class WisdomSystem:
         # Category-specific
         verse = wisdom.get_by_category("excellence")
     """
-    
+
     def __init__(self):
         """Initialize wisdom system."""
         self.verses = ALL_VERSES
@@ -232,7 +232,7 @@ class WisdomSystem:
             "excellence": VERSES_EXCELLENCE,
         }
         self._last_verse: Optional[Verse] = None
-    
+
     def get_random(self, avoid_repeat: bool = True) -> Verse:
         """
         Get random verse from all categories.
@@ -247,7 +247,7 @@ class WisdomSystem:
         verse = random.choice(available)
         self._last_verse = verse
         return verse
-    
+
     def get_by_category(self, category: str, avoid_repeat: bool = True) -> Verse:
         """
         Get random verse from specific category.
@@ -261,13 +261,13 @@ class WisdomSystem:
         """
         if category not in self.categories:
             return self.get_random(avoid_repeat)
-        
+
         verses = self.categories[category]
         available = [v for v in verses if v != self._last_verse] if avoid_repeat else verses
         verse = random.choice(available)
         self._last_verse = verse
         return verse
-    
+
     def get_for_operation(self, operation_type: str) -> Verse:
         """
         Get contextually appropriate verse for operation.
@@ -297,10 +297,10 @@ class WisdomSystem:
             "design": "purpose",
             "architect": "purpose",
         }
-        
+
         category = operation_map.get(operation_type.lower(), "excellence")
         return self.get_by_category(category)
-    
+
     def get_formatted(self, max_width: Optional[int] = 80) -> str:
         """
         Get random verse formatted for display.

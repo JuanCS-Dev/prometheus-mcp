@@ -9,11 +9,9 @@ Tests cover:
 
 Based on pytest patterns from Anthropic's Claude Code.
 """
-import pytest
 import os
 import subprocess
-from pathlib import Path
-from unittest.mock import patch, MagicMock
+from unittest.mock import patch
 
 from jdev_tui.core.agentic_prompt import (
     build_agentic_system_prompt,

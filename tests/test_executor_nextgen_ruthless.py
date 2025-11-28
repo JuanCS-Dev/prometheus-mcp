@@ -22,10 +22,6 @@ pip install pytest pytest-asyncio pytest-timeout pytest-cov
 import pytest
 import asyncio
 import time
-import os
-import tempfile
-from unittest.mock import Mock, AsyncMock, patch, MagicMock
-from pathlib import Path
 
 # Import the beast
 from jdev_cli.agents.executor import (
@@ -35,11 +31,8 @@ from jdev_cli.agents.executor import (
     CommandCategory,
     AdvancedSecurityValidator,
     CodeExecutionEngine,
-    CommandResult,
-    ExecutionMetrics,
 )
 from jdev_cli.agents.base import AgentTask, AgentResponse
-from jdev_cli.core.llm import LLMClient
 
 
 # ============================================================================

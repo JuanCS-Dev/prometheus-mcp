@@ -15,14 +15,13 @@ Date: 2025-11-27
 
 from __future__ import annotations
 
-import datetime
 import logging
 import re
 import shlex
 import signal
 import subprocess
 import threading
-from typing import Any, Dict, List, Optional
+from typing import Dict, List
 
 from jdev_cli.tools.base import Tool, ToolCategory, ToolResult
 from jdev_cli.tools._parity_utils import TaskTracker

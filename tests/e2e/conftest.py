@@ -21,7 +21,7 @@ import json
 import time
 from pathlib import Path
 from dataclasses import dataclass, field
-from typing import Dict, List, Any, Optional
+from typing import Dict, List, Any
 from datetime import datetime
 
 

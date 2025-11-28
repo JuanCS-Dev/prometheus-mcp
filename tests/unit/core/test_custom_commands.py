@@ -13,9 +13,7 @@ Target: 95%+ coverage
 
 import pytest
 from pathlib import Path
-from unittest.mock import patch, MagicMock
-import tempfile
-import shutil
+from unittest.mock import patch
 
 from jdev_tui.core.custom_commands import CustomCommandsManager
 

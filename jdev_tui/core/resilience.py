@@ -18,9 +18,8 @@ from __future__ import annotations
 import asyncio
 import threading
 import time
-from collections import deque
 from contextlib import asynccontextmanager
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from typing import Any, Dict, Generic, Iterator, List, Optional, TypeVar
 
 T = TypeVar('T')

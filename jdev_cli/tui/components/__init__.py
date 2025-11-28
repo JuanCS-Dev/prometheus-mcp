@@ -92,7 +92,7 @@ __all__ = [
     "ProgressBar", "ProgressState", "ProgressStyle", "create_progress_bar",
     "CodeBlock", "CodeSnippet", "InlineCode", "create_code_block",
     "DiffViewer", "DiffMode", "DiffLine",
-    
+
     # Advanced
     "FileTree", "FileNode", "FileType", "create_file_tree",
     "ContextPill", "PillContainer", "PillType", "create_pill_from_file",

@@ -35,7 +35,7 @@ class LLMClientAdapter:
         # New code gets benefits
         result = await enhanced_client.generate_with_thinking(prompt, budget=5000)
     """
-    
+
     def __init__(self, llm_client: Any):
         """
         Wrap existing LLMClient.
@@ -45,23 +45,23 @@ class LLMClientAdapter:
         """
         self._client = llm_client
         self.logger = logging.getLogger("llm_adapter")
-        
+
         # Check what the client actually supports
         self._has_generate = hasattr(llm_client, 'generate')
         self._has_stream = hasattr(llm_client, 'stream')
         self._has_stream_chat = hasattr(llm_client, 'stream_chat')
-        
+
         self.logger.info(
             f"LLMClientAdapter initialized - "
             f"generate:{self._has_generate} "
             f"stream:{self._has_stream} "
             f"stream_chat:{self._has_stream_chat}"
         )
-    
+
     # ========================================================================
     # PASSTHROUGH - Existing Methods Work Unchanged
     # ========================================================================
-    
+
     async def generate(
         self,
         prompt: str,
@@ -71,13 +71,13 @@ class LLMClientAdapter:
         """Passthrough to original generate() - no changes"""
         if not self._has_generate:
             raise NotImplementedError("LLMClient doesn't have generate()")
-        
+
         return await self._client.generate(
             prompt=prompt,
             system_prompt=system_prompt,
             **kwargs,
         )
-    
+
     async def stream(
         self,
         prompt: str,
@@ -87,14 +87,14 @@ class LLMClientAdapter:
         """Passthrough to original stream() - no changes"""
         if not self._has_stream:
             raise NotImplementedError("LLMClient doesn't have stream()")
-        
+
         async for chunk in self._client.stream(
             prompt=prompt,
             system_prompt=system_prompt,
             **kwargs,
         ):
             yield chunk
-    
+
     async def stream_chat(
         self,
         prompt: str,
@@ -104,18 +104,18 @@ class LLMClientAdapter:
         """Passthrough to original stream_chat() - no changes"""
         if not self._has_stream_chat:
             raise NotImplementedError("LLMClient doesn't have stream_chat()")
-        
+
         async for chunk in self._client.stream_chat(
             prompt=prompt,
             context=context,
             **kwargs,
         ):
             yield chunk
-    
+
     # ========================================================================
     # NEW FEATURES - Built on Top of Existing Methods
     # ========================================================================
-    
+
     async def generate_with_thinking(
         self,
         prompt: str,
@@ -145,7 +145,7 @@ class LLMClientAdapter:
             }
         """
         self.logger.info(f"Simulating extended thinking (budget: {thinking_budget})")
-        
+
         # Phase 1: Thinking
         thinking_prompt = f"""
 {system_prompt or ''}
@@ -160,13 +160,13 @@ Before answering, think step-by-step:
 
 Provide your detailed reasoning (aim for ~{thinking_budget // 4} words).
 """
-        
+
         thinking_response = await self.generate(
             prompt=thinking_prompt,
             system_prompt=system_prompt,
             **kwargs,
         )
-        
+
         # Phase 2: Final Answer
         answer_prompt = f"""
 Based on your thinking:
@@ -175,22 +175,22 @@ Based on your thinking:
 
 Now provide the final, concise answer to: {prompt}
 """
-        
+
         final_response = await self.generate(
             prompt=answer_prompt,
             system_prompt=system_prompt,
             **kwargs,
         )
-        
+
         # Estimate tokens (rough approximation)
         tokens_used = len(thinking_response.split()) + len(final_response.split())
-        
+
         return {
             "thinking": thinking_response,
             "response": final_response,
             "tokens_used": tokens_used,
         }
-    
+
     async def generate_structured(
         self,
         prompt: str,
@@ -216,7 +216,7 @@ Now provide the final, concise answer to: {prompt}
             JSON string (hopefully valid)
         """
         self.logger.info("Requesting structured JSON output")
-        
+
         structured_prompt = f"""
 {prompt}
 
@@ -226,13 +226,13 @@ CRITICAL: Respond with ONLY valid JSON. No markdown, no explanation.
 
 Your response must be parseable JSON.
 """
-        
+
         return await self.generate(
             prompt=structured_prompt,
             system_prompt=system_prompt,
             **kwargs,
         )
-    
+
     async def stream_with_thinking(
         self,
         prompt: str,
@@ -249,7 +249,7 @@ Your response must be parseable JSON.
             {"type": "done", "tokens_used": N}
         """
         self.logger.info("Streaming with thinking phase")
-        
+
         # Phase 1: Stream thinking
         thinking_prompt = f"""
 {system_prompt or ''}
@@ -258,7 +258,7 @@ TASK: {prompt}
 
 Think step-by-step about this problem. Be thorough.
 """
-        
+
         thinking_buffer = []
         async for chunk in self.stream(
             prompt=thinking_prompt,
@@ -267,9 +267,9 @@ Think step-by-step about this problem. Be thorough.
         ):
             thinking_buffer.append(chunk)
             yield {"type": "thinking", "content": chunk}
-        
+
         thinking_text = "".join(thinking_buffer)
-        
+
         # Phase 2: Stream response
         answer_prompt = f"""
 Based on your thinking:
@@ -278,7 +278,7 @@ Based on your thinking:
 
 Now provide the final answer to: {prompt}
 """
-        
+
         response_buffer = []
         async for chunk in self.stream(
             prompt=answer_prompt,
@@ -287,23 +287,23 @@ Now provide the final answer to: {prompt}
         ):
             response_buffer.append(chunk)
             yield {"type": "response", "content": chunk}
-        
+
         # Done
         total_tokens = len(thinking_text.split()) + len("".join(response_buffer).split())
         yield {"type": "done", "tokens_used": total_tokens}
-    
+
     # ========================================================================
     # INTROSPECTION - Know Thy Limits
     # ========================================================================
-    
+
     def supports_native_thinking(self) -> bool:
         """Does the underlying client natively support thinking?"""
         return hasattr(self._client, 'generate_with_thinking')
-    
+
     def supports_native_structured(self) -> bool:
         """Does the underlying client natively support structured outputs?"""
         return hasattr(self._client, 'generate_structured')
-    
+
     def get_capabilities(self) -> Dict[str, bool]:
         """Get adapter capabilities"""
         return {
@@ -346,46 +346,46 @@ def wrap_llm_client(client: Any) -> LLMClientAdapter:
 
 if __name__ == "__main__":
     import asyncio
-    
+
     # Mock LLM client (simulates your real one)
     class MockLLMClient:
         async def generate(self, prompt, system_prompt=None, **kwargs):
             return f"Generated response to: {prompt[:50]}..."
-        
+
         async def stream(self, prompt, system_prompt=None, **kwargs):
             words = f"Streaming response to: {prompt[:50]}...".split()
             for word in words:
                 yield word + " "
-    
+
     async def demo():
         print("=" * 80)
         print("LLM CLIENT ADAPTER - DEMO")
         print("=" * 80)
-        
+
         # Wrap existing client
         original = MockLLMClient()
         adapter = LLMClientAdapter(original)
-        
+
         # Check capabilities
         print("\n📊 CAPABILITIES:")
         caps = adapter.get_capabilities()
         for name, supported in caps.items():
             status = "✅" if supported else "❌"
             print(f"  {status} {name}")
-        
+
         # Demo 1: Original methods still work
         print("\n" + "=" * 80)
         print("DEMO 1: Original Methods Work")
         print("=" * 80)
-        
+
         response = await adapter.generate("What is 2+2?")
         print(f"Response: {response}")
-        
+
         # Demo 2: New thinking feature
         print("\n" + "=" * 80)
         print("DEMO 2: Simulated Extended Thinking")
         print("=" * 80)
-        
+
         result = await adapter.generate_with_thinking(
             "Explain quantum computing",
             thinking_budget=5000,
@@ -393,12 +393,12 @@ if __name__ == "__main__":
         print(f"Thinking: {result['thinking'][:100]}...")
         print(f"Response: {result['response'][:100]}...")
         print(f"Tokens: {result['tokens_used']}")
-        
+
         # Demo 3: Streaming with thinking
         print("\n" + "=" * 80)
         print("DEMO 3: Streaming with Thinking")
         print("=" * 80)
-        
+
         async for event in adapter.stream_with_thinking("What is AI?"):
             if event["type"] == "thinking":
                 print(f"💭 {event['content']}", end="", flush=True)
@@ -406,9 +406,9 @@ if __name__ == "__main__":
                 print(f"💡 {event['content']}", end="", flush=True)
             elif event["type"] == "done":
                 print(f"\n✅ Done ({event['tokens_used']} tokens)")
-        
+
         print("\n" + "=" * 80)
         print("✅ ALL DEMOS PASSED - ZERO BREAKING CHANGES")
         print("=" * 80)
-    
+
     asyncio.run(demo())

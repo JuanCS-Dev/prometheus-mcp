@@ -14,8 +14,6 @@ import os
 sys.path.insert(0, os.path.dirname(__file__))
 
 from maestro_v10_integrated import Orchestrator
-from jdev_cli.core.llm import LLMClient
-from jdev_cli.core.mcp_client import MCPClient
 
 
 # Mock LLM for testing

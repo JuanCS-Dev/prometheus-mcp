@@ -47,29 +47,29 @@ class TestSuite:
     def __init__(self, name: str):
         self.name = name
         self.tests: List[TestCase] = []
-    
+
     def add_test(self, test: TestCase):
         self.tests.append(test)
-    
+
     def summary(self):
         passed = sum(1 for t in self.tests if t.result == TestResult.PASSED)
         failed = sum(1 for t in self.tests if t.result == TestResult.FAILED)
         total = len(self.tests)
-        
+
         print(f"\n{'='*60}")
         print(f"TEST SUITE: {self.name}")
         print(f"{'='*60}")
-        
+
         for test in self.tests:
             status = test.result.value
             duration = f"({test.duration:.2f}s)" if test.duration else ""
             print(f"  {status} {test.name} {duration}")
             if test.message and test.result == TestResult.FAILED:
                 print(f"      ↳ {test.message}")
-        
+
         print(f"\n  Summary: {passed}/{total} passed, {failed} failed")
         print(f"{'='*60}\n")
-        
+
         return failed == 0
 
 
@@ -79,7 +79,7 @@ class TestSuite:
 
 class MockLLMClient:
     """Mock LLM that simulates token streaming"""
-    
+
     def __init__(self, response_tokens: List[str] = None, delay: float = 0.02):
         self.response_tokens = response_tokens or [
             "Based", " on", " the", " request", ",", "\n",
@@ -90,7 +90,7 @@ class MockLLMClient:
         ]
         self.delay = delay
         self.call_count = 0
-    
+
     async def generate_stream(
         self,
         prompt: str,
@@ -100,11 +100,11 @@ class MockLLMClient:
     ) -> AsyncIterator[str]:
         """Simulate token-by-token streaming"""
         self.call_count += 1
-        
+
         for token in self.response_tokens:
             await asyncio.sleep(self.delay)
             yield token
-    
+
     async def stream_chat(
         self,
         messages: List[Dict],
@@ -123,7 +123,7 @@ class MockAgentTask:
     request: str
     context: Dict[str, Any] = None
     trace_id: str = "test-trace-001"
-    
+
     def __post_init__(self):
         if self.context is None:
             self.context = {"cwd": "/test/project"}
@@ -140,24 +140,24 @@ class MockAgentResponse:
 
 class MockPlannerAgent:
     """Mock planner with execute_streaming"""
-    
+
     def __init__(self, llm: MockLLMClient):
         self.llm = llm
         self.name = "planner"
-    
+
     async def execute_streaming(
         self,
         task: MockAgentTask
     ) -> AsyncIterator[Dict[str, Any]]:
         """Streaming execution - this is what we're testing"""
-        
+
         # Phase 1: Status
         yield {"type": "status", "data": "📋 Loading project context..."}
         await asyncio.sleep(0.05)
-        
+
         # Phase 2: Generate
         yield {"type": "status", "data": "🎯 Generating plan..."}
-        
+
         # Phase 3: Stream LLM tokens
         buffer = []
         async for token in self.llm.generate_stream(
@@ -168,13 +168,13 @@ class MockPlannerAgent:
         ):
             buffer.append(token)
             yield {"type": "thinking", "data": token}  # ← THE CRITICAL PART!
-        
+
         response_text = ''.join(buffer)
-        
+
         # Phase 4: Process
         yield {"type": "status", "data": "⚙️ Processing plan..."}
         await asyncio.sleep(0.05)
-        
+
         # Phase 5: Result
         yield {
             "type": "result",
@@ -188,7 +188,7 @@ class MockPlannerAgent:
 
 class MockMaestroUI:
     """Mock MAESTRO UI that receives streaming updates"""
-    
+
     def __init__(self):
         self.updates: List[Dict[str, Any]] = []
         self.panels = {
@@ -196,7 +196,7 @@ class MockMaestroUI:
             "planner": [],
             "file_ops": []
         }
-    
+
     async def update_agent_stream(self, agent_name: str, data: str):
         """Receive streaming token update"""
         self.updates.append({
@@ -204,10 +204,10 @@ class MockMaestroUI:
             "data": data,
             "timestamp": time.time()
         })
-        
+
         if agent_name in self.panels:
             self.panels[agent_name].append(data)
-    
+
     def get_panel_content(self, panel_name: str) -> str:
         """Get accumulated content for a panel"""
         return ''.join(self.panels.get(panel_name, []))
@@ -215,31 +215,31 @@ class MockMaestroUI:
 
 class MockOrchestrator:
     """Mock orchestrator that routes to agents and updates UI"""
-    
+
     def __init__(self, ui: MockMaestroUI):
         self.ui = ui
         self.llm = MockLLMClient()
         self.agents = {
             "planner": MockPlannerAgent(self.llm)
         }
-    
+
     async def execute_streaming(
         self,
         prompt: str,
         context: Dict[str, Any] = None
     ) -> AsyncIterator[Dict[str, Any]]:
         """Execute and stream to UI"""
-        
+
         # Route to planner for this test
         agent = self.agents["planner"]
         task = MockAgentTask(request=prompt, context=context)
-        
+
         # Stream from agent
         async for update in agent.execute_streaming(task):
             # Forward to UI
             if update["type"] == "thinking":
                 await self.ui.update_agent_stream("planner", update["data"])
-            
+
             yield update
 
 
@@ -251,14 +251,14 @@ async def test_llm_streaming() -> TestCase:
     """Test 1: LLM generates tokens correctly"""
     test = TestCase(name="LLM Streaming")
     start = time.time()
-    
+
     try:
         llm = MockLLMClient()
         tokens = []
-        
+
         async for token in llm.generate_stream("Test prompt"):
             tokens.append(token)
-        
+
         # Assertions
         if len(tokens) == 0:
             test.result = TestResult.FAILED
@@ -269,11 +269,11 @@ async def test_llm_streaming() -> TestCase:
         else:
             test.result = TestResult.PASSED
             test.message = f"Generated {len(tokens)} tokens"
-    
+
     except Exception as e:
         test.result = TestResult.FAILED
         test.message = str(e)
-    
+
     test.duration = time.time() - start
     return test
 
@@ -282,24 +282,24 @@ async def test_agent_streaming() -> TestCase:
     """Test 2: Agent streams updates correctly"""
     test = TestCase(name="Agent Streaming")
     start = time.time()
-    
+
     try:
         llm = MockLLMClient()
         agent = MockPlannerAgent(llm)
         task = MockAgentTask(request="Create authentication system")
-        
+
         updates = []
         thinking_tokens = []
-        
+
         async for update in agent.execute_streaming(task):
             updates.append(update)
             if update["type"] == "thinking":
                 thinking_tokens.append(update["data"])
-        
+
         # Assertions
         status_updates = [u for u in updates if u["type"] == "status"]
         result_updates = [u for u in updates if u["type"] == "result"]
-        
+
         if len(thinking_tokens) == 0:
             test.result = TestResult.FAILED
             test.message = "No thinking tokens streamed"
@@ -312,11 +312,11 @@ async def test_agent_streaming() -> TestCase:
         else:
             test.result = TestResult.PASSED
             test.message = f"Streamed {len(thinking_tokens)} tokens, {len(status_updates)} statuses"
-    
+
     except Exception as e:
         test.result = TestResult.FAILED
         test.message = str(e)
-    
+
     test.duration = time.time() - start
     return test
 
@@ -325,21 +325,21 @@ async def test_ui_receives_updates() -> TestCase:
     """Test 3: UI receives streaming updates"""
     test = TestCase(name="UI Integration")
     start = time.time()
-    
+
     try:
         ui = MockMaestroUI()
         orch = MockOrchestrator(ui)
-        
+
         updates = []
         async for update in orch.execute_streaming(
             "Create user authentication",
             context={"cwd": "/test"}
         ):
             updates.append(update)
-        
+
         # Check UI received updates
         planner_content = ui.get_panel_content("planner")
-        
+
         if len(ui.updates) == 0:
             test.result = TestResult.FAILED
             test.message = "UI received no updates"
@@ -349,11 +349,11 @@ async def test_ui_receives_updates() -> TestCase:
         else:
             test.result = TestResult.PASSED
             test.message = f"UI received {len(ui.updates)} updates, panel has {len(planner_content)} chars"
-    
+
     except Exception as e:
         test.result = TestResult.FAILED
         test.message = str(e)
-    
+
     test.duration = time.time() - start
     return test
 
@@ -362,19 +362,19 @@ async def test_streaming_order() -> TestCase:
     """Test 4: Updates arrive in correct order"""
     test = TestCase(name="Streaming Order")
     start = time.time()
-    
+
     try:
         llm = MockLLMClient()
         agent = MockPlannerAgent(llm)
         task = MockAgentTask(request="Test task")
-        
+
         update_types = []
         async for update in agent.execute_streaming(task):
             update_types.append(update["type"])
-        
+
         # Expected order: status -> status -> thinking* -> status -> result
         expected_order = ["status", "status"]  # First two statuses
-        
+
         # Check starts correctly
         if update_types[:2] != expected_order:
             test.result = TestResult.FAILED
@@ -390,11 +390,11 @@ async def test_streaming_order() -> TestCase:
         else:
             test.result = TestResult.PASSED
             test.message = f"Correct order: {len(update_types)} updates"
-    
+
     except Exception as e:
         test.result = TestResult.FAILED
         test.message = str(e)
-    
+
     test.duration = time.time() - start
     return test
 
@@ -403,17 +403,17 @@ async def test_error_handling() -> TestCase:
     """Test 5: Errors are handled gracefully"""
     test = TestCase(name="Error Handling")
     start = time.time()
-    
+
     try:
         class FailingLLM:
             async def generate_stream(self, *args, **kwargs):
                 yield "token1"
                 raise Exception("Simulated error")
-        
+
         class FailingAgent:
             def __init__(self):
                 self.llm = FailingLLM()
-            
+
             async def execute_streaming(self, task):
                 try:
                     yield {"type": "status", "data": "Starting..."}
@@ -421,28 +421,28 @@ async def test_error_handling() -> TestCase:
                         yield {"type": "thinking", "data": token}
                 except Exception as e:
                     yield {"type": "error", "data": {"error": str(e)}}
-        
+
         agent = FailingAgent()
         task = MockAgentTask(request="Test")
-        
+
         updates = []
         async for update in agent.execute_streaming(task):
             updates.append(update)
-        
+
         error_updates = [u for u in updates if u["type"] == "error"]
-        
+
         if len(error_updates) == 0:
             test.result = TestResult.FAILED
             test.message = "Error not captured in stream"
         else:
             test.result = TestResult.PASSED
             test.message = "Error handled gracefully"
-    
+
     except Exception as e:
         # If exception propagates, that's also acceptable
         test.result = TestResult.PASSED
         test.message = f"Error propagated: {str(e)[:50]}"
-    
+
     test.duration = time.time() - start
     return test
 
@@ -451,7 +451,7 @@ async def test_streaming_performance() -> TestCase:
     """Test 6: Streaming meets performance requirements"""
     test = TestCase(name="Streaming Performance")
     start = time.time()
-    
+
     try:
         # Fast LLM simulation
         llm = MockLLMClient(
@@ -460,20 +460,20 @@ async def test_streaming_performance() -> TestCase:
         )
         agent = MockPlannerAgent(llm)
         task = MockAgentTask(request="Performance test")
-        
+
         update_times = []
         last_time = time.time()
-        
+
         async for update in agent.execute_streaming(task):
             now = time.time()
             if update["type"] == "thinking":
                 update_times.append(now - last_time)
             last_time = now
-        
+
         # Calculate average time between updates
         avg_interval = sum(update_times) / len(update_times) if update_times else 0
         fps = 1 / avg_interval if avg_interval > 0 else 0
-        
+
         # Target: 30 FPS = 33ms between updates
         if fps < 20:
             test.result = TestResult.FAILED
@@ -481,11 +481,11 @@ async def test_streaming_performance() -> TestCase:
         else:
             test.result = TestResult.PASSED
             test.message = f"{fps:.1f} FPS ({avg_interval*1000:.1f}ms avg interval)"
-    
+
     except Exception as e:
         test.result = TestResult.FAILED
         test.message = str(e)
-    
+
     test.duration = time.time() - start
     return test
 
@@ -497,9 +497,9 @@ async def test_streaming_performance() -> TestCase:
 async def run_all_tests():
     """Run all streaming tests"""
     suite = TestSuite("Streaming Implementation Tests")
-    
+
     print("\n🧪 Running streaming tests...\n")
-    
+
     # Run tests
     tests = [
         await test_llm_streaming(),
@@ -509,28 +509,28 @@ async def run_all_tests():
         await test_error_handling(),
         await test_streaming_performance(),
     ]
-    
+
     for test in tests:
         suite.add_test(test)
         status = "✅" if test.result == TestResult.PASSED else "❌"
         print(f"  {status} {test.name}")
-    
+
     # Summary
     all_passed = suite.summary()
-    
+
     # Visual demonstration
     print("\n📺 VISUAL DEMONSTRATION:")
     print("-" * 40)
-    
+
     ui = MockMaestroUI()
     orch = MockOrchestrator(ui)
-    
+
     print("PLANNER Panel (streaming tokens):")
     async for update in orch.execute_streaming("Create auth"):
         if update["type"] == "thinking":
             print(update["data"], end="", flush=True)
     print("\n" + "-" * 40)
-    
+
     return all_passed
 
 
