@@ -144,11 +144,15 @@ class BlockDetector:
         # Dentro de code fence?
         if self.in_code_fence:
             self._handle_code_fence_content(line)
+            # Atualiza base para partial tracking
+            if self.current_block:
+                self._partial_base = self.current_block.content
             return
 
         # Linha vazia
         if not line.strip():
             self._finalize_current_block()
+            self._partial_base = ''
             return
 
         # Detecta tipo de bloco
@@ -156,7 +160,12 @@ class BlockDetector:
 
         # Continua bloco atual ou inicia novo?
         if self._should_continue_block(block_type, line):
-            self._extend_current_block(line)
+            # IMPORTANTE: Se bloco atual tinha partial, substituir pelo conteúdo completo
+            # não extender (pois o partial já tem o texto)
+            if self.current_block:
+                confirmed = getattr(self.current_block, '_confirmed_content', '')
+                self.current_block.content = confirmed + line + "\n"
+                self.current_block._confirmed_content = self.current_block.content
         else:
             self._finalize_current_block()
             self._start_new_block(block_type, line)
@@ -165,23 +174,29 @@ class BlockDetector:
         """
         Processa linha parcial (optimistic parsing).
         Detecta tipo mas não finaliza.
+
+        IMPORTANTE: partial é o buffer acumulado, não o delta.
+        O content do bloco é: confirmed_content + partial
         """
         if not partial.strip():
             return
 
         if self.in_code_fence:
-            # Adiciona ao bloco atual sem finalizar
             if self.current_block:
-                self.current_block.content += partial
+                # Content = confirmed + partial (não acumula partial)
+                confirmed = getattr(self.current_block, '_confirmed_content', '')
+                self.current_block.content = confirmed + partial
             return
 
         block_type = self._detect_block_type(partial)
 
         if self._should_continue_block(block_type, partial):
             if self.current_block:
-                self.current_block.content += partial
+                # Content = confirmed + partial (substitui, não acumula)
+                confirmed = getattr(self.current_block, '_confirmed_content', '')
+                self.current_block.content = confirmed + partial
         else:
-            # Inicia novo bloco (sem finalizar anterior ainda)
+            # Inicia novo bloco com partial
             self._start_new_block(block_type, partial, is_partial=True)
 
     def _detect_block_type(self, line: str) -> BlockType:
@@ -306,6 +321,7 @@ class BlockDetector:
                     content="",  # Não inclui a fence marker
                     is_complete=False,
                 )
+                self.current_block._confirmed_content = ''
                 return
 
         # Extrai metadata para heading
@@ -323,6 +339,11 @@ class BlockDetector:
             is_complete=False,
             metadata=metadata,
         )
+        # Inicializa confirmed_content
+        if is_partial:
+            self.current_block._confirmed_content = ''  # Partial não é confirmado
+        else:
+            self.current_block._confirmed_content = self.current_block.content
 
         # Headings e horizontal rules são completos em uma linha
         if block_type in (BlockType.HEADING, BlockType.HORIZONTAL_RULE):
@@ -332,6 +353,8 @@ class BlockDetector:
         """Estende o bloco atual com mais conteúdo."""
         if self.current_block:
             self.current_block.content += line + "\n"
+            # Salva como confirmed (linha completa processada)
+            self.current_block._confirmed_content = self.current_block.content
 
     def _handle_code_fence_content(self, line: str) -> None:
         """Processa conteúdo dentro de code fence."""
@@ -347,6 +370,7 @@ class BlockDetector:
         # Adiciona conteúdo
         if self.current_block:
             self.current_block.content += line + "\n"
+            self.current_block._confirmed_content = self.current_block.content
 
     def _finalize_current_block(self) -> None:
         """Finaliza o bloco atual e o adiciona à lista."""

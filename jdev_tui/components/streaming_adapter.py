@@ -129,6 +129,75 @@ class StreamingResponseWidget(Static):
         self._last_lines: List[str] = []
         self._max_line_history = 10
 
+        # Tool call JSON buffer for multi-chunk JSON parsing
+        self._json_buffer = ""
+
+    def _sanitize_tool_call_json(self, chunk: str) -> str:
+        """
+        BLINDAGEM: Converte JSON tool calls em exibição amigável.
+
+        Detecta padrões como:
+        - {"tool": "bash_command", "args": {"command": "..."}}
+        - {"name": "bash_command", "arguments": {"command": "..."}}
+        - {"functionCall": {"name": "...", "args": {...}}}
+
+        E converte para formato legível:
+        ```bash
+        sudo apt install ...
+        ```
+        """
+        import re
+        import json
+
+        # Patterns para detectar tool calls JSON (ordem importa - mais específico primeiro)
+        TOOL_PATTERNS = [
+            # Nested PRIMEIRO: {"tool":{"tool":"bash_command","args":{...}}}
+            (re.compile(r'\{"tool"\s*:\s*\{\s*"tool"\s*:\s*"(\w+)"\s*,\s*"args"\s*:\s*(\{[^{}]*\})\s*\}\s*\}', re.DOTALL), True),
+            # {"tool": "bash_command", "args": {"command": "..."}}
+            (re.compile(r'\{\s*"tool"\s*:\s*"(\w+)"\s*,\s*"args"\s*:\s*(\{[^{}]*\})\s*\}', re.DOTALL), False),
+            # {"name": "bash_command", "arguments": {"command": "..."}}
+            (re.compile(r'\{\s*"name"\s*:\s*"(\w+)"\s*,\s*"(?:arguments|params)"\s*:\s*(\{[^{}]*\})\s*\}', re.DOTALL), False),
+        ]
+
+        result = chunk
+
+        for pattern, _ in TOOL_PATTERNS:
+            def replace_tool_call(match):
+                tool_name = match.group(1)
+                try:
+                    args = json.loads(match.group(2))
+                except json.JSONDecodeError:
+                    return match.group(0)  # Retorna original se não conseguir parsear
+
+                # Converte para formato amigável baseado no tool
+                if tool_name in ('bash_command', 'bash'):
+                    cmd = args.get('command', args.get('cmd', ''))
+                    if cmd:
+                        return f"```bash\n{cmd}\n```"
+                elif tool_name == 'write_file':
+                    path = args.get('path', args.get('file_path', ''))
+                    return f"📝 **Escrevendo arquivo:** `{path}`"
+                elif tool_name == 'read_file':
+                    path = args.get('path', args.get('file_path', ''))
+                    return f"📖 **Lendo arquivo:** `{path}`"
+                elif tool_name == 'edit_file':
+                    path = args.get('path', args.get('file_path', ''))
+                    return f"✏️ **Editando arquivo:** `{path}`"
+                elif tool_name in ('web_search', 'search'):
+                    query = args.get('query', args.get('q', ''))
+                    return f"🔍 **Pesquisando:** `{query}`"
+                elif tool_name in ('web_fetch', 'fetch_url'):
+                    url = args.get('url', '')
+                    return f"🌐 **Acessando:** `{url}`"
+
+                # Fallback: mostra tool call de forma limpa
+                args_str = ', '.join(f"{k}={repr(v)}" for k, v in args.items())
+                return f"🔧 **{tool_name}**({args_str})"
+
+            result = pattern.sub(replace_tool_call, result)
+
+        return result
+
     def on_mount(self) -> None:
         """Chamado quando widget é montado."""
         self.is_streaming = True
@@ -151,9 +220,11 @@ class StreamingResponseWidget(Static):
         """
         import time
         import re
+        import json
 
-        # Sanitizar Rich markup que o LLM pode ter gerado erroneamente
-        # Remove [bold], [italic], [dim], [/], [#hexcode], [color name] tags
+        # =================================================================
+        # BLINDAGEM 1: Sanitizar Rich markup que o LLM gerou erroneamente
+        # =================================================================
         chunk = re.sub(
             r'\[/?(?:bold|italic|dim|underline|strike|blink|reverse|#[0-9a-fA-F]{6}|'
             r'red|green|blue|yellow|magenta|cyan|white|black|'
@@ -161,6 +232,12 @@ class StreamingResponseWidget(Static):
             '',
             chunk
         )
+
+        # =================================================================
+        # BLINDAGEM 2: Converter JSON tool calls em exibição amigável
+        # Detecta {"tool": "bash_command", "args": {...}} e converte
+        # =================================================================
+        chunk = self._sanitize_tool_call_json(chunk)
 
         # DEDUPLICATION: Remove LLM-generated duplicate lines
         # Split chunk into lines and filter duplicates
