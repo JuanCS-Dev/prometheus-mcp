@@ -239,7 +239,8 @@ class GeminiSDKStreamer(BaseStreamer):
 
         try:
             # 1. Start Request (Threaded)
-            response_iterator = await loop.run_in_executor(None, _generate)
+            response = await loop.run_in_executor(None, _generate)
+            response_iterator = iter(response)
 
             # 2. Iterate Chunks (Threaded to prevent UI freeze)
             def _next_chunk():

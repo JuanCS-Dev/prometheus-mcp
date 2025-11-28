@@ -133,10 +133,13 @@ class LanguageDetector:
         Returns:
             Instruction string like "Respond in Portuguese." or None for English
         """
-        code, name = cls.detect_with_name(text)
+        # DISABLE FORCED TRANSLATION (Fix for "OláOlá" duplication issue)
+        # The model is smart enough to reply in the correct language without this.
+        # code, name = cls.detect_with_name(text)
 
-        # Don't add instruction for English (default)
-        if code == "en":
-            return None
+        # # Don't add instruction for English (default)
+        # if code == "en":
+        #     return None
 
-        return f"Respond in {name}."
+        # return f"Respond in {name}."
+        return None

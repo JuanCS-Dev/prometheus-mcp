@@ -9,6 +9,25 @@ logger = logging.getLogger(__name__)
 
 # REMOVED top-level import: import google.generativeai as genai
 
+# Anti-repetition and table formatting suffix added to all system prompts
+# Based on: https://ai.google.dev/gemini-api/docs/troubleshooting
+GEMINI_OUTPUT_RULES = """
+
+CRITICAL OUTPUT RULES:
+- Be concise and direct
+- Never repeat yourself
+- Never duplicate content horizontally or vertically
+- Provide each answer only once
+- If you find yourself repeating, STOP and move on
+
+MARKDOWN TABLES - CRITICAL:
+- Use EXACTLY 3 hyphens per column: |---|---|---|
+- NO extra spaces or padding for visual alignment
+- NO tabs - only single spaces
+- FOR TABLE HEADINGS, IMMEDIATELY ADD ' |' AFTER THE HEADING
+- Keep cell content short (under 30 chars)
+"""
+
 class GeminiProvider:
     """Google Gemini API provider."""
     
@@ -232,10 +251,20 @@ class GeminiProvider:
             # 2. Initialize Model (with System Instruction)
             # We create a specific instance for this chat to support dynamic system prompt
             # This is lightweight and ensures we use the native system_instruction
+            
+            # Add anti-repetition instructions
+            full_system_prompt = (system_prompt or "") + GEMINI_OUTPUT_RULES
+            
+            # CRITICAL: Temperature MUST be 1.0 for Gemini 2.5+ to prevent looping
+            safe_temperature = 1.0
+            if temperature != 1.0:
+                 # We silently enforce 1.0 for stability as per DeepMind docs
+                 safe_temperature = 1.0
+
             model = self._genai.GenerativeModel(
                 self.model_name,
                 tools=tools if tools else None,
-                system_instruction=system_prompt
+                system_instruction=full_system_prompt
             )
 
             # 3. Prepare History
@@ -257,7 +286,7 @@ class GeminiProvider:
                     last_user_msg,
                     generation_config={
                         'max_output_tokens': max_tokens,
-                        'temperature': temperature,
+                        'temperature': safe_temperature,
                     },
                     stream=True
                 )
@@ -265,8 +294,27 @@ class GeminiProvider:
             loop = asyncio.get_event_loop()
             response = await loop.run_in_executor(None, _send)
             
+            # FIX: Convert iterable response to iterator
+            response_iterator = iter(response)
+            
             # 6. Stream Response
-            for chunk in response:
+            # We iterate manually to avoid blocking the event loop
+            def _next_chunk():
+                try:
+                    return next(response_iterator)
+                except StopIteration:
+                    return None
+                except Exception as e:
+                    return e
+
+            while True:
+                chunk = await loop.run_in_executor(None, _next_chunk)
+                
+                if chunk is None:
+                    break
+                if isinstance(chunk, Exception):
+                    raise chunk
+
                 try:
                     # Handle Code Execution Parts
                     if hasattr(chunk, 'parts'):
@@ -286,6 +334,7 @@ class GeminiProvider:
                     continue
                 
                 await asyncio.sleep(0)
+
                     
         except Exception as e:
             logger.error(f"Gemini streaming error: {e}")
